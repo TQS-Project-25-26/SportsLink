@@ -7,7 +7,9 @@
 
 
 ## Features
-
+- Vista por calendário
+- Matchmaking
+- Marcar em Aveiro -> Aveiro não há -> sugere próximos
 
 # Item Owner
 - Disponibiliza campos com equipamentos especificos

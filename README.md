@@ -1,4 +1,6 @@
-Team Leader- Paulo
-Product Owner- Tomás
-QA Engineer- Rafael
-DevOps- Diogo
+## Roles
+
+- Paulo: Team Leader
+- Tomás: Product owner
+- Diogo: DevOps
+- Rafael: QA 

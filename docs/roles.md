@@ -5,7 +5,6 @@
 - Diogo: DevOps
 - Rafael: QA 
 
-
 ## Features
 - Vista por calendário
 - Matchmaking
@@ -31,4 +30,6 @@
 
 
 # Third-party Services
-
+- Gateways de pagamento.
+- Seguros desportivos.
+- APIs de geolocalização.

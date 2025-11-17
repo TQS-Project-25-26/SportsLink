@@ -22,7 +22,7 @@
 - Puder filtrar por desporto ou por campo, localização
 - (Future Work) Matchmaking
 
-# PLatform Admin
+# Platform Admin
 - Verifica feedback dos utilizadores
 - Vê possiveis parceiros e colaboradores
 - Analiza metricas dos rentings
@@ -30,4 +30,6 @@
 
 
 # Third-party Services
-
+- Gateways de pagamento.
+- Seguros desportivos.
+- APIs de geolocalização.

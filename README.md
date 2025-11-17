@@ -1,35 +1,19 @@
-## Roles
+# SportsLink - Overview of the project
 
-- Paulo: Team Leader
-- Tomás: Product owner
-- Diogo: DevOps
-- Rafael: QA 
+**Contextualization in TQS Course:**
 
+This project assignment aims to apply Software Quality Assurance (SQA) and DevOps practices in a real-world, medium-sized software development scenario. The team is expected to implement a full-stack application using Spring Boot, applying an agile methodology with continuous integration, continuous testing, and continuous delivery pipelines. This project demonstrates the integration of quality practices from conception through deployment, including test automation, code analysis, and infrastructure management.
 
-## Features
-- Vista por calendário
-- Matchmaking
-- Marcar em Aveiro -> Aveiro não há -> sugere próximos
+**SportsLink Application Overview:**
 
-# Item Owner
-- Disponibiliza campos com equipamentos especificos
-- Vê o estado dos seus assets 
-- Dá update do estado dos seus equipamentos 
+SportsLink is a digital marketplace platform that connects field owners with sports enthusiasts who want to rent sports fields and related equipment on-demand. The application solves a critical inefficiency in sports facility utilization: field owners have idle capacity during off-peak hours while potential users lack convenient access to affordable sports facilities.
 
-# Renter
-- Alugar campos com diferentes tipos de desportos
-- Cada campo tem um conjunto de desportos e material disponivel 
-- Puder filtrar por desporto ou por campo, localização
-- (Future Work) Matchmaking
+**What is it good for?**
 
-# Platform Admin
-- Verifica feedback dos utilizadores
-- Vê possiveis parceiros e colaboradores
-- Analiza metricas dos rentings
-- Garante a segurança e bom funcionamento da aplicação
+- **For Field Owners:** Monetize underutilized sports facilities by renting them out, manage bookings and equipment inventory, track maintenance schedules, and monitor occupancy rates.
+- **For Renters:** Discover nearby sports fields filtered by sport type, location, and availability; easily reserve fields for specific time slots; access quality assurance information through reviews and ratings.
+- **For Platform Administrators:** Monitor platform health, analyze usage metrics, manage user partnerships, and ensure compliance and safety standards.
 
+**Product Name:** SportsLink
 
-# Third-party Services
-- Gateways de pagamento.
-- Seguros desportivos.
-- APIs de geolocalização.
+**Domain:** Sports facilities and equipment rental platform, initially focused on collective sports (padel, futsal, tennis, badminton, basketball, volleyball, etc.)

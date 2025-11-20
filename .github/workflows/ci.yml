@@ -49,4 +49,5 @@ jobs:
         run: |
           mvn sonar:sonar \
               -Dsonar.projectKey=TQS-Project-25-26_SportsLink \
-              -Dsonar.host.url=http://sonarcloud.io 
+              -Dsonar.organization=sportslink \
+              -Dsonar.host.url=https://sonarcloud.io 

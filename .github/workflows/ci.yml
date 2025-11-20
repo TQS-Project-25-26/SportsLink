@@ -39,3 +39,15 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
+
+      - name: Build and test with Maven
+        run: mvn clean verify
+
+      - name: Build and analyze with SonarQube
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn sonar:sonar \
+              -Dsonar.projectKey=TQS-Project-25-26_SportsLink \
+              -Dsonar.organization=sportslink \
+              -Dsonar.host.url=https://sonarcloud.io 

@@ -1,14 +1,14 @@
 <mxfile host="65bd71144e">
     <diagram id="Ev2pshBuMlfR4hd7ppHR" name="Page-1">
-        <mxGraphModel dx="1072" dy="375" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="2110" dy="514" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="2" value="Search Game" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                <mxCell id="2" value="Search Field &amp;amp; Book Field" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="320" y="10" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="3" value="1. S&lt;span data-teams=&quot;true&quot;&gt;elect option to find matches&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="10" y="140" width="120" height="60" as="geometry"/>
+                <mxCell id="3" value="1. S&lt;span data-teams=&quot;true&quot;&gt;elect option Book Field&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="-140" y="140" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="4" value="2.Select preferences" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="180" y="140" width="120" height="60" as="geometry"/>
@@ -16,10 +16,10 @@
                 <mxCell id="5" value="3. Confirm preferences" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="350" y="140" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="6" value="4. Choose a match of interest from the list presented" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                <mxCell id="6" value="4. Choose materials that are provided" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="530" y="140" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="7" value="5. Accept match" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                <mxCell id="7" value="5. Payment" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="700" y="140" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="8" value="5.1. Verifiy the match´s details" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
@@ -33,14 +33,14 @@
                 </mxCell>
                 <mxCell id="10" value="" style="endArrow=none;html=1;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
-                        <mxPoint x="10" y="130" as="sourcePoint"/>
+                        <mxPoint x="-140" y="130" as="sourcePoint"/>
                         <mxPoint x="820" y="130" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="12" value="" style="endArrow=none;html=1;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
-                        <mxPoint x="10" y="210" as="sourcePoint"/>
-                        <mxPoint x="130" y="210" as="targetPoint"/>
+                        <mxPoint x="-140" y="210" as="sourcePoint"/>
+                        <mxPoint x="-20" y="210" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="13" value="" style="endArrow=none;html=1;" parent="1" edge="1">
@@ -63,8 +63,8 @@
                 </mxCell>
                 <mxCell id="16" value="" style="endArrow=none;html=1;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
-                        <mxPoint x="515" y="360" as="sourcePoint"/>
-                        <mxPoint x="655" y="360" as="targetPoint"/>
+                        <mxPoint x="520" y="360" as="sourcePoint"/>
+                        <mxPoint x="650" y="360" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="19" value="" style="endArrow=none;html=1;" parent="1" edge="1">
@@ -75,62 +75,62 @@
                 </mxCell>
                 <mxCell id="20" value="" style="endArrow=none;html=1;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
-                        <mxPoint x="20" y="280" as="sourcePoint"/>
-                        <mxPoint x="460" y="280" as="targetPoint"/>
+                        <mxPoint x="110" y="280" as="sourcePoint"/>
+                        <mxPoint x="370" y="280" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="21" value="2.1. Select location" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="30" y="290" width="120" height="60" as="geometry"/>
+                <mxCell id="21" value="2.1. Select options provided by field" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="110" y="290" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="22" value="2.2. Select sport" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="180" y="290" width="120" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="23" value="2.3. Pick a time" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="330" y="290" width="120" height="60" as="geometry"/>
+                <mxCell id="23" value="2.3. Pick a slot time" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="250" y="290" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="24" value="" style="endArrow=none;html=1;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
-                        <mxPoint x="30" y="360" as="sourcePoint"/>
-                        <mxPoint x="150" y="360" as="targetPoint"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="25" value="" style="endArrow=none;html=1;" parent="1" edge="1">
-                    <mxGeometry width="50" height="50" relative="1" as="geometry">
-                        <mxPoint x="180" y="360" as="sourcePoint"/>
-                        <mxPoint x="300" y="360" as="targetPoint"/>
+                        <mxPoint x="110" y="360" as="sourcePoint"/>
+                        <mxPoint x="230" y="360" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="26" value="" style="endArrow=none;html=1;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
-                        <mxPoint x="330" y="360" as="sourcePoint"/>
-                        <mxPoint x="450" y="360" as="targetPoint"/>
+                        <mxPoint x="250" y="360" as="sourcePoint"/>
+                        <mxPoint x="370" y="360" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="27" value="" style="endArrow=none;html=1;" edge="1" parent="1">
+                <mxCell id="27" value="" style="endArrow=none;html=1;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
-                        <mxPoint x="510" y="280" as="sourcePoint"/>
-                        <mxPoint x="820" y="280" as="targetPoint"/>
+                        <mxPoint x="520" y="280" as="sourcePoint"/>
+                        <mxPoint x="810" y="280" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="28" value="" style="endArrow=none;html=1;" edge="1" parent="1">
+                <mxCell id="28" value="" style="endArrow=none;html=1;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
                         <mxPoint x="760" y="280" as="sourcePoint"/>
                         <mxPoint x="760" y="210" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="29" value="" style="endArrow=none;html=1;" edge="1" parent="1">
+                <mxCell id="29" value="" style="endArrow=none;html=1;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
                         <mxPoint x="700" y="210" as="sourcePoint"/>
                         <mxPoint x="820" y="210" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="30" value="5.2. Confirm presence" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                <mxCell id="30" value="5.2. Confirm payment" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="680" y="290" width="130" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="31" value="" style="endArrow=none;html=1;" edge="1" parent="1">
+                <mxCell id="31" value="" style="endArrow=none;html=1;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
-                        <mxPoint x="675" y="360" as="sourcePoint"/>
-                        <mxPoint x="815" y="360" as="targetPoint"/>
+                        <mxPoint x="680" y="360" as="sourcePoint"/>
+                        <mxPoint x="810" y="360" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="32" value="1. S&lt;span data-teams=&quot;true&quot;&gt;elect Filters or Seacrh&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="20" y="140" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="33" value="" style="endArrow=none;html=1;" edge="1" parent="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="20" y="210" as="sourcePoint"/>
+                        <mxPoint x="140" y="210" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
             </root>

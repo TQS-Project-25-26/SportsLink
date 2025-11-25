@@ -242,7 +242,7 @@ A estratégia de testes do projeto segue o princípio de validação contínua, 
 
 ### 4.1 Estratégia Global de Testes
 
-A estratégia de testes segue um modelo em camadas:
+A estratégia de testes segue tdd (test driven development) num modelo em camadas:
 
 - **Testes Unitários**  
   Implementados com **JUnit** e **Mockito**, validam a lógica de negócio de forma isolada.  

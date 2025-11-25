@@ -6,33 +6,7 @@ The project will follow an incremental delivery approach across 5 main iteration
 
 ---
 
-#### **Epic 1: User Management & Authentication** [HIGH PRIORITY - I1-I2]
-
-**Description:** Enable users to register, authenticate securely, and manage their profiles with role-based access control.
-
-**Business Value:** Foundation for entire platform; without authentication, no other features work.
-
-**Features included:**
-- User registration (email/phone validation)
-- Login/logout with password security
-- Role assignment (Owner, Renter, Admin)
-- Profile management (personal info, payment methods)
-- Password reset functionality
-- Session management
-
-**Implementation Timeline:**
-- I1: Backend authentication service, API endpoints, database schema
-- I2: Frontend login/registration UI, password validation, email verification
-
-**Acceptance Criteria:**
-- User can register and login securely within 30 seconds
-- Passwords stored with bcrypt hashing
-- Session tokens expire after 24 hours
-- Role-based access control enforced on all protected endpoints
-
----
-
-#### **Epic 2: Field Discovery & Catalog** [HIGH PRIORITY - I1-I3]
+#### **Epic 1: Field Discovery & Catalog** [HIGH PRIORITY - I1-I3]
 
 **Description:** Enable renters to search, filter, and discover sports fields with comprehensive details.
 
@@ -61,7 +35,7 @@ The project will follow an incremental delivery approach across 5 main iteration
 
 ---
 
-#### **Epic 3: Booking & Reservation System** [HIGH PRIORITY - I2-I3]
+#### **Epic 2: Booking & Reservation System** [HIGH PRIORITY - I2-I3]
 
 **Description:** Allow renters to view availability, reserve time slots, and manage bookings. Prevent double-bookings.
 
@@ -87,6 +61,36 @@ The project will follow an incremental delivery approach across 5 main iteration
 - Double-bookings impossible (database-level validation)
 - Cancellation confirmation received within 5 minutes
 - Calendar displays availability in real-time
+
+---
+
+#### **Epic 3: Owner Field Management** [HIGH PRIORITY - I2-I4]
+
+**Description:** Enable field owners to register, manage, and monitor their facilities and equipment.
+
+**Business Value:** Directly enables field owners to monetize assets; high-value user segment.
+
+**Features included:**
+- Register new facility with details (name, address, sport types)
+- Upload facility photos
+- Add/manage equipment inventory
+- Update pricing and availability
+- Mark facilities as active/inactive
+- Equipment maintenance tracking and status updates
+- Owner dashboard showing occupancy, earnings, bookings
+- Availability calendar management
+- Facility analytics (popular time slots, revenue by facility)
+
+**Implementation Timeline:**
+- I2: Backend facility registration, equipment management APIs
+- I3: Owner dashboard UI, analytics components
+- I4: Advanced analytics, maintenance tracking refinements
+
+**Acceptance Criteria:**
+- Facility appears in search results within 5 minutes of posting
+- Owner can update equipment status within 30 seconds
+- Dashboard shows real-time occupancy percentages
+- Revenue calculations are accurate within 2 decimal places
 
 ---
 
@@ -118,63 +122,58 @@ The project will follow an incremental delivery approach across 5 main iteration
 
 ---
 
-#### **Epic 5: Owner Field Management** [HIGH PRIORITY - I2-I4]
+#### **Epic 5: User Management & Authentication** [HIGH PRIORITY - I1-I2]
 
-**Description:** Enable field owners to register, manage, and monitor their facilities and equipment.
+**Description:** Enable users to register, authenticate securely, and manage their profiles with role-based access control.
 
-**Business Value:** Directly enables field owners to monetize assets; high-value user segment.
+**Business Value:** Foundation for entire platform; without authentication, no other features work.
 
 **Features included:**
-- Register new facility with details (name, address, sport types)
-- Upload facility photos
-- Add/manage equipment inventory
-- Update pricing and availability
-- Mark facilities as active/inactive
-- Equipment maintenance tracking and status updates
-- Owner dashboard showing occupancy, earnings, bookings
-- Availability calendar management
-- Facility analytics (popular time slots, revenue by facility)
+- User registration (email/phone validation)
+- Login/logout with password security
+- Role assignment (Owner, Renter, Admin)
+- Profile management (personal info, payment methods)
+- Password reset functionality
+- Session management
 
 **Implementation Timeline:**
-- I2: Backend facility registration, equipment management APIs
-- I3: Owner dashboard UI, analytics components
-- I4: Advanced analytics, maintenance tracking refinements
+- I1: Backend authentication service, API endpoints, database schema
+- I2: Frontend login/registration UI, password validation, email verification
 
 **Acceptance Criteria:**
-- Facility appears in search results within 5 minutes of posting
-- Owner can update equipment status within 30 seconds
-- Dashboard shows real-time occupancy percentages
-- Revenue calculations are accurate within 2 decimal places
+- User can register and login securely within 30 seconds
+- Passwords stored with bcrypt hashing
+- Session tokens expire after 24 hours
+- Role-based access control enforced on all protected endpoints
 
 ---
 
 ### **Future Work**
 
-##### **Reviews & Trust System** [MEDIUM PRIORITY]
-
-**Description:** Build trust through community ratings and reviews of facilities, equipment, and users.
-
----
-
-##### **Admin Dashboard & Platform Analytics** [MEDIUM PRIORITY ]
-
-**Description:** Provide Ana (admin) with platform-wide visibility into operations, metrics, and issues.
-
----
-
-##### **Epic 8: Renter Dashboard & Booking History** [MEDIUM PRIORITY]
+##### **Epic 6: Renter Dashboard & Booking History** [MEDIUM PRIORITY]
 
 **Description:** Provide renters (like Maria) with easy access to their booking history and current reservations.
 
 ---
 
-##### **Community Features & Occupancy Indicators** [LOWER PRIORITY]
+##### **Epic 7: Reviews & Trust System** [MEDIUM PRIORITY]
+
+**Description:** Build trust through community ratings and reviews of facilities, equipment, and users.
+
+---
+
+##### **Epic 8:Admin Dashboard & Platform Analytics** [MEDIUM PRIORITY ]
+
+**Description:** Provide Ana (admin) with platform-wide visibility into operations, metrics, and issues.
+
+
+##### **Epic 9: Community Features & Occupancy Indicators** [LOWER PRIORITY]
 
 **Description:** Enable community building features like occupancy indicators and group organization (supporting Pedro's scenario).
 
 ---
 
-##### **Notifications & Communication** [LOWER PRIORITY]
+##### **Epic 10: Notifications & Communication** [LOWER PRIORITY]
 
 **Description:** Keep users informed of important events (booking confirmations, reminders, etc.).
 
@@ -184,14 +183,14 @@ The project will follow an incremental delivery approach across 5 main iteration
 
 | Epic | Priority | Timeline | Description |
 |------|----------|----------|-------------|
-| **1. User Management & Authentication** | HIGH | I1-I2 | Registration, login, role-based access |
-| **2. Field Discovery & Catalog** | HIGH | I1-I3 | Search and filter facilities by sport, location, price |
-| **3. Booking & Reservation System** | HIGH | I2-I3 | Calendar-based reservations with conflict prevention |
+| **1. Field Discovery & Catalog** | HIGH | I1-I3 | Search and filter facilities by sport, location, price |
+| **2. Booking & Reservation System** | HIGH | I2-I3 | Calendar-based reservations with conflict prevention |
+| **3. Owner Field Management** | HIGH | I2-I4 | Facility registration, equipment tracking, owner dashboard |
 | **4. Payment & Transactions** | HIGH | I3-I4 | Stripe integration (sandbox mode), secure payments |
-| **5. Owner Field Management** | HIGH | I2-I4 | Facility registration, equipment tracking, owner dashboard |
-| **6. Reviews & Trust System** | MEDIUM | FW | Ratings, reviews, reputation scoring |
-| **7. Admin Dashboard & Analytics** | MEDIUM | FW | KPI dashboard, platform metrics and reports |
-| **8. Renter Dashboard & History** | MEDIUM | FW | Booking history, favorites, quick re-booking |
+| **5. User Management & Authentication** | HIGH | I1-I2 | Registration, login, role-based access |
+| **6. Renter Dashboard & History** | MEDIUM | FW | Booking history, favorites, quick re-booking |
+| **7. Reviews & Trust System** | MEDIUM | FW | Ratings, reviews, reputation scoring |
+| **8. Admin Dashboard & Analytics** | MEDIUM | FW | KPI dashboard, platform metrics and reports |
 | **9. Community Features & Occupancy** | LOW | FW | Occupancy indicators, peer profiles, group chat |
 | **10. Notifications & Communication** | LOW | FW | Email notifications, booking reminders, alerts |
 

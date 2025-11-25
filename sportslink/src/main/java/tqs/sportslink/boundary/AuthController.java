@@ -5,11 +5,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import tqs.sportslink.service.AuthService;
+import tqs.sportslink.dto.AuthResponseDTO;
 import tqs.sportslink.dto.UserRequestDTO;
-import tqs.sportslink.dto.UserResponseDTO;
 
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -29,14 +29,14 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserResponseDTO> loginUser(@Valid @RequestBody UserRequestDTO request) {
-        UserResponseDTO response = authService.login(request);  // Deve retornar token com role
+    public ResponseEntity<AuthResponseDTO> loginUser(@Valid @RequestBody UserRequestDTO request) {
+        AuthResponseDTO response = authService.login(request);  // Retorna token e role
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponseDTO> registerUser(@Valid @RequestBody UserRequestDTO request) {
-        UserResponseDTO response = authService.register(request);  // Registra e retorna token
+    public ResponseEntity<AuthResponseDTO> registerUser(@Valid @RequestBody UserRequestDTO request) {
+        AuthResponseDTO response = authService.register(request);  // Registra e retorna token
         return ResponseEntity.ok(response);
     }
 

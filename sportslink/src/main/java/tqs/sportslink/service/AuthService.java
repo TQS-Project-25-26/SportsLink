@@ -1,5 +1,5 @@
 package tqs.sportslink.service;
 
-public class UserService {
+public class AuthService {
     
 }

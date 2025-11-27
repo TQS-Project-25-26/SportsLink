@@ -1,8 +1,12 @@
 package tqs.sportslink;
 
 import org.junit.jupiter.api.Test;
+
+import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
+
 import static org.junit.jupiter.api.Assertions.*;
 
+@XrayTest
 public class BasicHealthCheckTest {
 
     @Test
@@ -15,8 +19,4 @@ public class BasicHealthCheckTest {
         assertEquals(4, 2 + 2);
     }
 
-    @Test
-    void testeQueFalhaDeProposito() {   //para ver o relatorio de testes falhados
-        assertEquals(5, 2 + 2);
-    }
 }

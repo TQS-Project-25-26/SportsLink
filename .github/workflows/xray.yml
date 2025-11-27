@@ -31,8 +31,9 @@ jobs:
           username: ${{ secrets.XRAY_CLIENT_ID }}
           password: ${{ secrets.XRAY_CLIENT_SECRET }}
           testFormat: junit
-          testPaths: target/surefire-reports/TEST-*.xml
+          testPaths: "**/target/surefire-reports/TEST-*.xml"
           projectKey: SL
           combineInSingleTestExec: true
           testEnvironments: GitHub-Actions
           revision: ${{ github.sha }}
+          failOnImportError: true

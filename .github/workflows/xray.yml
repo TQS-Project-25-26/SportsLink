@@ -1,0 +1,38 @@
+name: Testes + Xray Cloud
+
+on:
+  push:
+    branches: [ main, dev, "feature/*" ]
+  pull_request:
+
+jobs:
+  test-and-report:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sportslink
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - name: Run tests
+        run: mvn -B test
+
+      - name: Import results to Xray
+        uses: mikepenz/xray-action@v3
+        with:
+          username: ${{ secrets.XRAY_CLIENT_ID }}
+          password: ${{ secrets.XRAY_CLIENT_SECRET }}
+          testFormat: junit
+          testPaths: target/surefire-reports/TEST-*.xml
+          projectKey: SL
+          combineInSingleTestExec: true
+          testEnvironments: GitHub-Actions
+          revision: ${{ github.sha }}

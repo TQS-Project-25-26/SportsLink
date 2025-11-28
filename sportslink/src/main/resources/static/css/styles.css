@@ -277,6 +277,80 @@ body {
 .carousel-control-prev:hover,
 .carousel-control-next:hover { background: var(--accent); }
 
+/* Carousel (horizontal scroll used pelo #featured) */
+.carousel {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding: 12px 6px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+}
+.carousel > .field-card {
+    scroll-snap-align: start;
+    flex: 0 0 auto;
+    min-width: 300px;
+}
+
+/* Tweak field-card global sizing and spacing */
+.field-card {
+    min-width: 300px;
+    max-width: 360px;
+    margin-bottom: 8px;
+    position: relative;
+    padding: 0;
+    background: var(--card);
+}
+
+/* Field image more prominent */
+.field-image { 
+    height: 180px;
+    display:flex;align-items:center;justify-content:center;
+    background: linear-gradient(135deg, rgba(255,122,0,0.06), rgba(255,182,107,0.03));
+}
+
+/* Card body spacing */
+.field-card .card-body { padding: 16px; }
+
+/* Favorite button visual */
+.favorite-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.06);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+.favorite-btn .material-icons { font-size:18px; }
+
+/* Search bar responsive fix */
+.search-bar {
+    gap:12px;
+    align-items:center;
+}
+@media (max-width: 768px) {
+    .carousel > .field-card { min-width: 260px; max-width: 92vw; }
+    .hero { padding: 36px 12px; }
+}
+
+/* Nearby carousel (uses bootstrap carousel inner markup) */
+#nearbyCarousel .carousel-inner { display:block; }
+#nearbyCarousel .carousel-item .d-flex { gap: 16px; overflow-x:auto; padding-bottom:8px; }
+
+/* Small visual polishing */
+.section-title { letter-spacing: 0.2px; }
+.category-card { padding: 20px 12px; }
+
+/* toast basic position fix (if app.js creates #app-toast) */
+#app-toast { 
+    position: fixed; left: 50%; transform: translateX(-50%); bottom: 6%; z-index: 1500;
+    background: white; padding:10px 14px; border-radius:8px; box-shadow:0 10px 30px rgba(0,0,0,0.12);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .hero-title { font-size: 2rem; }

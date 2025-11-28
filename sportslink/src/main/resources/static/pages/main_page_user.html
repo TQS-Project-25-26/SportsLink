@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="pt-PT">
+<html lang="en">
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>SportsLink — Plataforma de Reserva de Campos</title>
+    <title>SportsLink — Sports Field Booking Platform</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
@@ -31,21 +31,21 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link active fw-medium" href="#">Início</a>
+                        <a class="nav-link active fw-medium" href="#">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link fw-medium" href="#reservas">Minhas Reservas</a>
+                        <a class="nav-link fw-medium" href="#reservas">My Bookings</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link fw-medium" href="#explorar">Explorar Campos</a>
+                        <a class="nav-link fw-medium" href="#explorar">Explore Fields</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link fw-medium" href="#favoritos">Favoritos</a>
+                        <a class="nav-link fw-medium" href="#favoritos">Favorites</a>
                     </li>
                 </ul>
                 <div class="d-flex">
                     <div class="profile-icon d-flex align-items-center justify-content-center text-white fw-bold"
-                        title="Perfil">U
+                        title="Profile">U
                     </div>
                 </div>
             </div>
@@ -55,167 +55,47 @@
     <!-- Hero Section -->
     <div class="hero text-center">
         <div class="container">
-            <h1 class="hero-title display-4 fw-bold mb-3">Reserve o Campo Perfeito</h1>
-            <p class="hero-subtitle lead mb-4">Encontre e reserve instalações desportivas perto de si</p>
+            <h1 class="hero-title display-4 fw-bold mb-3">Book the Perfect Field</h1>
+            <p class="hero-subtitle lead mb-4">Find and book sports facilities near you</p>
 
             <!-- Search Bar -->
             <div
                 class="search-bar d-flex align-items-center justify-content-center gap-3 p-3 mx-auto flex-column flex-md-row">
-                <input type="text" class="form-control" placeholder="Procurar por modalidade ou localização..."
-                    id="searchInput">
-                <select class="form-select text-muted" id="sportFilter" aria-label="Selecionar modalidade">
-                    <option value="">Todas as modalidades</option>
-                    <option value="futebol">Futebol</option>
+                <input type="text" class="form-control border-0 bg-transparent"
+                    placeholder="Search by sport or location..." id="searchInput">
+                <select class="form-select border-0 bg-transparent text-muted" id="sportFilter"
+                    aria-label="Select sport">
+                    <option value="">All sports</option>
+                    <option value="futebol">Football</option>
                     <option value="padel">Padel</option>
-                    <option value="tenis">Ténis</option>
-                    <option value="basquete">Basquetebol</option>
-                    <option value="volei">Voleibol</option>
+                    <option value="tenis">Tennis</option>
+                    <option value="basquete">Basketball</option>
+                    <option value="volei">Volleyball</option>
                 </select>
-                <button class="btn text-white fw-bold px-4 bg-accent border-0 search-btn">Pesquisar</button>
+                <!-- searchBtn ID used by app.js; keeps bootstrap classes -->
+                <button id="searchBtn" class="btn text-white fw-bold px-4 bg-accent border-0">Search</button>
             </div>
         </div>
     </div>
 
     <!-- Featured Fields Carousel -->
     <div class="carousel-container container mb-5">
-        <h2 class="section-title h3 fw-bold mb-4">Campos em Destaque</h2>
-        <div id="featuredCarousel" class="carousel slide" data-bs-ride="false">
-            <div class="carousel-inner">
-                <div class="carousel-item active">
-                    <div class="d-flex gap-3 flex-nowrap">
-                        <div class="field-card card border-0 shadow-sm" onclick="openFieldDetail(1)"
-                            style="min-width: 320px;">
-                            <div class="field-image card-img-top d-flex align-items-center justify-content-center">
-                                <i class="material-icons text-accent icon-large">sports_soccer</i>
-                            </div>
-                            <button class="favorite-btn position-absolute top-0 end-0 m-2" aria-label="Favoritar">
-                                <i class="material-icons">favorite_border</i>
-                            </button>
-                            <div class="card-body">
-                                <div class="field-sport text-uppercase fw-bold text-accent small mb-2">Futebol</div>
-                                <h5 class="field-name card-title fw-bold text-accent-dark">Campo Municipal da Glória
-                                </h5>
-                                <div class="field-location d-flex align-items-center gap-1 text-muted small mb-3">
-                                    <i class="material-icons icon-small">location_on</i> Aveiro, 2.5 km
-                                </div>
-                                <div
-                                    class="field-details d-flex justify-content-between align-items-center pt-3 border-top">
-                                    <div class="field-price fw-bold text-accent-dark">€25/hora</div>
-                                    <div class="field-rating fw-bold text-warning">★ 4.8</div>
-                                </div>
-                            </div>
-                        </div>
+        <h2 class="section-title h3 fw-bold mb-4">Featured Fields</h2>
 
-                        <div class="field-card card border-0 shadow-sm" onclick="openFieldDetail(2)"
-                            style="min-width: 320px;">
-                            <div class="field-image card-img-top d-flex align-items-center justify-content-center">
-                                <i class="material-icons text-accent icon-large">sports_tennis</i>
-                            </div>
-                            <button class="favorite-btn position-absolute top-0 end-0 m-2" aria-label="Favoritar">
-                                <i class="material-icons">favorite_border</i>
-                            </button>
-                            <div class="card-body">
-                                <div class="field-sport text-uppercase fw-bold text-accent small mb-2">Padel</div>
-                                <h5 class="field-name card-title fw-bold text-accent-dark">Padel Arena Premium</h5>
-                                <div class="field-location d-flex align-items-center gap-1 text-muted small mb-3">
-                                    <i class="material-icons icon-small">location_on</i> Aveiro, 1.2 km
-                                </div>
-                                <div
-                                    class="field-details d-flex justify-content-between align-items-center pt-3 border-top">
-                                    <div class="field-price fw-bold text-accent-dark">€18/hora</div>
-                                    <div class="field-rating fw-bold text-warning">★ 4.9</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="field-card card border-0 shadow-sm" onclick="openFieldDetail(3)"
-                            style="min-width: 320px;">
-                            <div class="field-image card-img-top d-flex align-items-center justify-content-center">
-                                <i class="material-icons text-accent icon-large">sports_basketball</i>
-                            </div>
-                            <button class="favorite-btn position-absolute top-0 end-0 m-2" aria-label="Favoritar">
-                                <i class="material-icons">favorite_border</i>
-                            </button>
-                            <div class="card-body">
-                                <div class="field-sport text-uppercase fw-bold text-accent small mb-2">Basquetebol</div>
-                                <h5 class="field-name card-title fw-bold text-accent-dark">Complexo Desportivo Central
-                                </h5>
-                                <div class="field-location d-flex align-items-center gap-1 text-muted small mb-3">
-                                    <i class="material-icons icon-small">location_on</i> Aveiro, 3.8 km
-                                </div>
-                                <div
-                                    class="field-details d-flex justify-content-between align-items-center pt-3 border-top">
-                                    <div class="field-price fw-bold text-accent-dark">€20/hora</div>
-                                    <div class="field-rating fw-bold text-warning">★ 4.7</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="field-card card border-0 shadow-sm" onclick="openFieldDetail(4)"
-                            style="min-width: 320px;">
-                            <div class="field-image card-img-top d-flex align-items-center justify-content-center">
-                                <i class="material-icons text-accent icon-large">sports_volleyball</i>
-                            </div>
-                            <button class="favorite-btn position-absolute top-0 end-0 m-2" aria-label="Favoritar">
-                                <i class="material-icons">favorite_border</i>
-                            </button>
-                            <div class="card-body">
-                                <div class="field-sport text-uppercase fw-bold text-accent small mb-2">Voleibol</div>
-                                <h5 class="field-name card-title fw-bold text-accent-dark">Beach Volley Praia</h5>
-                                <div class="field-location d-flex align-items-center gap-1 text-muted small mb-3">
-                                    <i class="material-icons icon-small">location_on</i> Costa Nova, 8.5 km
-                                </div>
-                                <div
-                                    class="field-details d-flex justify-content-between align-items-center pt-3 border-top">
-                                    <div class="field-price fw-bold text-accent-dark">€15/hora</div>
-                                    <div class="field-rating fw-bold text-warning">★ 4.6</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="field-card card border-0 shadow-sm" onclick="openFieldDetail(5)"
-                            style="min-width: 320px;">
-                            <div class="field-image card-img-top d-flex align-items-center justify-content-center">
-                                <i class="material-icons text-accent icon-large">sports_tennis</i>
-                            </div>
-                            <button class="favorite-btn position-absolute top-0 end-0 m-2" aria-label="Favoritar">
-                                <i class="material-icons">favorite_border</i>
-                            </button>
-                            <div class="card-body">
-                                <div class="field-sport text-uppercase fw-bold text-accent small mb-2">Ténis</div>
-                                <h5 class="field-name card-title fw-bold text-accent-dark">Clube de Ténis Aveiro</h5>
-                                <div class="field-location d-flex align-items-center gap-1 text-muted small mb-3">
-                                    <i class="material-icons icon-small">location_on</i> Aveiro, 2.0 km
-                                </div>
-                                <div
-                                    class="field-details d-flex justify-content-between align-items-center pt-3 border-top">
-                                    <div class="field-price fw-bold text-accent-dark">€22/hora</div>
-                                    <div class="field-rating fw-bold text-warning">★ 4.8</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#featuredCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#featuredCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-            </button>
+        <div id="featured" class="d-flex gap-3 flex-nowrap carousel">
+            <!-- cards rendered here by /static/js/app.js -->
         </div>
+
     </div>
 
     <!-- Categories -->
     <div class="categories container mb-5">
-        <h2 class="section-title h3 fw-bold mb-4">Explorar por Modalidade</h2>
+        <h2 class="section-title h3 fw-bold mb-4">Explore by Sport</h2>
         <div class="category-grid row g-3">
             <div class="col-6 col-md-4 col-lg-2">
                 <div class="category-card card border-0 shadow-sm text-center" onclick="filterBySport('futebol')">
                     <i class="material-icons mb-2 text-accent icon-large">sports_soccer</i>
-                    <div class="category-name fw-bold text-accent-dark">Futebol</div>
+                    <div class="category-name fw-bold text-accent-dark">Football</div>
                 </div>
             </div>
             <div class="col-6 col-md-4 col-lg-2">
@@ -227,19 +107,19 @@
             <div class="col-6 col-md-4 col-lg-2">
                 <div class="category-card card border-0 shadow-sm text-center" onclick="filterBySport('basquete')">
                     <i class="material-icons mb-2 text-accent icon-large">sports_basketball</i>
-                    <div class="category-name fw-bold text-accent-dark">Basquetebol</div>
+                    <div class="category-name fw-bold text-accent-dark">Basketball</div>
                 </div>
             </div>
             <div class="col-6 col-md-4 col-lg-2">
                 <div class="category-card card border-0 shadow-sm text-center" onclick="filterBySport('tenis')">
                     <i class="material-icons mb-2 text-accent icon-large">sports_tennis</i>
-                    <div class="category-name fw-bold text-accent-dark">Ténis</div>
+                    <div class="category-name fw-bold text-accent-dark">Tennis</div>
                 </div>
             </div>
             <div class="col-6 col-md-4 col-lg-2">
                 <div class="category-card card border-0 shadow-sm text-center" onclick="filterBySport('volei')">
                     <i class="material-icons mb-2 text-accent icon-large">sports_volleyball</i>
-                    <div class="category-name fw-bold text-accent-dark">Voleibol</div>
+                    <div class="category-name fw-bold text-accent-dark">Volleyball</div>
                 </div>
             </div>
             <div class="col-6 col-md-4 col-lg-2">
@@ -253,73 +133,12 @@
 
     <!-- Nearby Fields Carousel -->
     <div class="carousel-container container mb-5">
-        <h2 class="section-title h3 fw-bold mb-4">Campos Perto de Si</h2>
+        <h2 class="section-title h3 fw-bold mb-4">Fields Near You</h2>
         <div id="nearbyCarousel" class="carousel slide" data-bs-ride="false">
             <div class="carousel-inner">
                 <div class="carousel-item active">
                     <div class="d-flex gap-3 flex-nowrap">
-                        <div class="field-card card border-0 shadow-sm" style="min-width: 320px;">
-                            <div class="field-image card-img-top d-flex align-items-center justify-content-center">
-                                <i class="material-icons text-accent icon-large">sports_soccer</i>
-                            </div>
-                            <button class="favorite-btn position-absolute top-0 end-0 m-2" aria-label="Favoritar">
-                                <i class="material-icons">favorite_border</i>
-                            </button>
-                            <div class="card-body">
-                                <div class="field-sport text-uppercase fw-bold text-accent small mb-2">Futebol</div>
-                                <h5 class="field-name card-title fw-bold text-accent-dark">Campo São Bernardo</h5>
-                                <div class="field-location d-flex align-items-center gap-1 text-muted small mb-3">
-                                    <i class="material-icons icon-small">location_on</i> Aveiro, 0.8 km
-                                </div>
-                                <div
-                                    class="field-details d-flex justify-content-between align-items-center pt-3 border-top">
-                                    <div class="field-price fw-bold text-accent-dark">€30/hora</div>
-                                    <div class="field-rating fw-bold text-warning">★ 4.5</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="field-card card border-0 shadow-sm" style="min-width: 320px;">
-                            <div class="field-image card-img-top d-flex align-items-center justify-content-center">
-                                <i class="material-icons text-accent icon-large">sports_tennis</i>
-                            </div>
-                            <button class="favorite-btn position-absolute top-0 end-0 m-2" aria-label="Favoritar">
-                                <i class="material-icons">favorite_border</i>
-                            </button>
-                            <div class="card-body">
-                                <div class="field-sport text-uppercase fw-bold text-accent small mb-2">Padel</div>
-                                <h5 class="field-name card-title fw-bold text-accent-dark">Padel City Center</h5>
-                                <div class="field-location d-flex align-items-center gap-1 text-muted small mb-3">
-                                    <i class="material-icons icon-small">location_on</i> Aveiro, 1.5 km
-                                </div>
-                                <div
-                                    class="field-details d-flex justify-content-between align-items-center pt-3 border-top">
-                                    <div class="field-price fw-bold text-accent-dark">€16/hora</div>
-                                    <div class="field-rating fw-bold text-warning">★ 4.7</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="field-card card border-0 shadow-sm" style="min-width: 320px;">
-                            <div class="field-image card-img-top d-flex align-items-center justify-content-center">
-                                <i class="material-icons text-accent icon-large">sports_basketball</i>
-                            </div>
-                            <button class="favorite-btn position-absolute top-0 end-0 m-2" aria-label="Favoritar">
-                                <i class="material-icons">favorite_border</i>
-                            </button>
-                            <div class="card-body">
-                                <div class="field-sport text-uppercase fw-bold text-accent small mb-2">Basquetebol</div>
-                                <h5 class="field-name card-title fw-bold text-accent-dark">Pavilhão Desportivo UA</h5>
-                                <div class="field-location d-flex align-items-center gap-1 text-muted small mb-3">
-                                    <i class="material-icons icon-small">location_on</i> Aveiro, 2.2 km
-                                </div>
-                                <div
-                                    class="field-details d-flex justify-content-between align-items-center pt-3 border-top">
-                                    <div class="field-price fw-bold text-accent-dark">€18/hora</div>
-                                    <div class="field-rating fw-bold text-warning">★ 4.9</div>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- cards rendered here by /static/js/app.js -->
                     </div>
                 </div>
             </div>
@@ -339,13 +158,16 @@
         integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
         crossorigin="anonymous"></script>
 
+    <!-- App JS -->
+    <script src="../js/app.js"></script>
+
     <script>
         function openFieldDetail(id) {
-            alert(`Abrir detalhes do campo ${id} - Esta funcionalidade será implementada em breve!`);
+            alert(`Open field details ${id} - This feature will be implemented soon!`);
         }
 
         function filterBySport(sport) {
-            alert(`Filtrar por ${sport} - Esta funcionalidade será implementada em breve!`);
+            alert(`Filter by ${sport} - This feature will be implemented soon!`);
         }
 
         // Toggle favorite
@@ -367,7 +189,7 @@
         document.querySelector('.search-btn').addEventListener('click', () => {
             const searchValue = document.getElementById('searchInput').value;
             const sportValue = document.getElementById('sportFilter').value;
-            alert(`Pesquisar por: "${searchValue}" ${sportValue ? `| Modalidade: ${sportValue}` : ''}`);
+            alert(`Search for: "${searchValue}" ${sportValue ? `| Sport: ${sportValue}` : ''}`);
         });
     </script>
 </body>

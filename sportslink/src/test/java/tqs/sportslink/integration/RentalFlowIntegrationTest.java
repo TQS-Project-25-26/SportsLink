@@ -1,203 +1,355 @@
 package tqs.sportslink.integration;
 
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import tqs.sportslink.boundary.RenterController;
-import tqs.sportslink.service.RentalService;
-import tqs.sportslink.service.FacilityService;
-import tqs.sportslink.service.EquipmentService;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import tqs.sportslink.dto.RentalRequestDTO;
-import tqs.sportslink.dto.RentalResponseDTO;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tqs.sportslink.data.RentalRepository;
+import tqs.sportslink.data.FacilityRepository;
+import tqs.sportslink.data.EquipmentRepository;
+import tqs.sportslink.data.UserRepository;
+import tqs.sportslink.data.model.Facility;
+import tqs.sportslink.data.model.Equipment;
+import tqs.sportslink.data.model.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.*;
 
 /**
- * Teste de integração para o fluxo completo de rental usando MockMvc
- * Testa o cenário de Maria fazendo booking de campo de Padel
+ * INTEGRATION TEST REAL usando RestAssured - SEM MOCKS
+ * Testa API REST completa: Controller → Service → Repository → Database (H2)
+ * 
+ * Cenário: Maria busca facilities em Aveiro para Padel às 19:00-21:00 
+ * e faz booking completo com equipamentos
  */
-@WebMvcTest(RenterController.class)
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
+@TestPropertySource(properties = {
+    "spring.datasource.url=jdbc:h2:mem:testdb",
+    "spring.jpa.hibernate.ddl-auto=create-drop"
+})
 public class RentalFlowIntegrationTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockBean
-    private RentalService rentalService;
-
-    @MockBean
-    private FacilityService facilityService;
-
-    @MockBean
-    private EquipmentService equipmentService;
+    @LocalServerPort
+    private int port;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private RentalRepository rentalRepository;
 
+    @Autowired
+    private FacilityRepository facilityRepository;
+
+    @Autowired
+    private EquipmentRepository equipmentRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    private Facility testFacility;
+    private Equipment testEquipment;
+    private User testUser;
+
+    @BeforeEach
+    public void setup() {
+        RestAssured.port = port;
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+
+        // Limpar base de dados H2
+        rentalRepository.deleteAll();
+        equipmentRepository.deleteAll();
+        facilityRepository.deleteAll();
+        userRepository.deleteAll();
+
+        // Criar user de teste (Maria)
+        testUser = new User();
+        testUser.setEmail("maria@example.com");
+        testUser.setName("Maria Silva");
+        testUser.setPassword("encoded-password");
+        testUser.setRole("RENTER");
+        testUser.setActive(true);
+        testUser = userRepository.save(testUser);
+
+        // Criar facility de teste (Padel em Aveiro)
+        testFacility = new Facility();
+        testFacility.setName("Padel Club Aveiro");
+        testFacility.setSportType("Padel");
+        testFacility.setCity("Aveiro");
+        testFacility.setAddress("Rua do Padel, 123");
+        testFacility.setPricePerHour(15.0);
+        testFacility.setStatus("ACTIVE");
+        testFacility = facilityRepository.save(testFacility);
+
+        // Criar equipamento de teste
+        testEquipment = new Equipment();
+        testEquipment.setName("Raquete Profissional");
+        testEquipment.setType("Racket");
+        testEquipment.setQuantity(10);
+        testEquipment.setPricePerHour(5.0);
+        testEquipment.setStatus("AVAILABLE");
+        testEquipment.setFacility(testFacility);
+        testEquipment = equipmentRepository.save(testEquipment);
+    }
+
+    /**
+     * Teste do fluxo completo: buscar -> consultar equipamentos -> criar rental -> atualizar -> cancelar
+     */
     @Test
-    public void testCompleteRentalFlow_MariaBookingScenario() {
-        // Cenário: Maria quer reservar um campo de padel em Aveiro
-        
-        // Step 1: Buscar facilities em Aveiro com Padel
+    public void whenCompleteRentalFlow_thenSuccess() {
+        // STEP 1: Maria busca facilities em Aveiro para Padel
         given()
             .queryParam("location", "Aveiro")
             .queryParam("sport", "Padel")
+            .queryParam("time", "19:00")
         .when()
             .get("/api/rentals/search")
         .then()
             .statusCode(200)
-            .contentType(ContentType.JSON)
-            .body("$", notNullValue());
-        
-        // Step 2: Consultar equipamentos disponíveis para facility 1
+            .body("$", hasSize(1))
+            .body("[0]", equalTo("Padel Club Aveiro"));
+
+        // STEP 2: Maria consulta equipamentos disponíveis
         given()
-            .pathParam("facilityId", 1)
         .when()
-            .get("/api/rentals/facility/{facilityId}/equipments")
+            .get("/api/rentals/facility/" + testFacility.getId() + "/equipments")
         .then()
             .statusCode(200)
+            .body("$", hasSize(1))
+            .body("[0]", equalTo("Raquete Profissional"));
+
+        // STEP 3: Maria cria booking com equipamento
+        RentalRequestDTO request = new RentalRequestDTO();
+        request.setUserId(testUser.getId());
+        request.setFacilityId(testFacility.getId());
+        request.setStartTime(LocalDateTime.now().plusDays(1).withHour(19).withMinute(0).withSecond(0).withNano(0));
+        request.setEndTime(LocalDateTime.now().plusDays(1).withHour(21).withMinute(0).withSecond(0).withNano(0));
+        request.setEquipmentIds(List.of(testEquipment.getId()));
+
+        Integer rentalIdInt = given()
             .contentType(ContentType.JSON)
-            .body("$", notNullValue());
-        
-        // Step 3: Criar booking para 19:00-21:00 com equipamentos
-        RentalRequestDTO rentalRequest = new RentalRequestDTO();
-        rentalRequest.setFacilityId(1L);
-        rentalRequest.setStartTime(LocalDateTime.of(2025, 11, 27, 19, 0));
-        rentalRequest.setEndTime(LocalDateTime.of(2025, 11, 27, 21, 0));
-        rentalRequest.setEquipmentIds(List.of(1L, 2L)); // Raquetes e bolas
-        
-        String rentalId = given()
-            .contentType(ContentType.JSON)
-            .body(rentalRequest)
+            .body(request)
         .when()
             .post("/api/rentals/rental")
         .then()
             .statusCode(200)
-            .contentType(ContentType.JSON)
             .body("id", notNullValue())
-            .body("facilityId", equalTo(1))
-            .body("status", notNullValue())
-            .extract()
-            .path("id")
-            .toString();
-        
-        // Step 4: Verificar status do booking
+            .body("status", equalTo("CONFIRMED"))
+            .body("facilityId", equalTo(testFacility.getId().intValue()))
+            .body("equipments", hasSize(1))
+            .body("equipments[0]", equalTo("Raquete Profissional"))
+        .extract()
+            .path("id");
+        Long rentalId = rentalIdInt.longValue();
+
+        // STEP 4: Maria consulta status do booking
         given()
-            .pathParam("id", rentalId)
         .when()
-            .get("/api/rentals/rental/{id}/status")
+            .get("/api/rentals/rental/" + rentalId + "/status")
         .then()
             .statusCode(200)
-            .contentType(ContentType.JSON)
-            .body("id", notNullValue())
-            .body("status", notNullValue());
-        
-        // Step 5: Atualizar horário do booking (mudar para 20:00-22:00)
+            .body("id", equalTo(rentalId.intValue()))
+            .body("status", equalTo("CONFIRMED"));
+
+        // STEP 5: Maria atualiza horário (20:00-22:00)
         RentalRequestDTO updateRequest = new RentalRequestDTO();
-        updateRequest.setFacilityId(1L);
-        updateRequest.setStartTime(LocalDateTime.of(2025, 11, 27, 20, 0));
-        updateRequest.setEndTime(LocalDateTime.of(2025, 11, 27, 22, 0));
-        updateRequest.setEquipmentIds(List.of(1L, 2L));
-        
+        updateRequest.setUserId(testUser.getId());
+        updateRequest.setFacilityId(testFacility.getId());
+        updateRequest.setStartTime(LocalDateTime.now().plusDays(1).withHour(20).withMinute(0).withSecond(0).withNano(0));
+        updateRequest.setEndTime(LocalDateTime.now().plusDays(1).withHour(22).withMinute(0).withSecond(0).withNano(0));
+
         given()
             .contentType(ContentType.JSON)
-            .pathParam("id", rentalId)
             .body(updateRequest)
         .when()
-            .put("/api/rentals/rental/{id}/update")
+            .put("/api/rentals/rental/" + rentalId + "/update")
         .then()
             .statusCode(200)
-            .contentType(ContentType.JSON)
-            .body("id", notNullValue());
-        
-        // Step 6: Cancelar booking
+            .body("status", equalTo("CONFIRMED"));
+
+        // STEP 6: Maria cancela booking
         given()
-            .pathParam("id", rentalId)
         .when()
-            .put("/api/rentals/rental/{id}/cancel")
+            .put("/api/rentals/rental/" + rentalId + "/cancel")
         .then()
             .statusCode(200)
-            .contentType(ContentType.JSON)
-            .body("id", notNullValue());
+            .body("status", equalTo("CANCELLED"));
     }
 
+    /**
+     * Teste de detecção de conflito ao criar dois rentals no mesmo horário
+     */
     @Test
-    public void testSearchFacilities_withFilters() {
-        // Test: Buscar facilities com múltiplos filtros
+    public void whenCreateConflictingRental_thenStatus400() {
+        LocalDateTime start = LocalDateTime.now().plusDays(2).withHour(14).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime end = LocalDateTime.now().plusDays(2).withHour(16).withMinute(0).withSecond(0).withNano(0);
+
+        // Criar primeiro rental
+        RentalRequestDTO request1 = new RentalRequestDTO();
+        request1.setUserId(testUser.getId());
+        request1.setFacilityId(testFacility.getId());
+        request1.setStartTime(start);
+        request1.setEndTime(end);
+
         given()
-            .queryParam("location", "Aveiro")
-            .queryParam("sport", "Padel")
-            .queryParam("startTime", "2025-11-27T19:00:00")
-            .queryParam("endTime", "2025-11-27T21:00:00")
-        .when()
-            .get("/api/rentals/search")
-        .then()
-            .statusCode(200)
             .contentType(ContentType.JSON)
-            .body("$", notNullValue());
+            .body(request1)
+        .when()
+            .post("/api/rentals/rental")
+        .then()
+            .statusCode(200);
+
+        // Tentar criar segundo rental no mesmo horário
+        RentalRequestDTO request2 = new RentalRequestDTO();
+        request2.setUserId(testUser.getId());
+        request2.setFacilityId(testFacility.getId());
+        request2.setStartTime(start);
+        request2.setEndTime(end);
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(request2)
+        .when()
+            .post("/api/rentals/rental")
+        .then()
+            .statusCode(400);
     }
 
+    /**
+     * Teste de criação de rental com facility inexistente
+     */
     @Test
-    public void testCreateRental_withoutEquipment() {
-        // Test: Criar booking sem equipamentos
-        RentalRequestDTO rentalRequest = new RentalRequestDTO();
-        rentalRequest.setFacilityId(1L);
-        rentalRequest.setStartTime(LocalDateTime.of(2025, 11, 28, 10, 0));
-        rentalRequest.setEndTime(LocalDateTime.of(2025, 11, 28, 12, 0));
-        
+    public void whenCreateRentalWithInvalidFacility_thenStatus400() {
+        RentalRequestDTO request = new RentalRequestDTO();
+        request.setUserId(testUser.getId());
+        request.setFacilityId(9999L); // Facility inexistente
+        request.setStartTime(LocalDateTime.now().plusDays(1).withHour(19).withMinute(0).withSecond(0).withNano(0));
+        request.setEndTime(LocalDateTime.now().plusDays(1).withHour(21).withMinute(0).withSecond(0).withNano(0));
+
         given()
             .contentType(ContentType.JSON)
-            .body(rentalRequest)
+            .body(request)
+        .when()
+            .post("/api/rentals/rental")
+        .then()
+            .statusCode(400);
+    }
+
+    /**
+     * Teste de criação de rental no passado
+     */
+    @Test
+    public void whenCreateRentalInPast_thenStatus400() {
+        RentalRequestDTO request = new RentalRequestDTO();
+        request.setUserId(testUser.getId());
+        request.setFacilityId(testFacility.getId());
+        request.setStartTime(LocalDateTime.now().minusDays(1));
+        request.setEndTime(LocalDateTime.now().minusDays(1).plusHours(2));
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(request)
+        .when()
+            .post("/api/rentals/rental")
+        .then()
+            .statusCode(400);
+    }
+
+    /**
+     * Teste de cancelamento de rental inexistente
+     */
+    @Test
+    public void whenCancelInvalidRental_thenStatus400() {
+        given()
+        .when()
+            .put("/api/rentals/rental/99999/cancel")
+        .then()
+            .statusCode(400);
+    }
+
+    /**
+     * Teste de update causando conflito com outro rental existente
+     */
+    @Test
+    public void whenUpdateRentalCausesConflict_thenStatus400() {
+        // Criar primeiro rental 14:00-16:00
+        RentalRequestDTO request1 = new RentalRequestDTO();
+        request1.setUserId(testUser.getId());
+        request1.setFacilityId(testFacility.getId());
+        request1.setStartTime(LocalDateTime.now().plusDays(30).withHour(14).withMinute(0).withSecond(0).withNano(0));
+        request1.setEndTime(LocalDateTime.now().plusDays(30).withHour(16).withMinute(0).withSecond(0).withNano(0));
+
+        Integer rentalId1Int = given()
+            .contentType(ContentType.JSON)
+            .body(request1)
         .when()
             .post("/api/rentals/rental")
         .then()
             .statusCode(200)
-            .contentType(ContentType.JSON)
-            .body("id", notNullValue())
-            .body("facilityId", equalTo(1));
-    }
+        .extract()
+            .path("id");
+        Long rentalId1 = rentalId1Int.longValue();
 
-    @Test
-    public void testCreateRental_invalidTimeRange() {
-        // Test: Tentar criar booking com horário inválido (fim antes do início)
-        RentalRequestDTO invalidRequest = new RentalRequestDTO();
-        invalidRequest.setFacilityId(1L);
-        invalidRequest.setStartTime(LocalDateTime.of(2025, 11, 27, 21, 0));
-        invalidRequest.setEndTime(LocalDateTime.of(2025, 11, 27, 19, 0)); // Inválido!
-        
+        // Criar segundo rental 17:00-19:00 (sem conflito com o primeiro)
+        RentalRequestDTO request2 = new RentalRequestDTO();
+        request2.setUserId(testUser.getId());
+        request2.setFacilityId(testFacility.getId());
+        request2.setStartTime(LocalDateTime.now().plusDays(30).withHour(17).withMinute(0).withSecond(0).withNano(0));
+        request2.setEndTime(LocalDateTime.now().plusDays(30).withHour(19).withMinute(0).withSecond(0).withNano(0));
+
         given()
             .contentType(ContentType.JSON)
-            .body(invalidRequest)
+            .body(request2)
         .when()
             .post("/api/rentals/rental")
         .then()
-            // Deve retornar erro quando validação for implementada
-            .statusCode(anyOf(is(200), is(400)));
+            .statusCode(200);
+
+        // Tentar atualizar primeiro rental para 17:00-19:00 (conflito com segundo)
+        RentalRequestDTO updateRequest = new RentalRequestDTO();
+        updateRequest.setUserId(testUser.getId());
+        updateRequest.setFacilityId(testFacility.getId());
+        updateRequest.setStartTime(LocalDateTime.now().plusDays(30).withHour(17).withMinute(0).withSecond(0).withNano(0));
+        updateRequest.setEndTime(LocalDateTime.now().plusDays(30).withHour(19).withMinute(0).withSecond(0).withNano(0));
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(updateRequest)
+        .when()
+            .put("/api/rentals/rental/" + rentalId1 + "/update")
+        .then()
+            .statusCode(400);
     }
 
+    /**
+     * Teste de filtro de equipamentos AVAILABLE
+     */
     @Test
-    public void testGetEquipments_forFacility() {
-        // Test: Listar equipamentos disponíveis para uma facility
+    public void whenGetEquipments_thenOnlyAvailableReturned() {
+        // Criar equipamento UNAVAILABLE
+        Equipment unavailable = new Equipment();
+        unavailable.setName("Bola Furada");
+        unavailable.setType("Ball");
+        unavailable.setQuantity(0);
+        unavailable.setPricePerHour(3.0);
+        unavailable.setStatus("UNAVAILABLE");
+        unavailable.setFacility(testFacility);
+        equipmentRepository.save(unavailable);
+
+        // Deve retornar apenas AVAILABLE
         given()
-            .pathParam("facilityId", 1)
         .when()
-            .get("/api/rentals/facility/{facilityId}/equipments")
+            .get("/api/rentals/facility/" + testFacility.getId() + "/equipments")
         .then()
             .statusCode(200)
-            .contentType(ContentType.JSON)
-            .body("$", notNullValue());
+            .body("$", hasSize(1))
+            .body("[0]", equalTo("Raquete Profissional"));
     }
 }

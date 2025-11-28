@@ -7,10 +7,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tqs.sportslink.service.EquipmentService;
 import tqs.sportslink.data.EquipmentRepository;
+import tqs.sportslink.data.model.Equipment;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class UnitEquipmentService {
@@ -24,25 +26,73 @@ public class UnitEquipmentService {
     @Test
     public void whenGetAvailableEquipment_forFacility_thenReturnsEquipmentList() {
         // Given - Maria checking equipment for Padel Club
-        Long facilityId = 1L;
+        Equipment eq1 = new Equipment();
+        eq1.setName("Raquete Profissional");
+        eq1.setStatus("AVAILABLE");
+        
+        Equipment eq2 = new Equipment();
+        eq2.setName("Bola Wilson");
+        eq2.setStatus("AVAILABLE");
+        
+        when(equipmentRepository.findByFacilityId(1L))
+            .thenReturn(List.of(eq1, eq2));
         
         // When
-        List<String> result = equipmentService.getEquipmentsByFacility(facilityId);
+        List<String> result = equipmentService.getEquipmentsByFacility(1L);
         
         // Then
-        assertThat(result).isNotNull();
+        assertThat(result).hasSize(2);
+        assertThat(result).contains("Raquete Profissional", "Bola Wilson");
     }
 
     @Test
     public void whenGetEquipments_thenIncludesRacketsAndBalls() {
         // Given
-        Long facilityId = 1L;
+        Equipment eq1 = new Equipment();
+        eq1.setName("Bola");
+        eq1.setStatus("AVAILABLE");
+        
+        Equipment eq2 = new Equipment();
+        eq2.setName("Raquete");
+        eq2.setStatus("AVAILABLE");
+        
+        Equipment eq3 = new Equipment();
+        eq3.setName("Rede");
+        eq3.setStatus("AVAILABLE");
+        
+        when(equipmentRepository.findByFacilityId(1L))
+            .thenReturn(List.of(eq1, eq2, eq3));
         
         // When
-        List<String> result = equipmentService.getEquipmentsByFacility(facilityId);
+        List<String> result = equipmentService.getEquipmentsByFacility(1L);
         
         // Then
-        assertThat(result).isNotNull();
+        assertThat(result).hasSize(3);
         assertThat(result).contains("Bola", "Raquete", "Rede");
+    }
+
+
+
+    @Test
+    public void whenGetEquipments_withUnavailableItems_thenExcludesUnavailable() {
+        // Given
+        Equipment eq1 = new Equipment();
+        eq1.setName("Bola");
+        eq1.setStatus("AVAILABLE");
+        
+        Equipment eq2 = new Equipment();
+        eq2.setName("Raquete");
+        eq2.setStatus("UNAVAILABLE");
+        
+        when(equipmentRepository.findByFacilityId(1L))
+            .thenReturn(List.of(eq1, eq2));
+        
+        // When
+        List<String> result = equipmentService.getEquipmentsByFacility(1L);
+        
+        // Then
+        assertThat(result).hasSize(1);
+        assertThat(result).contains("Bola");
+        assertThat(result).doesNotContain("Raquete");
     }
 }

@@ -7,10 +7,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tqs.sportslink.service.FacilityService;
 import tqs.sportslink.data.FacilityRepository;
+import tqs.sportslink.data.model.Facility;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class UnitFacilityTest {
@@ -24,58 +26,71 @@ public class UnitFacilityTest {
     @Test
     public void whenSearchByLocation_thenReturnsNearbyFacilities() {
         // Given - Maria searching in Aveiro
-        String location = "Aveiro";
-        String sport = "Padel";
-        String time = "19:00";
+        Facility facility1 = new Facility();
+        facility1.setName("Padel Club Aveiro");
+        facility1.setStatus("ACTIVE");
+        
+        Facility facility2 = new Facility();
+        facility2.setName("Sports Center Aveiro");
+        facility2.setStatus("ACTIVE");
+        
+        when(facilityRepository.findByCityAndSportType("Aveiro", "Padel"))
+            .thenReturn(List.of(facility1, facility2));
         
         // When
-        List<String> result = facilityService.searchFacilities(location, sport, time);
+        List<String> result = facilityService.searchFacilities("Aveiro", "Padel", "19:00");
         
         // Then
-        assertThat(result).isNotNull();
+        assertThat(result).hasSize(2);
+        assertThat(result).contains("Padel Club Aveiro", "Sports Center Aveiro");
     }
 
     @Test
     public void whenSearchBySport_thenReturnsCorrectFacilities() {
         // Given - Maria looking for Padel courts
-        String location = "Aveiro";
-        String sport = "Padel";
-        String time = "19:00";
+        Facility facility = new Facility();
+        facility.setName("Padel Club Aveiro");
+        facility.setStatus("ACTIVE");
+        
+        when(facilityRepository.findByCityAndSportType("Aveiro", "Padel"))
+            .thenReturn(List.of(facility));
         
         // When
-        List<String> result = facilityService.searchFacilities(location, sport, time);
+        List<String> result = facilityService.searchFacilities("Aveiro", "Padel", "19:00");
         
         // Then
-        assertThat(result).isNotNull();
         assertThat(result).isNotEmpty();
+        assertThat(result).contains("Padel Club Aveiro");
     }
 
     @Test
     public void whenSearchWithInvalidLocation_thenReturnsEmpty() {
         // Given
-        String location = "InvalidLocation";
-        String sport = "Padel";
-        String time = "19:00";
+        when(facilityRepository.findByCityAndSportType("InvalidLocation", "Padel"))
+            .thenReturn(List.of());
         
         // When
-        List<String> result = facilityService.searchFacilities(location, sport, time);
+        List<String> result = facilityService.searchFacilities("InvalidLocation", "Padel", "19:00");
         
         // Then
-        assertThat(result).isNotNull();
+        assertThat(result).isEmpty();
     }
 
     @Test
     public void whenCheckAvailability_duringOpenHours_thenReturnsTrue() {
         // Given - Check if facility available
-        String location = "Aveiro";
-        String sport = "Padel";
-        String time = "19:00";
+        Facility facility = new Facility();
+        facility.setName("Padel Club Aveiro");
+        facility.setStatus("ACTIVE");
+        
+        when(facilityRepository.findByCityAndSportType("Aveiro", "Padel"))
+            .thenReturn(List.of(facility));
         
         // When
-        List<String> result = facilityService.searchFacilities(location, sport, time);
+        List<String> result = facilityService.searchFacilities("Aveiro", "Padel", "19:00");
         
         // Then
-        assertThat(result).isNotNull();
+        assertThat(result).isNotEmpty();
     }
 
     @Test

@@ -160,38 +160,6 @@
 
     <!-- App JS -->
     <script src="../js/app.js"></script>
-
-    <script>
-        function openFieldDetail(id) {
-            alert(`Open field details ${id} - This feature will be implemented soon!`);
-        }
-
-        function filterBySport(sport) {
-            alert(`Filter by ${sport} - This feature will be implemented soon!`);
-        }
-
-        // Toggle favorite
-        document.querySelectorAll('.favorite-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const icon = btn.querySelector('.material-icons');
-                if (icon.textContent === 'favorite_border') {
-                    icon.textContent = 'favorite';
-                    icon.style.color = '#e63946';
-                } else {
-                    icon.textContent = 'favorite_border';
-                    icon.style.color = '';
-                }
-            });
-        });
-
-        // Search functionality
-        document.querySelector('.search-btn').addEventListener('click', () => {
-            const searchValue = document.getElementById('searchInput').value;
-            const sportValue = document.getElementById('sportFilter').value;
-            alert(`Search for: "${searchValue}" ${sportValue ? `| Sport: ${sportValue}` : ''}`);
-        });
-    </script>
 </body>
 
 </html>

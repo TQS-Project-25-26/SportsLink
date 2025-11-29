@@ -35,6 +35,10 @@
   }
 
   // API functions
+  async function getAllFacilities() {
+    return apiFetch("/api/public/facilities"); // Buscar todas as facilities
+  }
+
   async function searchFacilities({
     location,
     sport,
@@ -46,7 +50,7 @@
     if (sport) params.set("sport", sport);
     if (startTime) params.set("startTime", startTime);
     if (endTime) params.set("endTime", endTime);
-    const url = `${BASE}/search?${params.toString()}`;
+    const url = `/api/public/facilities/search?${params.toString()}`; // Endpoint público
     return apiFetch(url);
   }
 
@@ -88,20 +92,20 @@
         <i class="material-icons">favorite_border</i>
       </button>
       <div class="card-body">
-        <div class="field-sport text-uppercase fw-bold text-accent small">${(
-          field.sport || ""
-        ).toString()}</div>
+        <div class="field-sport text-uppercase fw-bold text-accent small">${
+          field.sportType || ""
+        }</div>
         <h5 class="field-name card-title fw-bold text-accent-dark">${
-          field.name || field.title || "Unnamed"
+          field.name || "Unnamed"
         }</h5>
         <div class="field-location d-flex align-items-center gap-1 text-muted small">
           <i class="material-icons icon-small">location_on</i> ${
-            field.location || field.city || ""
+            field.city || ""
           }
         </div>
         <div class="field-details d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
           <div class="field-price fw-bold text-accent-dark">${
-            field.price ? `€${field.price}/hora` : ""
+            field.pricePerHour ? `€${field.pricePerHour}/hora` : ""
           }</div>
           <div class="d-flex gap-2">
             <button class="btn btn-sm btn-outline-primary btn-equip">Equipamentos</button>
@@ -124,18 +128,23 @@
     return div;
   }
 
-  async function renderSearchResults(data = [], containerSelector = '#featured') {
-    const container = document.querySelector(containerSelector) || document.querySelector('.carousel');
+  async function renderSearchResults(
+    data = [],
+    containerSelector = "#featured"
+  ) {
+    const container =
+      document.querySelector(containerSelector) ||
+      document.querySelector(".carousel");
     if (!container) return;
-    container.innerHTML = '';
+    container.innerHTML = "";
     if (!Array.isArray(data) || data.length === 0) {
-      const empty = document.createElement('div');
-      empty.className = 'text-muted';
-      empty.textContent = 'Nenhum resultado encontrado.';
+      const empty = document.createElement("div");
+      empty.className = "text-muted";
+      empty.textContent = "Nenhum resultado encontrado.";
       container.appendChild(empty);
       return;
     }
-    data.forEach(f => container.appendChild(createFieldCard(f)));
+    data.forEach((f) => container.appendChild(createFieldCard(f)));
   }
 
   // Simple equipment panel (appends to body)
@@ -259,20 +268,28 @@
     });
   }
 
-  // Add after bindSearch function
+  // loadFeatured: buscar todas (sem filtros)
   async function loadFeatured() {
-    const res = await searchFacilities({}); // Empty params for all
+    const res = await getAllFacilities(); // /api/public/facilities
     if (res.ok) {
       const body = Array.isArray(res.body) ? res.body : [];
-      renderSearchResults(body, "#featuredCarousel");
+      renderSearchResults(body, "#featured");
+    } else {
+      console.error("Erro ao carregar featured:", res);
     }
   }
 
+  // loadNearby: usar search no backend com location="Lisboa"
   async function loadNearby() {
-    const res = await searchFacilities({ location: "Lisboa" }); // Default location
+    const res = await searchFacilities({ location: "Lisboa" }); // Search no backend
     if (res.ok) {
       const body = Array.isArray(res.body) ? res.body : [];
-      renderSearchResults(body, "#nearbyCarousel");
+      renderSearchResults(
+        body,
+        "#nearbyCarousel .carousel-inner .carousel-item .d-flex"
+      );
+    } else {
+      console.error("Erro ao carregar nearby:", res);
     }
   }
 

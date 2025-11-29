@@ -20,9 +20,13 @@ public class SecurityConfig {
         http
             .csrf().disable()
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/api/auth/**").permitAll()  // Acesso público ao AuthController
-                .anyRequest().authenticated()  // Outros endpoints requerem autenticação
+                .requestMatchers("/", "/pages/**", "/css/**", "/js/**").permitAll()  // Adicione esta linha para acesso público
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/public/**").permitAll()  // Se ainda não tiver
+                .requestMatchers("/h2-console/**").permitAll()  // Para H2 console
+                .anyRequest().authenticated()
             )
+            .headers(headers -> headers.frameOptions().disable())  // Para H2 console
             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

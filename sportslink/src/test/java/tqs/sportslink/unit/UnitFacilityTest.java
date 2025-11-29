@@ -1,18 +1,19 @@
 package tqs.sportslink.unit;
 
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
-import tqs.sportslink.service.FacilityService;
+
 import tqs.sportslink.data.FacilityRepository;
 import tqs.sportslink.data.model.Facility;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import tqs.sportslink.dto.FacilityDTO;
+import tqs.sportslink.service.FacilityService;
 
 @ExtendWith(MockitoExtension.class)
 public class UnitFacilityTest {
@@ -38,11 +39,11 @@ public class UnitFacilityTest {
             .thenReturn(List.of(facility1, facility2));
         
         // When
-        List<String> result = facilityService.searchFacilities("Aveiro", "Padel", "19:00");
+        List<FacilityDTO> result = facilityService.searchFacilities("Aveiro", "Padel", "19:00");
         
         // Then
         assertThat(result).hasSize(2);
-        assertThat(result).contains("Padel Club Aveiro", "Sports Center Aveiro");
+        assertThat(result).extracting(FacilityDTO::getName).contains("Padel Club Aveiro", "Sports Center Aveiro");
     }
 
     @Test
@@ -56,11 +57,11 @@ public class UnitFacilityTest {
             .thenReturn(List.of(facility));
         
         // When
-        List<String> result = facilityService.searchFacilities("Aveiro", "Padel", "19:00");
+        List<FacilityDTO> result = facilityService.searchFacilities("Aveiro", "Padel", "19:00");
         
         // Then
         assertThat(result).isNotEmpty();
-        assertThat(result).contains("Padel Club Aveiro");
+        assertThat(result).extracting(FacilityDTO::getName).contains("Padel Club Aveiro");
     }
 
     @Test
@@ -70,7 +71,7 @@ public class UnitFacilityTest {
             .thenReturn(List.of());
         
         // When
-        List<String> result = facilityService.searchFacilities("InvalidLocation", "Padel", "19:00");
+        List<FacilityDTO> result = facilityService.searchFacilities("InvalidLocation", "Padel", "19:00");
         
         // Then
         assertThat(result).isEmpty();
@@ -87,7 +88,7 @@ public class UnitFacilityTest {
             .thenReturn(List.of(facility));
         
         // When
-        List<String> result = facilityService.searchFacilities("Aveiro", "Padel", "19:00");
+        List<FacilityDTO> result = facilityService.searchFacilities("Aveiro", "Padel", "19:00");
         
         // Then
         assertThat(result).isNotEmpty();
@@ -101,7 +102,7 @@ public class UnitFacilityTest {
         String time = "19:00";
         
         // When
-        List<String> result = facilityService.searchFacilities(location, sport, time);
+        List<FacilityDTO> result = facilityService.searchFacilities(location, sport, time);
         
         // Then
         assertThat(result).isNotNull();

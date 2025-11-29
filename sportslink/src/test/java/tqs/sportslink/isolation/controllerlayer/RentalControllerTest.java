@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import tqs.sportslink.service.RentalService;
 import tqs.sportslink.service.FacilityService;
 import tqs.sportslink.service.EquipmentService;
+import tqs.sportslink.dto.FacilityDTO;
 import tqs.sportslink.dto.RentalRequestDTO;
 import tqs.sportslink.dto.RentalResponseDTO;
 
@@ -45,17 +46,21 @@ public class RentalControllerTest {
     @Test
     public void test_searchFacilities_returns200_validParams() throws Exception {
         // Given - Maria's search scenario
-        List<String> facilities = List.of("Padel Club Aveiro", "Sports Center", "Academy Pro");
+        List<FacilityDTO> facilities = List.of(
+            new FacilityDTO(1L, "Padel Club Aveiro", "Padel", "Address", "Aveiro", "Desc", 10.0, 4.0, "ACTIVE", "08:00", "22:00"),
+            new FacilityDTO(2L, "Sports Center", "Padel", "Address2", "Aveiro", "Desc2", 15.0, 4.5, "ACTIVE", "09:00", "21:00"),
+            new FacilityDTO(3L, "Academy Pro", "Padel", "Address3", "Aveiro", "Desc3", 20.0, 5.0, "ACTIVE", "10:00", "20:00")
+        );
         when(facilityService.searchFacilities("Aveiro", "Padel", "19:00")).thenReturn(facilities);
 
         // When & Then
-        mockMvc.perform(get("/api/rentals/search")
+        mockMvc.perform(get("/api/rentals/facilities/search")  // Atualizado para o novo endpoint
                 .param("location", "Aveiro")
                 .param("sport", "Padel")
                 .param("time", "19:00"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
-                .andExpect(jsonPath("$[0]", is("Padel Club Aveiro")));
+                .andExpect(jsonPath("$[0].name", is("Padel Club Aveiro")));  // Atualizado para campo do DTO
     }
 
     @Test
@@ -64,7 +69,7 @@ public class RentalControllerTest {
         when(facilityService.searchFacilities("Porto", "Tennis", "02:00")).thenReturn(List.of());
 
         // When & Then
-        mockMvc.perform(get("/api/rentals/search")
+        mockMvc.perform(get("/api/rentals/facilities/search")  // Atualizado
                 .param("location", "Porto")
                 .param("sport", "Tennis")
                 .param("time", "02:00"))

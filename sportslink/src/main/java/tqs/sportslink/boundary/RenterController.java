@@ -1,15 +1,23 @@
 package tqs.sportslink.boundary;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.security.access.prepost.PreAuthorize;
-import tqs.sportslink.service.RentalService;
-import tqs.sportslink.service.EquipmentService;
-import tqs.sportslink.service.FacilityService;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.validation.Valid;
+import tqs.sportslink.dto.FacilityDTO;
 import tqs.sportslink.dto.RentalRequestDTO;
 import tqs.sportslink.dto.RentalResponseDTO;
-import jakarta.validation.Valid;
-import java.util.List;
+import tqs.sportslink.service.EquipmentService;
+import tqs.sportslink.service.FacilityService;
+import tqs.sportslink.service.RentalService;
 
 @RestController
 @RequestMapping("/api/rentals")
@@ -26,16 +34,25 @@ public class RenterController {
         this.facilityService = facilityService;
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<String>> searchFacilities(@RequestParam String location, @RequestParam String sport, @RequestParam String time) {
-        List<String> facilities = facilityService.searchFacilities(location, sport, time);
+    @GetMapping("/facilities")
+    public ResponseEntity<List<FacilityDTO>> getAllFacilities() {
+        List<FacilityDTO> facilities = facilityService.getAllActiveFacilities();
         return ResponseEntity.ok(facilities);
     }
 
-    @PostMapping("/rental")
-    public ResponseEntity<RentalResponseDTO> createRental(@Valid @RequestBody RentalRequestDTO request) {
-        RentalResponseDTO response = rentalService.createRental(request);
-        return ResponseEntity.ok(response);
+    @GetMapping("/facilities/search")
+    public ResponseEntity<List<FacilityDTO>> searchFacilities(
+        @RequestParam(required = false) String location,
+        @RequestParam(required = false) String sport,
+        @RequestParam(required = false) String time) {
+        List<FacilityDTO> facilities = facilityService.searchFacilities(location, sport, time);
+        return ResponseEntity.ok(facilities);
+    }
+
+    @GetMapping("/facility/{id}")
+    public ResponseEntity<FacilityDTO> getFacilityById(@PathVariable Long id) {
+        FacilityDTO facility = facilityService.getFacilityById(id);
+        return ResponseEntity.ok(facility);
     }
 
     @PutMapping("/rental/{id}/cancel")

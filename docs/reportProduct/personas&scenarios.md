@@ -88,6 +88,46 @@ António is very capable of managing web apps.
 
 ---
 
+**Demographics:**
+- Age: 23 years old
+- Occupation: Part of an association from Oporto's university
+- Location: Porto, Portugal
+- Education: Degree in Sports Sciences
+- Tech savviness: Moderate (uses email, basic spreadsheets, social media)
+
+**Background & Goals:**
+António is part of an association from Oporto's university that controls ownership of a few courts and sport spaces that are part of the university. As the university grows and more people want to schedule bookings for sport related spaces it became hard to keep track of all the spaces on a singular well kept envirnoment.
+
+**Pain Points:**
+- Currently manages bookings via WhatsApp messages and emails
+- Can't easily see which time slots are available at a glance
+- No systematic way to track available equipment
+- Human errors lead to idle time or congruent bookings
+
+**Technology Comfort:**
+António is very capable of managing web apps.
+
+**Key Quote:**
+"I want my courts full and my maintenance tracked. If I could see bookings in a calendar and know when equipment needs service, I'd be happy."
+
+---
+
+**Scenario 1: Antonio's thrusday evening**
+
+*Time: Thursday 5 PM. Francisco is at is office at university and opens SportsLink.*
+
+1. António opens SportsLink app/web on his phone
+2. Lands on "Owner Dashboard" showing university's spaces assigned to his association
+3. He sees there are requests to book the football court for tomorow at 6 PM
+4. Clicks on the request and accepts the booking
+5. New football equipment was delivered so it adds it to the correct space
+
+**Expected System Interactions:**
+- Manage bookings
+- Manage places and associated material
+
+---
+
 #### **Persona 3: Maria Floro Silva- The Occasional Renter**
 
 **Demographics:**

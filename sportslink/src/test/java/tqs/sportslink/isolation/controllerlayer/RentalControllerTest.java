@@ -14,6 +14,7 @@ import tqs.sportslink.service.EquipmentService;
 import tqs.sportslink.dto.RentalRequestDTO;
 import tqs.sportslink.dto.RentalResponseDTO;
 import tqs.sportslink.dto.FacilityResponseDTO;
+import tqs.sportslink.data.model.Sport;
 import tqs.sportslink.dto.EquipmentResponseDTO;
 
 import java.time.LocalDateTime;
@@ -50,7 +51,7 @@ public class RentalControllerTest {
         FacilityResponseDTO dto1 = new FacilityResponseDTO();
         dto1.setId(1L);
         dto1.setName("Padel Club Aveiro");
-        dto1.setSportType("Padel");
+        dto1.setSports(List.of(Sport.PADEL));
         dto1.setCity("Aveiro");
         
         FacilityResponseDTO dto2 = new FacilityResponseDTO();

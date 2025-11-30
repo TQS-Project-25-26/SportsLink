@@ -24,9 +24,10 @@ public class User {
     
     @Column(length = 20)
     private String phone;
-    
-    @Column(nullable = false, length = 50)
-    private String role; // RENTER, OWNER, ADMIN
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Role role;
     
     @Column(nullable = false)
     private Boolean active = true;
@@ -48,7 +49,7 @@ public class User {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
         if (role == null) {
-            role = "RENTER";
+            role = Role.RENTER;
         }
     }
     
@@ -98,11 +99,11 @@ public class User {
         this.phone = phone;
     }
     
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
     
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
     

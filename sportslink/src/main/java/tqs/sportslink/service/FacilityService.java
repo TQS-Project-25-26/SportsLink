@@ -39,17 +39,22 @@ public class FacilityService {
     }
     
     private FacilityResponseDTO toDTO(Facility facility) {
-        return new FacilityResponseDTO(
+        FacilityResponseDTO dto = new FacilityResponseDTO(
             facility.getId(),
             facility.getName(),
-            facility.getSportType(),
+            facility.getSports(),
             facility.getCity(),
             facility.getAddress(),
             facility.getDescription(),
             facility.getPricePerHour(),
-            facility.getRating(),
-            facility.getOpeningTime(),
-            facility.getClosingTime()
+            facility.getRating()
         );
+        if (facility.getOpeningTime() != null) {
+            dto.setOpeningTime(facility.getOpeningTime().toString());
+        }
+        if (facility.getClosingTime() != null) {
+            dto.setClosingTime(facility.getClosingTime().toString());
+        }
+        return dto;
     }
 }

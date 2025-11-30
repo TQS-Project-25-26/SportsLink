@@ -15,10 +15,13 @@ import tqs.sportslink.data.FacilityRepository;
 import tqs.sportslink.data.EquipmentRepository;
 import tqs.sportslink.data.UserRepository;
 import tqs.sportslink.data.model.Facility;
+import tqs.sportslink.data.model.Role;
+import tqs.sportslink.data.model.Sport;
 import tqs.sportslink.data.model.Equipment;
 import tqs.sportslink.data.model.User;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
@@ -74,14 +77,14 @@ public class RentalFlowIntegrationTest {
         testUser.setEmail("maria@example.com");
         testUser.setName("Maria Silva");
         testUser.setPassword("encoded-password");
-        testUser.setRole("RENTER");
+        testUser.setRole(Role.RENTER);
         testUser.setActive(true);
         testUser = userRepository.save(testUser);
 
         // Criar facility de teste (Padel em Aveiro)
         testFacility = new Facility();
         testFacility.setName("Padel Club Aveiro");
-        testFacility.setSportType("Padel");
+        testFacility.setSportsType(List.of(Sport.PADEL));
         testFacility.setCity("Aveiro");
         testFacility.setAddress("Rua do Padel, 123");
         testFacility.setPricePerHour(15.0);

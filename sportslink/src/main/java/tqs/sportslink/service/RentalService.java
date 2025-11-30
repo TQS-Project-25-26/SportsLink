@@ -48,6 +48,33 @@ public class RentalService {
             throw new IllegalArgumentException("Rental duration must be at least 1 hour");
         }
         
+        // Validação: duração máxima (4 horas)
+        if (request.getStartTime().plusHours(4).isBefore(request.getEndTime())) {
+            throw new IllegalArgumentException("Rental duration cannot exceed 4 hours");
+        }
+        
+        // Validação: mínimo de antecedência (1 hora)
+        if (request.getStartTime().isBefore(LocalDateTime.now().plusHours(1))) {
+            throw new IllegalArgumentException("Rental must be booked at least 1 hour in advance");
+        }
+        
+        // Validação: máximo de antecedência (30 dias)
+        if (request.getStartTime().isAfter(LocalDateTime.now().plusDays(30))) {
+            throw new IllegalArgumentException("Rental cannot be booked more than 30 days in advance");
+        }
+        
+        // Buscar facility primeiro para validar horários de funcionamento
+        Facility facility = facilityRepository.findById(request.getFacilityId())
+            .orElseThrow(() -> new IllegalArgumentException("Facility not found"));
+        
+        // Validação: horários de funcionamento da facility
+        if (facility.getOpeningTime() != null && facility.getClosingTime() != null) {
+            if (request.getStartTime().toLocalTime().isBefore(facility.getOpeningTime()) ||
+                request.getEndTime().toLocalTime().isAfter(facility.getClosingTime())) {
+                throw new IllegalArgumentException("Rental time is outside facility operating hours");
+            }
+        }
+        
         // Validar conflitos - LÓGICA NO SERVICE
         List<Rental> conflictingRentals = rentalRepository
             .findByFacilityIdAndStartTimeLessThanEqualAndEndTimeGreaterThanEqual(
@@ -61,10 +88,6 @@ public class RentalService {
         if (hasConflict) {
             throw new IllegalArgumentException("Facility already booked for this time slot");
         }
-
-        // Buscar facility
-        Facility facility = facilityRepository.findById(request.getFacilityId())
-            .orElseThrow(() -> new IllegalArgumentException("Facility not found"));
 
         // Criar rental
         Rental rental = new Rental();
@@ -91,6 +114,16 @@ public class RentalService {
     public RentalResponseDTO cancelRental(Long rentalId) {
         Rental rental = rentalRepository.findById(rentalId)
             .orElseThrow(() -> new IllegalArgumentException("Rental not found"));
+        
+        // Validação: não cancelar rental já cancelado
+        if ("CANCELLED".equals(rental.getStatus())) {
+            throw new IllegalArgumentException("Rental is already cancelled");
+        }
+        
+        // Validação: não cancelar rental que já passou
+        if (rental.getStartTime().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Cannot cancel rental that has already passed");
+        }
         
         rental.setStatus("CANCELLED");
         Rental updated = rentalRepository.save(rental);

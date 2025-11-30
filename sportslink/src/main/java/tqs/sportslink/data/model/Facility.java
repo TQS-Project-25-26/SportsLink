@@ -2,6 +2,7 @@ package tqs.sportslink.data.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +18,8 @@ public class Facility {
     private String name;
     
     @Column(nullable = false, length = 100)
-    private String sportType; // Padel, Football, Tennis, etc.
+    @OneToMany(mappedBy = "facility", cascade = CascadeType.ALL)
+    private List<Sport> sports = new ArrayList<>();
     
     @Column(nullable = false, length = 500)
     private String address;
@@ -45,11 +47,11 @@ public class Facility {
     @OneToMany(mappedBy = "facility", cascade = CascadeType.ALL)
     private List<Rental> rentals = new ArrayList<>();
     
-    @Column(length = 20)
-    private String openingTime; // "08:00"
+    @Column
+    private LocalTime openingTime; // "08:00"
     
-    @Column(length = 20)
-    private String closingTime; // "22:00"
+    @Column
+    private LocalTime closingTime; // "22:00"
     
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -91,12 +93,12 @@ public class Facility {
         this.name = name;
     }
     
-    public String getSportType() {
-        return sportType;
+    public List<Sport> getSports() {
+        return sports;
     }
     
-    public void setSportType(String sportType) {
-        this.sportType = sportType;
+    public void setSportsType(List<Sport> sports) {
+        this.sports = sports;
     }
     
     public String getAddress() {
@@ -172,19 +174,19 @@ public class Facility {
         this.rentals = rentals;
     }
     
-    public String getOpeningTime() {
+    public LocalTime getOpeningTime() {
         return openingTime;
     }
     
-    public void setOpeningTime(String openingTime) {
+    public void setOpeningTime(LocalTime openingTime) {
         this.openingTime = openingTime;
     }
     
-    public String getClosingTime() {
+    public LocalTime getClosingTime() {
         return closingTime;
     }
     
-    public void setClosingTime(String closingTime) {
+    public void setClosingTime(LocalTime closingTime) {
         this.closingTime = closingTime;
     }
     

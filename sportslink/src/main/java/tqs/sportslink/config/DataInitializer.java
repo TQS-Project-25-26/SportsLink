@@ -1,5 +1,7 @@
 package tqs.sportslink.config;
 
+import java.time.LocalTime;
+import java.util.List;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -7,6 +9,7 @@ import tqs.sportslink.data.FacilityRepository;
 import tqs.sportslink.data.EquipmentRepository;
 import tqs.sportslink.data.model.Facility;
 import tqs.sportslink.data.model.Equipment;
+import tqs.sportslink.data.model.Sport;
 
 @Configuration
 public class DataInitializer {
@@ -22,7 +25,7 @@ public class DataInitializer {
                 System.out.println("Database already has " + count + " facilities");
                 // List facilities for debugging
                 facilityRepository.findAll().forEach(f -> 
-                    System.out.println("  - " + f.getName() + " (" + f.getSportType() + " in " + f.getCity() + ")")
+                    System.out.println("  - " + f.getName() + " (" + f.getSports() + " in " + f.getCity() + ")")
                 );
                 return; // Data already initialized
             }
@@ -32,66 +35,61 @@ public class DataInitializer {
             // Create sample facilities
             Facility facility1 = new Facility();
             facility1.setName("Campo de Futebol da Universidade de Aveiro");
-            facility1.setSportType("Football");
+            facility1.setSportsType(List.of(Sport.FOOTBALL));
             facility1.setCity("Aveiro");
             facility1.setAddress("Campus Universitário de Santiago, 3810-193 Aveiro");
             facility1.setDescription("Campo de futebol sintético com iluminação");
             facility1.setPricePerHour(25.0);
-            facility1.setRating(4.5);
-            facility1.setOpeningTime("08:00");
-            facility1.setClosingTime("22:00");
+            facility1.setOpeningTime(LocalTime.parse("08:00"));
+            facility1.setClosingTime(LocalTime.parse("22:00"));
             facility1.setStatus("ACTIVE");
             facilityRepository.save(facility1);
 
             Facility facility2 = new Facility();
             facility2.setName("Padel Center Aveiro");
-            facility2.setSportType("Padel");
+            facility2.setSportsType(List.of(Sport.PADEL));
             facility2.setCity("Aveiro");
             facility2.setAddress("Rua do Clube dos Galitos, 3800-000 Aveiro");
             facility2.setDescription("Courts de padel cobertos e descobertos");
             facility2.setPricePerHour(15.0);
-            facility2.setRating(4.8);
-            facility2.setOpeningTime("09:00");
-            facility2.setClosingTime("23:00");
+            facility2.setOpeningTime(LocalTime.parse("09:00"));
+            facility2.setClosingTime(LocalTime.parse("23:00"));
             facility2.setStatus("ACTIVE");
             facilityRepository.save(facility2);
 
             Facility facility3 = new Facility();
             facility3.setName("Tennis Club Aveiro");
-            facility3.setSportType("Tennis");
+            facility3.setSportsType(List.of(Sport.TENNIS));
             facility3.setCity("Aveiro");
             facility3.setAddress("Av. Dr. Lourenço Peixinho, 3800-000 Aveiro");
             facility3.setDescription("Courts de ténis com piso rápido");
             facility3.setPricePerHour(20.0);
-            facility3.setRating(4.2);
-            facility3.setOpeningTime("08:00");
-            facility3.setClosingTime("21:00");
+            facility3.setOpeningTime(LocalTime.parse("08:00"));
+            facility3.setClosingTime(LocalTime.parse("21:00"));
             facility3.setStatus("ACTIVE");
             facilityRepository.save(facility3);
 
             Facility facility4 = new Facility();
             facility4.setName("Basketball Arena Lisboa");
-            facility4.setSportType("Basketball");
+            facility4.setSportsType(List.of(Sport.BASKETBALL));
             facility4.setCity("Lisboa");
             facility4.setAddress("Rua do Ouro, 1100-000 Lisboa");
             facility4.setDescription("Pavilhão coberto com bancadas");
             facility4.setPricePerHour(30.0);
-            facility4.setRating(4.7);
-            facility4.setOpeningTime("10:00");
-            facility4.setClosingTime("22:00");
+            facility4.setOpeningTime(LocalTime.parse("10:00"));
+            facility4.setClosingTime(LocalTime.parse("22:00"));
             facility4.setStatus("ACTIVE");
             facilityRepository.save(facility4);
 
             Facility facility5 = new Facility();
             facility5.setName("Volleyball Beach Porto");
-            facility5.setSportType("Volleyball");
+            facility5.setSportsType(List.of(Sport.VOLLEYBALL));
             facility5.setCity("Porto");
             facility5.setAddress("Praia de Matosinhos, 4450-000 Porto");
             facility5.setDescription("Campo de voleibol de praia");
             facility5.setPricePerHour(12.0);
-            facility5.setRating(4.6);
-            facility5.setOpeningTime("09:00");
-            facility5.setClosingTime("20:00");
+            facility5.setOpeningTime(LocalTime.parse("09:00"));
+            facility5.setClosingTime(LocalTime.parse("20:00"));
             facility5.setStatus("ACTIVE");
             facilityRepository.save(facility5);
 

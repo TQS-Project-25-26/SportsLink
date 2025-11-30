@@ -1,10 +1,14 @@
 package tqs.sportslink.dto;
 
+import java.util.List;
+
+import tqs.sportslink.data.model.Sport;
+
 public class FacilityResponseDTO {
     
     private Long id;
     private String name;
-    private String sportType;
+    private List<Sport> sports;
     private String city;
     private String address;
     private String description;
@@ -17,12 +21,24 @@ public class FacilityResponseDTO {
     public FacilityResponseDTO() {
     }
     
-    public FacilityResponseDTO(Long id, String name, String sportType, String city, String address, 
+    public FacilityResponseDTO(Long id, String name, List<Sport> sports, String city, String address, 
+                              String description, Double pricePerHour, Double rating) {
+        this.id = id;
+        this.name = name;
+        this.sports = sports;
+        this.city = city;
+        this.address = address;
+        this.description = description;
+        this.pricePerHour = pricePerHour;
+        this.rating = rating;
+    }
+    
+    public FacilityResponseDTO(Long id, String name, List<Sport> sports, String city, String address, 
                               String description, Double pricePerHour, Double rating, 
                               String openingTime, String closingTime) {
         this.id = id;
         this.name = name;
-        this.sportType = sportType;
+        this.sports = sports;
         this.city = city;
         this.address = address;
         this.description = description;
@@ -49,12 +65,12 @@ public class FacilityResponseDTO {
         this.name = name;
     }
     
-    public String getSportType() {
-        return sportType;
+    public List<Sport> getSports() {
+        return sports;
     }
     
-    public void setSportType(String sportType) {
-        this.sportType = sportType;
+    public void setSports(List<Sport> sports) {
+        this.sports = sports;
     }
     
     public String getCity() {

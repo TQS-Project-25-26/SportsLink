@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import tqs.sportslink.service.FacilityService;
 import tqs.sportslink.data.FacilityRepository;
 import tqs.sportslink.data.model.Facility;
+import tqs.sportslink.dto.FacilityResponseDTO;
 
 import java.util.List;
 
@@ -38,11 +39,12 @@ public class UnitFacilityTest {
             .thenReturn(List.of(facility1, facility2));
         
         // When
-        List<String> result = facilityService.searchFacilities("Aveiro", "Padel", "19:00");
+        List<FacilityResponseDTO> result = facilityService.searchFacilities("Aveiro", "Padel", "19:00");
         
         // Then
         assertThat(result).hasSize(2);
-        assertThat(result).contains("Padel Club Aveiro", "Sports Center Aveiro");
+        assertThat(result).extracting(FacilityResponseDTO::getName)
+            .contains("Padel Club Aveiro", "Sports Center Aveiro");
     }
 
     @Test
@@ -56,11 +58,12 @@ public class UnitFacilityTest {
             .thenReturn(List.of(facility));
         
         // When
-        List<String> result = facilityService.searchFacilities("Aveiro", "Padel", "19:00");
+        List<FacilityResponseDTO> result = facilityService.searchFacilities("Aveiro", "Padel", "19:00");
         
         // Then
         assertThat(result).isNotEmpty();
-        assertThat(result).contains("Padel Club Aveiro");
+        assertThat(result).extracting(FacilityResponseDTO::getName)
+            .contains("Padel Club Aveiro");
     }
 
     @Test
@@ -70,7 +73,7 @@ public class UnitFacilityTest {
             .thenReturn(List.of());
         
         // When
-        List<String> result = facilityService.searchFacilities("InvalidLocation", "Padel", "19:00");
+        List<FacilityResponseDTO> result = facilityService.searchFacilities("InvalidLocation", "Padel", "19:00");
         
         // Then
         assertThat(result).isEmpty();
@@ -87,7 +90,7 @@ public class UnitFacilityTest {
             .thenReturn(List.of(facility));
         
         // When
-        List<String> result = facilityService.searchFacilities("Aveiro", "Padel", "19:00");
+        List<FacilityResponseDTO> result = facilityService.searchFacilities("Aveiro", "Padel", "19:00");
         
         // Then
         assertThat(result).isNotEmpty();
@@ -101,7 +104,7 @@ public class UnitFacilityTest {
         String time = "19:00";
         
         // When
-        List<String> result = facilityService.searchFacilities(location, sport, time);
+        List<FacilityResponseDTO> result = facilityService.searchFacilities(location, sport, time);
         
         // Then
         assertThat(result).isNotNull();

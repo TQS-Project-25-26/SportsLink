@@ -20,7 +20,10 @@ public class SecurityConfig {
         http
             .csrf().disable()
             .authorizeHttpRequests(authz -> authz
+                .requestMatchers("/", "/index.html", "/css/**", "/js/**", "/pages/**").permitAll()  // Recursos estáticos
+                .requestMatchers("/api/rentals/**").permitAll()  // API de rentals pública
                 .requestMatchers("/api/auth/**").permitAll()  // Acesso público ao AuthController
+                .requestMatchers("/h2-console/**").permitAll()  // H2 console
                 .anyRequest().authenticated()  // Outros endpoints requerem autenticação
             )
             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);

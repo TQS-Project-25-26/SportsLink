@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import tqs.sportslink.service.RentalService;
@@ -13,6 +13,8 @@ import tqs.sportslink.service.FacilityService;
 import tqs.sportslink.service.EquipmentService;
 import tqs.sportslink.dto.RentalRequestDTO;
 import tqs.sportslink.dto.RentalResponseDTO;
+import tqs.sportslink.dto.FacilityResponseDTO;
+import tqs.sportslink.dto.EquipmentResponseDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,19 +35,33 @@ public class RentalControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private RentalService rentalService;
 
-    @MockBean
+    @MockitoBean
     private FacilityService facilityService;
 
-    @MockBean
+    @MockitoBean
     private EquipmentService equipmentService;
 
     @Test
     public void test_searchFacilities_returns200_validParams() throws Exception {
         // Given - Maria's search scenario
-        List<String> facilities = List.of("Padel Club Aveiro", "Sports Center", "Academy Pro");
+        FacilityResponseDTO dto1 = new FacilityResponseDTO();
+        dto1.setId(1L);
+        dto1.setName("Padel Club Aveiro");
+        dto1.setSportType("Padel");
+        dto1.setCity("Aveiro");
+        
+        FacilityResponseDTO dto2 = new FacilityResponseDTO();
+        dto2.setId(2L);
+        dto2.setName("Sports Center");
+        
+        FacilityResponseDTO dto3 = new FacilityResponseDTO();
+        dto3.setId(3L);
+        dto3.setName("Academy Pro");
+        
+        List<FacilityResponseDTO> facilities = List.of(dto1, dto2, dto3);
         when(facilityService.searchFacilities("Aveiro", "Padel", "19:00")).thenReturn(facilities);
 
         // When & Then
@@ -55,7 +71,7 @@ public class RentalControllerTest {
                 .param("time", "19:00"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
-                .andExpect(jsonPath("$[0]", is("Padel Club Aveiro")));
+                .andExpect(jsonPath("$[0].name", is("Padel Club Aveiro")));
     }
 
     @Test
@@ -153,13 +169,25 @@ public class RentalControllerTest {
     @Test
     public void test_getEquipments_returns200_validFacilityId() throws Exception {
         // Given - Maria checking equipment
-        List<String> equipments = List.of("Bola", "Raquete", "Rede");
+        EquipmentResponseDTO eq1 = new EquipmentResponseDTO();
+        eq1.setId(1L);
+        eq1.setName("Bola");
+        
+        EquipmentResponseDTO eq2 = new EquipmentResponseDTO();
+        eq2.setId(2L);
+        eq2.setName("Raquete");
+        
+        EquipmentResponseDTO eq3 = new EquipmentResponseDTO();
+        eq3.setId(3L);
+        eq3.setName("Rede");
+        
+        List<EquipmentResponseDTO> equipments = List.of(eq1, eq2, eq3);
         when(equipmentService.getEquipmentsByFacility(1L)).thenReturn(equipments);
 
         // When & Then
         mockMvc.perform(get("/api/rentals/facility/1/equipments"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
-                .andExpect(jsonPath("$[0]", is("Bola")));
+                .andExpect(jsonPath("$[0].name", is("Bola")));
     }
 }

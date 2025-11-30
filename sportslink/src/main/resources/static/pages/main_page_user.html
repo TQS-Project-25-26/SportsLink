@@ -66,11 +66,11 @@
                 <select class="form-select border-0 bg-transparent text-muted" id="sportFilter"
                     aria-label="Select sport">
                     <option value="">All sports</option>
-                    <option value="futebol">Football</option>
-                    <option value="padel">Padel</option>
-                    <option value="tenis">Tennis</option>
-                    <option value="basquete">Basketball</option>
-                    <option value="volei">Volleyball</option>
+                    <option value="Football">Football</option>
+                    <option value="Padel">Padel</option>
+                    <option value="Tennis">Tennis</option>
+                    <option value="Basketball">Basketball</option>
+                    <option value="Volleyball">Volleyball</option>
                 </select>
                 <!-- searchBtn ID used by app.js; keeps bootstrap classes -->
                 <button id="searchBtn" class="btn text-white fw-bold px-4 bg-accent border-0">Search</button>
@@ -93,37 +93,37 @@
         <h2 class="section-title h3 fw-bold mb-4">Explore by Sport</h2>
         <div class="category-grid row g-3">
             <div class="col-6 col-md-4 col-lg-2">
-                <div class="category-card card border-0 shadow-sm text-center" onclick="filterBySport('futebol')">
+                <div class="category-card card border-0 shadow-sm text-center" onclick="filterBySport('Football')">
                     <i class="material-icons mb-2 text-accent icon-large">sports_soccer</i>
                     <div class="category-name fw-bold text-accent-dark">Football</div>
                 </div>
             </div>
             <div class="col-6 col-md-4 col-lg-2">
-                <div class="category-card card border-0 shadow-sm text-center" onclick="filterBySport('padel')">
+                <div class="category-card card border-0 shadow-sm text-center" onclick="filterBySport('Padel')">
                     <i class="material-icons mb-2 text-accent icon-large">sports_tennis</i>
                     <div class="category-name fw-bold text-accent-dark">Padel</div>
                 </div>
             </div>
             <div class="col-6 col-md-4 col-lg-2">
-                <div class="category-card card border-0 shadow-sm text-center" onclick="filterBySport('basquete')">
+                <div class="category-card card border-0 shadow-sm text-center" onclick="filterBySport('Basketball')">
                     <i class="material-icons mb-2 text-accent icon-large">sports_basketball</i>
                     <div class="category-name fw-bold text-accent-dark">Basketball</div>
                 </div>
             </div>
             <div class="col-6 col-md-4 col-lg-2">
-                <div class="category-card card border-0 shadow-sm text-center" onclick="filterBySport('tenis')">
+                <div class="category-card card border-0 shadow-sm text-center" onclick="filterBySport('Tennis')">
                     <i class="material-icons mb-2 text-accent icon-large">sports_tennis</i>
                     <div class="category-name fw-bold text-accent-dark">Tennis</div>
                 </div>
             </div>
             <div class="col-6 col-md-4 col-lg-2">
-                <div class="category-card card border-0 shadow-sm text-center" onclick="filterBySport('volei')">
+                <div class="category-card card border-0 shadow-sm text-center" onclick="filterBySport('Volleyball')">
                     <i class="material-icons mb-2 text-accent icon-large">sports_volleyball</i>
                     <div class="category-name fw-bold text-accent-dark">Volleyball</div>
                 </div>
             </div>
             <div class="col-6 col-md-4 col-lg-2">
-                <div class="category-card card border-0 shadow-sm text-center" onclick="filterBySport('badminton')">
+                <div class="category-card card border-0 shadow-sm text-center" onclick="filterBySport('Badminton')">
                     <i class="material-icons mb-2 text-accent icon-large">sports</i>
                     <div class="category-name fw-bold text-accent-dark">Badminton</div>
                 </div>
@@ -167,29 +167,33 @@
         }
 
         function filterBySport(sport) {
-            alert(`Filter by ${sport} - This feature will be implemented soon!`);
+            // Trigger search with the selected sport
+            const sportFilter = document.getElementById('sportFilter');
+            if (sportFilter) {
+                sportFilter.value = sport;
+            }
+            const searchBtn = document.getElementById('searchBtn');
+            if (searchBtn) {
+                searchBtn.click();
+            }
         }
 
         // Toggle favorite
-        document.querySelectorAll('.favorite-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const icon = btn.querySelector('.material-icons');
-                if (icon.textContent === 'favorite_border') {
-                    icon.textContent = 'favorite';
-                    icon.style.color = '#e63946';
-                } else {
-                    icon.textContent = 'favorite_border';
-                    icon.style.color = '';
+        document.addEventListener('DOMContentLoaded', () => {
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('.favorite-btn');
+                if (btn) {
+                    e.stopPropagation();
+                    const icon = btn.querySelector('.material-icons');
+                    if (icon.textContent === 'favorite_border') {
+                        icon.textContent = 'favorite';
+                        icon.style.color = '#e63946';
+                    } else {
+                        icon.textContent = 'favorite_border';
+                        icon.style.color = '';
+                    }
                 }
             });
-        });
-
-        // Search functionality
-        document.querySelector('.search-btn').addEventListener('click', () => {
-            const searchValue = document.getElementById('searchInput').value;
-            const sportValue = document.getElementById('sportFilter').value;
-            alert(`Search for: "${searchValue}" ${sportValue ? `| Sport: ${sportValue}` : ''}`);
         });
     </script>
 </body>

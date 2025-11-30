@@ -114,7 +114,7 @@ public class RentalFlowIntegrationTest {
         .then()
             .statusCode(200)
             .body("$", hasSize(1))
-            .body("[0]", equalTo("Padel Club Aveiro"));
+            .body("[0].name", equalTo("Padel Club Aveiro"));
 
         // STEP 2: Maria consulta equipamentos disponíveis
         given()
@@ -123,7 +123,7 @@ public class RentalFlowIntegrationTest {
         .then()
             .statusCode(200)
             .body("$", hasSize(1))
-            .body("[0]", equalTo("Raquete Profissional"));
+            .body("[0].name", equalTo("Raquete Profissional"));
 
         // STEP 3: Maria cria booking com equipamento
         RentalRequestDTO request = new RentalRequestDTO();
@@ -350,6 +350,6 @@ public class RentalFlowIntegrationTest {
         .then()
             .statusCode(200)
             .body("$", hasSize(1))
-            .body("[0]", equalTo("Raquete Profissional"));
+            .body("[0].name", equalTo("Raquete Profissional"));
     }
 }

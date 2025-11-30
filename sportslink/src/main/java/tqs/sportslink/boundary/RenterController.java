@@ -8,11 +8,14 @@ import tqs.sportslink.service.EquipmentService;
 import tqs.sportslink.service.FacilityService;
 import tqs.sportslink.dto.RentalRequestDTO;
 import tqs.sportslink.dto.RentalResponseDTO;
+import tqs.sportslink.dto.FacilityResponseDTO;
+import tqs.sportslink.dto.EquipmentResponseDTO;
 import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/rentals")
+@CrossOrigin(origins = "*")
 // @PreAuthorize("hasRole('RENTER')") // Comentado para testes
 public class RenterController {
 
@@ -27,8 +30,11 @@ public class RenterController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<String>> searchFacilities(@RequestParam String location, @RequestParam String sport, @RequestParam String time) {
-        List<String> facilities = facilityService.searchFacilities(location, sport, time);
+    public ResponseEntity<List<FacilityResponseDTO>> searchFacilities(
+            @RequestParam(required = false) String location, 
+            @RequestParam(required = false) String sport, 
+            @RequestParam(required = false) String time) {
+        List<FacilityResponseDTO> facilities = facilityService.searchFacilities(location, sport, time);
         return ResponseEntity.ok(facilities);
     }
 
@@ -57,8 +63,8 @@ public class RenterController {
     }
 
     @GetMapping("/facility/{id}/equipments")
-    public ResponseEntity<List<String>> getEquipments(@PathVariable Long id) {
-        List<String> equipments = equipmentService.getEquipmentsByFacility(id);
+    public ResponseEntity<List<EquipmentResponseDTO>> getEquipments(@PathVariable Long id) {
+        List<EquipmentResponseDTO> equipments = equipmentService.getEquipmentsByFacility(id);
         return ResponseEntity.ok(equipments);
     }
 }

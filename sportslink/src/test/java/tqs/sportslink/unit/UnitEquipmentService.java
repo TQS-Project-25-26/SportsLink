@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import tqs.sportslink.service.EquipmentService;
 import tqs.sportslink.data.EquipmentRepository;
 import tqs.sportslink.data.model.Equipment;
+import tqs.sportslink.dto.EquipmentResponseDTO;
 
 import java.util.List;
 
@@ -38,11 +39,12 @@ public class UnitEquipmentService {
             .thenReturn(List.of(eq1, eq2));
         
         // When
-        List<String> result = equipmentService.getEquipmentsByFacility(1L);
+        List<EquipmentResponseDTO> result = equipmentService.getEquipmentsByFacility(1L);
         
         // Then
         assertThat(result).hasSize(2);
-        assertThat(result).contains("Raquete Profissional", "Bola Wilson");
+        assertThat(result).extracting(EquipmentResponseDTO::getName)
+            .contains("Raquete Profissional", "Bola Wilson");
     }
 
     @Test
@@ -64,11 +66,12 @@ public class UnitEquipmentService {
             .thenReturn(List.of(eq1, eq2, eq3));
         
         // When
-        List<String> result = equipmentService.getEquipmentsByFacility(1L);
+        List<EquipmentResponseDTO> result = equipmentService.getEquipmentsByFacility(1L);
         
         // Then
         assertThat(result).hasSize(3);
-        assertThat(result).contains("Bola", "Raquete", "Rede");
+        assertThat(result).extracting(EquipmentResponseDTO::getName)
+            .contains("Bola", "Raquete", "Rede");
     }
 
 
@@ -88,11 +91,13 @@ public class UnitEquipmentService {
             .thenReturn(List.of(eq1, eq2));
         
         // When
-        List<String> result = equipmentService.getEquipmentsByFacility(1L);
+        List<EquipmentResponseDTO> result = equipmentService.getEquipmentsByFacility(1L);
         
         // Then
         assertThat(result).hasSize(1);
-        assertThat(result).contains("Bola");
-        assertThat(result).doesNotContain("Raquete");
+        assertThat(result).extracting(EquipmentResponseDTO::getName)
+            .contains("Bola");
+        assertThat(result).extracting(EquipmentResponseDTO::getName)
+            .doesNotContain("Raquete");
     }
 }

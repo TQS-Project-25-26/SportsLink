@@ -343,6 +343,11 @@ body {
 #app-toast { 
     position: fixed; left: 50%; transform: translateX(-50%); bottom: 6%; z-index: 1500;
     background: white; padding:10px 14px; border-radius:8px; box-shadow:0 10px 30px rgba(0,0,0,0.12);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+#app-toast.visible {
+    opacity: 1;
 }
 
 /* Responsive */

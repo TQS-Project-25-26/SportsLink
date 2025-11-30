@@ -80,28 +80,39 @@
     div.className = "field-card card border-0 shadow-sm";
     div.style.minWidth = "300px";
     div.dataset.id = field.id ?? "";
+    
+    // Map sportType to icon
+    const sportIcons = {
+      'Football': 'sports_soccer',
+      'Padel': 'sports_tennis',
+      'Tennis': 'sports_tennis',
+      'Basketball': 'sports_basketball',
+      'Volleyball': 'sports_volleyball'
+    };
+    const icon = sportIcons[field.sportType] || 'sports';
+    
     div.innerHTML = `
       <div class="field-image card-img-top d-flex align-items-center justify-content-center bg-gradient-orange">
-        <i class="material-icons text-accent icon-large">sports_soccer</i>
+        <i class="material-icons text-accent icon-large">${icon}</i>
       </div>
       <button class="favorite-btn btn position-absolute top-0 end-0 m-2 rounded-circle shadow-sm" aria-label="Favoritar">
         <i class="material-icons">favorite_border</i>
       </button>
       <div class="card-body">
-        <div class="field-sport text-uppercase fw-bold text-accent small">${(
-          field.sport || ""
-        ).toString()}</div>
+        <div class="field-sport text-uppercase fw-bold text-accent small">${
+          field.sportType || ""
+        }</div>
         <h5 class="field-name card-title fw-bold text-accent-dark">${
-          field.name || field.title || "Unnamed"
+          field.name || "Unnamed"
         }</h5>
         <div class="field-location d-flex align-items-center gap-1 text-muted small">
           <i class="material-icons icon-small">location_on</i> ${
-            field.location || field.city || ""
+            field.city || field.address || ""
           }
         </div>
         <div class="field-details d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
           <div class="field-price fw-bold text-accent-dark">${
-            field.price ? `€${field.price}/hora` : ""
+            field.pricePerHour ? `€${field.pricePerHour}/hora` : ""
           }</div>
           <div class="d-flex gap-2">
             <button class="btn btn-sm btn-outline-primary btn-equip">Equipamentos</button>
@@ -180,9 +191,10 @@
         <div>
           <div class="fw-bold">${eq.name}</div>
           <small class="text-muted">${eq.description || ""}</small>
+          <small class="text-muted"> | Qty: ${eq.quantity || 0}</small>
         </div>
         <div class="text-end"><small>${
-          eq.price ? `€${eq.price}` : ""
+          eq.pricePerHour ? `€${eq.pricePerHour}` : ""
         }</small></div>
       </div>
     `
@@ -243,9 +255,23 @@
     if (!searchBtn || !input) return;
     searchBtn.addEventListener("click", async (e) => {
       e.preventDefault();
+      
+      // Map frontend sport names to backend values
+      const sportMap = {
+        'futebol': 'Football',
+        'padel': 'Padel',
+        'tenis': 'Tennis',
+        'basquete': 'Basketball',
+        'volei': 'Volleyball',
+        'badminton': 'Badminton'
+      };
+      
+      const sportValue = sport?.value || undefined;
+      const mappedSport = sportValue ? sportMap[sportValue.toLowerCase()] || sportValue : undefined;
+      
       const params = {
         location: input.value || undefined,
-        sport: sport?.value || undefined,
+        sport: mappedSport,
       };
       showToast("A pesquisar...");
       const res = await searchFacilities(params);
@@ -256,28 +282,40 @@
       // expected body may be array
       const body = Array.isArray(res.body) ? res.body : res.body?.results || [];
       renderSearchResults(body, "#featured");
+      if (body.length === 0) {
+        showToast("Nenhum resultado encontrado");
+      } else {
+        showToast(`${body.length} resultado(s) encontrado(s)`);
+      }
     });
   }
 
   // Add after bindSearch function
   async function loadFeatured() {
+    console.log('Loading featured facilities...');
     const res = await searchFacilities({}); // Empty params for all
+    console.log('Featured facilities response:', res);
     if (res.ok) {
       const body = Array.isArray(res.body) ? res.body : [];
-      renderSearchResults(body, "#featuredCarousel");
+      console.log('Featured facilities data:', body);
+      renderSearchResults(body, "#featured");
     }
   }
 
   async function loadNearby() {
+    console.log('Loading nearby facilities...');
     const res = await searchFacilities({ location: "Lisboa" }); // Default location
+    console.log('Nearby facilities response:', res);
     if (res.ok) {
       const body = Array.isArray(res.body) ? res.body : [];
-      renderSearchResults(body, "#nearbyCarousel");
+      console.log('Nearby facilities data:', body);
+      renderSearchResults(body, "#nearbyCarousel .carousel-item .d-flex");
     }
   }
 
   // Update DOMContentLoaded
   document.addEventListener("DOMContentLoaded", () => {
+    console.log('DOM loaded, initializing app...');
     bindSearch();
     loadFeatured();
     loadNearby();

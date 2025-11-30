@@ -137,7 +137,50 @@ public class DataInitializer {
             equipment4.setStatus("AVAILABLE");
             equipmentRepository.save(equipment4);
 
-            System.out.println("Database initialized with sample data!");
+            // Create more equipment for variety
+            Equipment equipment5 = new Equipment();
+            equipment5.setName("Rede de Vólei");
+            equipment5.setType("Net");
+            equipment5.setDescription("Rede profissional de vólei");
+            equipment5.setFacility(facility5);
+            equipment5.setQuantity(2);
+            equipment5.setPricePerHour(8.0);
+            equipment5.setStatus("AVAILABLE");
+            equipmentRepository.save(equipment5);
+
+            Equipment equipment6 = new Equipment();
+            equipment6.setName("Bola de Ténis");
+            equipment6.setType("Ball");
+            equipment6.setDescription("Bola oficial de ténis Wilson");
+            equipment6.setFacility(facility3);
+            equipment6.setQuantity(20);
+            equipment6.setPricePerHour(2.0);
+            equipment6.setStatus("AVAILABLE");
+            equipmentRepository.save(equipment6);
+
+            Equipment equipment7 = new Equipment();
+            equipment7.setName("Raquete de Ténis");
+            equipment7.setType("Racket");
+            equipment7.setDescription("Raquete profissional HEAD");
+            equipment7.setFacility(facility3);
+            equipment7.setQuantity(5);
+            equipment7.setPricePerHour(6.0);
+            equipment7.setStatus("AVAILABLE");
+            equipmentRepository.save(equipment7);
+
+            Equipment equipment8 = new Equipment();
+            equipment8.setName("Protetor de Joelho");
+            equipment8.setType("Protection");
+            equipment8.setDescription("Protetor de joelho para vólei");
+            equipment8.setFacility(facility5);
+            equipment8.setQuantity(0);
+            equipment8.setPricePerHour(3.0);
+            equipment8.setStatus("UNAVAILABLE");
+            equipmentRepository.save(equipment8);
+
+            System.out.println("✅ Database initialized with sample data!");
+            System.out.println("   - 5 facilities created");
+            System.out.println("   - 8 equipments created");
         };
     }
 }

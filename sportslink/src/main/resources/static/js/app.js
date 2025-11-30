@@ -125,13 +125,19 @@
     div.querySelector(".btn-equip").addEventListener("click", async (e) => {
       e.stopPropagation();
       const fid = div.dataset.id;
-      await handleShowEquipments(fid, field);
+      window.location.href = `equipments.html?facilityId=${fid}`;
     });
     div.querySelector(".btn-rent").addEventListener("click", async (e) => {
       e.stopPropagation();
       const fid = div.dataset.id;
-      await handleQuickRent(fid, field);
+      window.location.href = `field_detail.html?id=${fid}`;
     });
+    
+    // Click on card to view details
+    div.addEventListener("click", () => {
+      window.location.href = `field_detail.html?id=${field.id}`;
+    });
+    
     return div;
   }
 

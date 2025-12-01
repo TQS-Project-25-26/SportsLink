@@ -3,6 +3,7 @@ package tqs.sportslink.service;
 import org.springframework.stereotype.Service;
 import tqs.sportslink.data.FacilityRepository;
 import tqs.sportslink.data.model.Facility;
+import tqs.sportslink.data.model.Sport;
 import tqs.sportslink.dto.FacilityResponseDTO;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,11 +22,13 @@ public class FacilityService {
         
         // Handle optional parameters
         if (location != null && !location.isEmpty() && sport != null && !sport.isEmpty()) {
-            facilities = facilityRepository.findByCityAndSportType(location, sport);
+            Sport sportEnum = Sport.valueOf(sport.toUpperCase());
+            facilities = facilityRepository.findByCityAndSportType(location, sportEnum);
         } else if (location != null && !location.isEmpty()) {
             facilities = facilityRepository.findByCity(location);
         } else if (sport != null && !sport.isEmpty()) {
-            facilities = facilityRepository.findBySportType(sport);
+            Sport sportEnum = Sport.valueOf(sport.toUpperCase());
+            facilities = facilityRepository.findBySportType(sportEnum);
         } else {
             // No filters - return all
             facilities = facilityRepository.findAll();

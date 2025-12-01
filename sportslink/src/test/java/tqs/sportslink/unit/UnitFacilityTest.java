@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import tqs.sportslink.service.FacilityService;
 import tqs.sportslink.data.FacilityRepository;
 import tqs.sportslink.data.model.Facility;
+import tqs.sportslink.data.model.Sport;
 import tqs.sportslink.dto.FacilityResponseDTO;
 
 import java.util.List;
@@ -35,7 +36,7 @@ public class UnitFacilityTest {
         facility2.setName("Sports Center Aveiro");
         facility2.setStatus("ACTIVE");
         
-        when(facilityRepository.findByCityAndSportType("Aveiro", "Padel"))
+        when(facilityRepository.findByCityAndSportType("Aveiro", Sport.PADEL))
             .thenReturn(List.of(facility1, facility2));
         
         // When
@@ -54,7 +55,7 @@ public class UnitFacilityTest {
         facility.setName("Padel Club Aveiro");
         facility.setStatus("ACTIVE");
         
-        when(facilityRepository.findByCityAndSportType("Aveiro", "Padel"))
+        when(facilityRepository.findByCityAndSportType("Aveiro", Sport.PADEL))
             .thenReturn(List.of(facility));
         
         // When
@@ -69,7 +70,7 @@ public class UnitFacilityTest {
     @Test
     public void whenSearchWithInvalidLocation_thenReturnsEmpty() {
         // Given
-        when(facilityRepository.findByCityAndSportType("InvalidLocation", "Padel"))
+        when(facilityRepository.findByCityAndSportType("InvalidLocation", Sport.PADEL))
             .thenReturn(List.of());
         
         // When
@@ -86,7 +87,7 @@ public class UnitFacilityTest {
         facility.setName("Padel Club Aveiro");
         facility.setStatus("ACTIVE");
         
-        when(facilityRepository.findByCityAndSportType("Aveiro", "Padel"))
+        when(facilityRepository.findByCityAndSportType("Aveiro", Sport.PADEL))
             .thenReturn(List.of(facility));
         
         // When

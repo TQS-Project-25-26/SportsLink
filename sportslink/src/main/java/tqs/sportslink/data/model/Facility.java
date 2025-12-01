@@ -17,8 +17,10 @@ public class Facility {
     @Column(nullable = false, length = 200)
     private String name;
     
-    @Column(nullable = false, length = 100)
-    @OneToMany(mappedBy = "facility", cascade = CascadeType.ALL)
+    @ElementCollection(targetClass = Sport.class)
+    @CollectionTable(name = "facility_sports", joinColumns = @JoinColumn(name = "facility_id"))
+    @Column(name = "sport")
+    @Enumerated(EnumType.STRING)
     private List<Sport> sports = new ArrayList<>();
     
     @Column(nullable = false, length = 500)

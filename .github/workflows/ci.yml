@@ -78,15 +78,6 @@ jobs:
           mvn test -Dtest=**/integration/*Test -B
         continue-on-error: true
 
-              
-      - name: Start Spring Boot Application
-        run: |
-          echo "Starting Spring Boot application..."
-          mvn spring-boot:run > app.log 2>&1 &
-          echo $! > app.pid
-          echo "Application PID: $(cat app.pid)"
-          timeout 120 bash -c 'until curl -f http://localhost:8080 > /dev/null 2>&1; do echo "Waiting for app..."; sleep 3; done' || (echo "App failed to start" && cat app.log && kill $(cat app.pid) && exit 1)
-          echo "✓ Application is ready!"
 
       - name: Run Functional Tests (BDD with Selenium)
         run: |
@@ -95,15 +86,6 @@ jobs:
           echo "========================================="
           mvn test -Dtest=RunCucumberTest -B
         continue-on-error: true
-
-      - name: Stop Spring Boot Application
-        if: always()
-        run: |
-          if [ -f app.pid ]; then
-            echo "Stopping application (PID: $(cat app.pid))..."
-            kill $(cat app.pid) 2>/dev/null || true
-            rm app.pid
-          fi
 
       - name: Display test results summary
         if: always()
@@ -139,7 +121,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Generate Coverage Report
-        run: mvn jacoco
+        run: mvn verify jacoco:report
         
 
       - name: Build and analyze with SonarQube

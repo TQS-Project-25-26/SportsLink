@@ -6,6 +6,7 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.*;
+import org.springframework.boot.test.web.server.LocalServerPort;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 
@@ -15,9 +16,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class FunctionalSteps {
 
+    @LocalServerPort
+    private int port;
+
     private FirefoxDriver driver;
     private WebDriverWait wait;
-    private final String baseUrl = "http://localhost:8080";
+
+    private String getBaseUrl() {
+        return "http://localhost:" + port;
+    }
 
     // Cards de campos: qualquer .card dentro das zonas de resultados
     private static final By FACILITY_CARD =
@@ -52,7 +59,7 @@ public class FunctionalSteps {
     @Given("I am on the main search page")
     public void i_am_on_main_page() {
         initDriverIfNeeded();
-        driver.get(baseUrl + "/pages/main_page_user.html");
+        driver.get(getBaseUrl() + "/pages/main_page_user.html");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("searchBtn")));
     }
 
@@ -147,7 +154,7 @@ public class FunctionalSteps {
     @Given("I am on the facility details page for facility {int}")
     public void on_facility_details_page(int id) {
         initDriverIfNeeded();
-        driver.get(baseUrl + "/pages/field_detail.html?id=" + id);
+        driver.get(getBaseUrl() + "/pages/field_detail.html?id=" + id);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("field-name")));
     }
 
@@ -170,7 +177,7 @@ public class FunctionalSteps {
     @Given("I am viewing equipment for facility {int}")
     public void viewing_equipment(int id) {
         initDriverIfNeeded();
-        driver.get(baseUrl + "/pages/equipments.html?facilityId=" + id);
+        driver.get(getBaseUrl() + "/pages/equipments.html?facilityId=" + id);
         wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector(".equipment-card")));
     }
 
@@ -203,9 +210,9 @@ public class FunctionalSteps {
     // ------------------------------
 
     @Given("I am on the booking page for facility {int}")
-    public void on_booking_page_given(int id) {
+    public void on_booking_page(int id) {
         initDriverIfNeeded();
-        driver.get(baseUrl + "/pages/booking.html?facilityId=" + id);
+        driver.get(getBaseUrl() + "/pages/booking.html?facilityId=" + id);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("btn-confirm-booking")));
     }
 

@@ -37,8 +37,7 @@ public class FunctionalSteps {
             return;
         }
 
-        // Use system-installed geckodriver (already in CI workflow)
-        // WebDriverManager.firefoxdriver().setup();
+        WebDriverManager.firefoxdriver().setup();
         
         FirefoxOptions options = new FirefoxOptions();
         options.addArguments("--headless"); // Run in headless mode for CI

@@ -78,7 +78,7 @@ jobs:
           echo "========================================="
           echo "Running Integration Tests (API)"
           echo "========================================="
-          mvn test -Dtest=**/Integration/*Test -B
+          mvn test -Dtest=**/integration/*Test -B
         continue-on-error: true
 
               

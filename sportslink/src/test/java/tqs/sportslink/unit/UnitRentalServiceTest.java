@@ -29,7 +29,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
 
-@XrayTest(key = " SL-30")
+@XrayTest(key = "SL-30")
 @ExtendWith(MockitoExtension.class)
 public class UnitRentalServiceTest {
 

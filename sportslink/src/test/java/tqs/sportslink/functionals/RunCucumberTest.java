@@ -9,8 +9,8 @@ import static io.cucumber.junit.platform.engine.Constants.*;
 
 @Suite
 @IncludeEngines("cucumber")
-@SelectClasspathResource("tqs/sportslink/functionals") // Os arquivos .feature devem estar em src/test/resources/tqs/zeromonos
+@SelectClasspathResource("tqs/sportslink/functionals") // Os arquivos .feature devem estar em src/test/resources/tqs/sportslink
 @ConfigurationParameter(key = PLUGIN_PROPERTY_NAME, value = "pretty")
-@ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "tqs.sportslink.functionals") // Os testes devem estar em tqs.zeromonos.functionals
+@ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "tqs.sportslink.functionals") // Os testes devem estar em tqs.sportlink.functionals
 public class RunCucumberTest {
 }

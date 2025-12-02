@@ -37,9 +37,11 @@ public class FunctionalSteps {
             return;
         }
 
-        WebDriverManager.firefoxdriver().setup();
+        // Use system-installed geckodriver (already in CI workflow)
+        // WebDriverManager.firefoxdriver().setup();
+        
         FirefoxOptions options = new FirefoxOptions();
-        // options.addArguments("--headless");
+        options.addArguments("--headless"); // Run in headless mode for CI
         driver = new FirefoxDriver(options);
         driver.manage().window().maximize();
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));

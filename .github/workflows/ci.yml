@@ -44,22 +44,19 @@ jobs:
         run: |
           sudo apt-get update
           
-          # Instala o Firefox (versão mais recente disponível nos repositórios oficiais do Ubuntu)
+          # Instala o Firefox (no Ubuntu 22.04/24.04 do GitHub Actions isso instala o Snap mais recente)
           sudo apt-get install -y firefox
           
-          # Instala o geckodriver (driver oficial do Firefox para Selenium)
-          # Versão mais recente direta do GitHub Mozilla
-          GECKODRIVER_LATEST_RELEASE=$(curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | grep tag_name | cut -d '"' -f 4)
-          wget https://github.com/mozilla/geckodriver/releases/download/${GECKODRIVER_LATEST_RELEASE}/geckodriver-${GECKODRIVER_LATEST_RELEASE}-linux64.tar.gz
-          tar -xzf geckodriver-${GECKODRIVER_LATEST_RELEASE}-linux64.tar.gz
+          # Essa URL é mágica e oficial do GitHub → sempre redireciona para o .tar.gz da última release
+          wget https://github.com/mozilla/geckodriver/releases/latest/download/geckodriver-linux64.tar.gz
+          
+          tar -xzf geckodriver-linux64.tar.gz
+          chmod +x geckodriver
           sudo mv geckodriver /usr/local/bin/
-          sudo chmod +x /usr/local/bin/geckodriver
           
           # Verificações finais
           firefox --version
           geckodriver --version
-        working-directory: .
-
       
       - name: Compile project
         run: mvn clean compile -B

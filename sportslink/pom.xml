@@ -198,6 +198,31 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<!-- Failsafe plugin for integration tests (produces target/failsafe-reports) -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>3.1.2</version>
+				<configuration>
+					<!-- run tests named *IT.java -->
+					<includes>
+						<include>**/*IT.java</include>
+					</includes>
+					<!-- ensure Cucumber (if used) writes JSON to target/cucumber-reports -->
+					<systemPropertyVariables>
+						<cucumber.plugin>json:target/cucumber-reports/cucumber.json</cucumber.plugin>
+					</systemPropertyVariables>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			
 		</plugins>
 	</build>

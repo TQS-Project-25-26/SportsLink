@@ -3,6 +3,7 @@ Feature: Functional testing for facility search and booking
   # -----------------------------------------------------------
   # Scenario 1 - Search by sport dropdown
   # -----------------------------------------------------------
+  @SL-27
   Scenario: User searches for fields using the sport dropdown
     Given I am on the main search page
     When I select the sport "Football" from the dropdown
@@ -12,6 +13,7 @@ Feature: Functional testing for facility search and booking
   # -----------------------------------------------------------
   # Scenario 2 - Search by sport + location text input
   # -----------------------------------------------------------
+  @SL-27
   Scenario: User searches for padel courts in Aveiro
     Given I am on the main search page
     When I select the sport "Padel" from the dropdown
@@ -22,6 +24,7 @@ Feature: Functional testing for facility search and booking
   # -----------------------------------------------------------
   # Scenario 3 - User opens the details page of a facility
   # -----------------------------------------------------------
+  @SL-24
   Scenario: User opens the details of the first search result
     Given I performed a search for "Padel" in "Aveiro"
     When I click on the first facility result
@@ -30,6 +33,7 @@ Feature: Functional testing for facility search and booking
   # -----------------------------------------------------------
   # Scenario 4 - User views equipment list of a facility
   # -----------------------------------------------------------
+  @SL-24
   Scenario: User opens equipment list from facility details
     Given I am on the facility details page for facility 1
     When I click the button to view all equipment
@@ -38,6 +42,7 @@ Feature: Functional testing for facility search and booking
   # -----------------------------------------------------------
   # Scenario 5 - User selects equipment and proceeds to booking
   # -----------------------------------------------------------
+  @SL-26
   Scenario: User selects available equipment and proceeds to booking
     Given I am viewing equipment for facility 1
     When I select at least one available equipment item
@@ -47,6 +52,7 @@ Feature: Functional testing for facility search and booking
   # -----------------------------------------------------------
   # Scenario 6 - User completes booking successfully
   # -----------------------------------------------------------
+  @SL-26
   Scenario: User completes a booking
     Given I am on the booking page for facility 1
     When I fill the booking form with valid data

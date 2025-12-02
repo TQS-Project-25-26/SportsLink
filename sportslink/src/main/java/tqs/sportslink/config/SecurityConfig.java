@@ -18,7 +18,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf().disable()
+            //.csrf().disable()
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/", "/index.html", "/css/**", "/js/**", "/pages/**").permitAll()  // Recursos estáticos
                 .requestMatchers("/api/rentals/**").permitAll()  // API de rentals pública

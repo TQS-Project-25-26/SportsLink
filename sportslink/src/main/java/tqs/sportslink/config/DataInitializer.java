@@ -14,26 +14,35 @@ import tqs.sportslink.data.model.Sport;
 import tqs.sportslink.data.model.User;
 import tqs.sportslink.data.model.Role;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Configuration
 public class DataInitializer {
+
+    private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class);
+
+    private static final String STATUS_ACTIVE = "ACTIVE";
+    private static final String STATUS_AVAILABLE = "AVAILABLE";
+    private static final String STATUS_UNAVAILABLE = "UNAVAILABLE";
 
     @Bean
     CommandLineRunner initDatabase(FacilityRepository facilityRepository, EquipmentRepository equipmentRepository, UserRepository userRepository) {
         return args -> {
             // Check if data already exists
             long count = facilityRepository.count();
-            System.out.println("Current facility count: " + count);
+            logger.info("Current facility count: {}", count);
             
             if (count > 0) {
-                System.out.println("Database already has " + count + " facilities");
+                logger.info("Database already has {} facilities", count);
                 // List facilities for debugging
                 facilityRepository.findAll().forEach(f -> 
-                    System.out.println("  - " + f.getName() + " (" + f.getSports() + " in " + f.getCity() + ")")
+                    logger.info("  - {} ({} in {})", f.getName(), f.getSports(), f.getCity())
                 );
                 return; // Data already initialized
             }
             
-            System.out.println("Initializing sample data...");
+            logger.info("Initializing sample data...");
 
             // Create test user for functional tests
             User testUser = new User();
@@ -44,7 +53,7 @@ public class DataInitializer {
             testUser.setRole(Role.RENTER);
             testUser.setActive(true);
             userRepository.save(testUser);
-            System.out.println("Test user created: test@sportslink.com / password123");
+            logger.info("Test user created: test@sportslink.com / password123");
 
             // Create sample facilities
             Facility facility1 = new Facility();
@@ -56,7 +65,7 @@ public class DataInitializer {
             facility1.setPricePerHour(25.0);
             facility1.setOpeningTime(LocalTime.parse("08:00"));
             facility1.setClosingTime(LocalTime.parse("22:00"));
-            facility1.setStatus("ACTIVE");
+            facility1.setStatus(STATUS_ACTIVE);
             facilityRepository.save(facility1);
 
             Facility facility2 = new Facility();
@@ -68,7 +77,7 @@ public class DataInitializer {
             facility2.setPricePerHour(15.0);
             facility2.setOpeningTime(LocalTime.parse("09:00"));
             facility2.setClosingTime(LocalTime.parse("23:00"));
-            facility2.setStatus("ACTIVE");
+            facility2.setStatus(STATUS_ACTIVE);
             facilityRepository.save(facility2);
 
             Facility facility3 = new Facility();
@@ -80,7 +89,7 @@ public class DataInitializer {
             facility3.setPricePerHour(20.0);
             facility3.setOpeningTime(LocalTime.parse("08:00"));
             facility3.setClosingTime(LocalTime.parse("21:00"));
-            facility3.setStatus("ACTIVE");
+            facility3.setStatus(STATUS_ACTIVE);
             facilityRepository.save(facility3);
 
             Facility facility4 = new Facility();
@@ -92,7 +101,7 @@ public class DataInitializer {
             facility4.setPricePerHour(30.0);
             facility4.setOpeningTime(LocalTime.parse("10:00"));
             facility4.setClosingTime(LocalTime.parse("22:00"));
-            facility4.setStatus("ACTIVE");
+            facility4.setStatus(STATUS_ACTIVE);
             facilityRepository.save(facility4);
 
             Facility facility5 = new Facility();
@@ -104,7 +113,7 @@ public class DataInitializer {
             facility5.setPricePerHour(12.0);
             facility5.setOpeningTime(LocalTime.parse("09:00"));
             facility5.setClosingTime(LocalTime.parse("20:00"));
-            facility5.setStatus("ACTIVE");
+            facility5.setStatus(STATUS_ACTIVE);
             facilityRepository.save(facility5);
 
             // Create sample equipment for facility1 (Football)
@@ -115,7 +124,7 @@ public class DataInitializer {
             equipment1.setFacility(facility1);
             equipment1.setQuantity(10);
             equipment1.setPricePerHour(2.0);
-            equipment1.setStatus("AVAILABLE");
+            equipment1.setStatus(STATUS_AVAILABLE);
             equipmentRepository.save(equipment1);
 
             Equipment equipment2 = new Equipment();
@@ -125,7 +134,7 @@ public class DataInitializer {
             equipment2.setFacility(facility1);
             equipment2.setQuantity(20);
             equipment2.setPricePerHour(1.0);
-            equipment2.setStatus("AVAILABLE");
+            equipment2.setStatus(STATUS_AVAILABLE);
             equipmentRepository.save(equipment2);
 
             // Create sample equipment for facility2 (Padel)
@@ -136,7 +145,7 @@ public class DataInitializer {
             equipment3.setFacility(facility2);
             equipment3.setQuantity(8);
             equipment3.setPricePerHour(5.0);
-            equipment3.setStatus("AVAILABLE");
+            equipment3.setStatus(STATUS_AVAILABLE);
             equipmentRepository.save(equipment3);
 
             Equipment equipment4 = new Equipment();
@@ -146,7 +155,7 @@ public class DataInitializer {
             equipment4.setFacility(facility2);
             equipment4.setQuantity(15);
             equipment4.setPricePerHour(3.0);
-            equipment4.setStatus("AVAILABLE");
+            equipment4.setStatus(STATUS_AVAILABLE);
             equipmentRepository.save(equipment4);
 
             // Create more equipment for variety
@@ -157,7 +166,7 @@ public class DataInitializer {
             equipment5.setFacility(facility5);
             equipment5.setQuantity(2);
             equipment5.setPricePerHour(8.0);
-            equipment5.setStatus("AVAILABLE");
+            equipment5.setStatus(STATUS_AVAILABLE);
             equipmentRepository.save(equipment5);
 
             Equipment equipment6 = new Equipment();
@@ -167,7 +176,7 @@ public class DataInitializer {
             equipment6.setFacility(facility3);
             equipment6.setQuantity(20);
             equipment6.setPricePerHour(2.0);
-            equipment6.setStatus("AVAILABLE");
+            equipment6.setStatus(STATUS_AVAILABLE);
             equipmentRepository.save(equipment6);
 
             Equipment equipment7 = new Equipment();
@@ -177,7 +186,7 @@ public class DataInitializer {
             equipment7.setFacility(facility3);
             equipment7.setQuantity(5);
             equipment7.setPricePerHour(6.0);
-            equipment7.setStatus("AVAILABLE");
+            equipment7.setStatus(STATUS_AVAILABLE);
             equipmentRepository.save(equipment7);
 
             Equipment equipment8 = new Equipment();
@@ -187,13 +196,13 @@ public class DataInitializer {
             equipment8.setFacility(facility5);
             equipment8.setQuantity(0);
             equipment8.setPricePerHour(3.0);
-            equipment8.setStatus("UNAVAILABLE");
+            equipment8.setStatus(STATUS_UNAVAILABLE);
             equipmentRepository.save(equipment8);
 
-            System.out.println("Database initialized with sample data!");
-            System.out.println("   - 1 test user created");
-            System.out.println("   - 5 facilities created");
-            System.out.println("   - 8 equipments created");
+            logger.info("Database initialized with sample data!");
+            logger.info("   - 1 test user created");
+            logger.info("   - 5 facilities created");
+            logger.info("   - 8 equipments created");
         };
     }
 }

@@ -47,13 +47,13 @@ jobs:
 
       - name: Download geckodriver
         run: |
-          # Baixa a versão latest (v0.36.0 em dez/2025 – sempre atualize se necessário)
-          wget https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-linux64.tar.gz
-          tar -xzf geckodriver-linux64.tar.gz
+          # Download latest version (v0.36.0 as of Feb 2025)
+          wget https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-linux64.tar.gz
+          tar -xzf geckodriver-v0.36.0-linux64.tar.gz
           chmod +x geckodriver
           sudo mv geckodriver /usr/local/bin/
           
-          # Verificação (opcional, mas bom para logs)
+          # Verify installation
           geckodriver --version
           firefox --version
         working-directory: .

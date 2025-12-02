@@ -40,6 +40,11 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
+      - name: Setup Firefox
+        uses: browser-actions/setup-firefox@v1
+        with:
+          firefox-version: 'latest'
+
       - name: Download geckodriver
         run: |
           # Baixa a versão latest (v0.36.0 em dez/2025 – sempre atualize se necessário)
@@ -50,6 +55,7 @@ jobs:
           
           # Verificação (opcional, mas bom para logs)
           geckodriver --version
+          firefox --version
         working-directory: .
       
       - name: Compile project

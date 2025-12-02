@@ -40,23 +40,17 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Install Firefox + geckodriver (for Selenium functional tests)
+      - name: Download geckodriver
         run: |
-          sudo apt-get update
-          
-          # Instala o Firefox (no Ubuntu 22.04/24.04 do GitHub Actions isso instala o Snap mais recente)
-          sudo apt-get install -y firefox
-          
-          # Essa URL é mágica e oficial do GitHub → sempre redireciona para o .tar.gz da última release
-          wget https://github.com/mozilla/geckodriver/releases/latest/download/geckodriver-linux64.tar.gz
-          
+          # Baixa a versão latest (v0.36.0 em dez/2025 – sempre atualize se necessário)
+          wget https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-linux64.tar.gz
           tar -xzf geckodriver-linux64.tar.gz
           chmod +x geckodriver
           sudo mv geckodriver /usr/local/bin/
           
-          # Verificações finais
-          firefox --version
+          # Verificação (opcional, mas bom para logs)
           geckodriver --version
+        working-directory: .
       
       - name: Compile project
         run: mvn clean compile -B

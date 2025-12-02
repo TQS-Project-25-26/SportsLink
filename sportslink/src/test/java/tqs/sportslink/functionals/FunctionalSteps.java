@@ -37,7 +37,7 @@ public class FunctionalSteps {
             return;
         }
 
-        WebDriverManager.firefoxdriver().setup();
+        //WebDriverManager.firefoxdriver().setup();
         
         FirefoxOptions options = new FirefoxOptions();
         options.addArguments("--headless"); // Run in headless mode for CI

@@ -1,7 +1,13 @@
 package tqs.sportslink.integration;
 
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,23 +15,19 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import tqs.sportslink.dto.RentalRequestDTO;
-import tqs.sportslink.data.RentalRepository;
-import tqs.sportslink.data.FacilityRepository;
+
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 import tqs.sportslink.data.EquipmentRepository;
+import tqs.sportslink.data.FacilityRepository;
+import tqs.sportslink.data.RentalRepository;
 import tqs.sportslink.data.UserRepository;
+import tqs.sportslink.data.model.Equipment;
 import tqs.sportslink.data.model.Facility;
 import tqs.sportslink.data.model.Role;
 import tqs.sportslink.data.model.Sport;
-import tqs.sportslink.data.model.Equipment;
 import tqs.sportslink.data.model.User;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.*;
+import tqs.sportslink.dto.RentalRequestDTO;
 
 /**
  * INTEGRATION TEST REAL usando RestAssured - SEM MOCKS
@@ -286,8 +288,8 @@ public class RentalFlowIntegrationTest {
         RentalRequestDTO request1 = new RentalRequestDTO();
         request1.setUserId(testUser.getId());
         request1.setFacilityId(testFacility.getId());
-        request1.setStartTime(LocalDateTime.now().plusDays(30).withHour(14).withMinute(0).withSecond(0).withNano(0));
-        request1.setEndTime(LocalDateTime.now().plusDays(30).withHour(16).withMinute(0).withSecond(0).withNano(0));
+        request1.setStartTime(LocalDateTime.now().plusDays(20).withHour(14).withMinute(0).withSecond(0).withNano(0));
+        request1.setEndTime(LocalDateTime.now().plusDays(20).withHour(16).withMinute(0).withSecond(0).withNano(0));
 
         Integer rentalId1Int = given()
             .contentType(ContentType.JSON)
@@ -304,8 +306,8 @@ public class RentalFlowIntegrationTest {
         RentalRequestDTO request2 = new RentalRequestDTO();
         request2.setUserId(testUser.getId());
         request2.setFacilityId(testFacility.getId());
-        request2.setStartTime(LocalDateTime.now().plusDays(30).withHour(17).withMinute(0).withSecond(0).withNano(0));
-        request2.setEndTime(LocalDateTime.now().plusDays(30).withHour(19).withMinute(0).withSecond(0).withNano(0));
+        request2.setStartTime(LocalDateTime.now().plusDays(20).withHour(17).withMinute(0).withSecond(0).withNano(0));
+        request2.setEndTime(LocalDateTime.now().plusDays(20).withHour(19).withMinute(0).withSecond(0).withNano(0));
 
         given()
             .contentType(ContentType.JSON)
@@ -319,8 +321,8 @@ public class RentalFlowIntegrationTest {
         RentalRequestDTO updateRequest = new RentalRequestDTO();
         updateRequest.setUserId(testUser.getId());
         updateRequest.setFacilityId(testFacility.getId());
-        updateRequest.setStartTime(LocalDateTime.now().plusDays(30).withHour(17).withMinute(0).withSecond(0).withNano(0));
-        updateRequest.setEndTime(LocalDateTime.now().plusDays(30).withHour(19).withMinute(0).withSecond(0).withNano(0));
+        updateRequest.setStartTime(LocalDateTime.now().plusDays(20).withHour(17).withMinute(0).withSecond(0).withNano(0));
+        updateRequest.setEndTime(LocalDateTime.now().plusDays(20).withHour(19).withMinute(0).withSecond(0).withNano(0));
 
         given()
             .contentType(ContentType.JSON)

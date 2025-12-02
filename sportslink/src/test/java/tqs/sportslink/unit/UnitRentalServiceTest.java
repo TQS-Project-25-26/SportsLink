@@ -55,8 +55,8 @@ public class UnitRentalServiceTest {
 
     @BeforeEach
     public void setUp() {
-        // Usar datas FUTURAS (30 dias à frente)
-        startTime = LocalDateTime.now().plusDays(30).withHour(19).withMinute(0).withSecond(0).withNano(0);
+        // Usar datas FUTURAS (29 dias à frente - dentro do limite de 30 dias)
+        startTime = LocalDateTime.now().plusDays(29).withHour(19).withMinute(0).withSecond(0).withNano(0);
         endTime = startTime.plusHours(2); // 2 horas depois
         
         validRequest = new RentalRequestDTO();

@@ -7,15 +7,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import tqs.sportslink.data.FacilityRepository;
 import tqs.sportslink.data.EquipmentRepository;
+import tqs.sportslink.data.UserRepository;
 import tqs.sportslink.data.model.Facility;
 import tqs.sportslink.data.model.Equipment;
 import tqs.sportslink.data.model.Sport;
+import tqs.sportslink.data.model.User;
+import tqs.sportslink.data.model.Role;
 
 @Configuration
 public class DataInitializer {
 
     @Bean
-    CommandLineRunner initDatabase(FacilityRepository facilityRepository, EquipmentRepository equipmentRepository) {
+    CommandLineRunner initDatabase(FacilityRepository facilityRepository, EquipmentRepository equipmentRepository, UserRepository userRepository) {
         return args -> {
             // Check if data already exists
             long count = facilityRepository.count();
@@ -31,6 +34,17 @@ public class DataInitializer {
             }
             
             System.out.println("Initializing sample data...");
+
+            // Create test user for functional tests
+            User testUser = new User();
+            testUser.setEmail("test@sportslink.com");
+            testUser.setPassword("password123"); // Plain text password for testing
+            testUser.setName("Test User");
+            testUser.setPhone("912345678");
+            testUser.setRole(Role.RENTER);
+            testUser.setActive(true);
+            userRepository.save(testUser);
+            System.out.println("Test user created: test@sportslink.com / password123");
 
             // Create sample facilities
             Facility facility1 = new Facility();
@@ -176,7 +190,8 @@ public class DataInitializer {
             equipment8.setStatus("UNAVAILABLE");
             equipmentRepository.save(equipment8);
 
-            System.out.println("✅ Database initialized with sample data!");
+            System.out.println("Database initialized with sample data!");
+            System.out.println("   - 1 test user created");
             System.out.println("   - 5 facilities created");
             System.out.println("   - 8 equipments created");
         };

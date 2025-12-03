@@ -40,20 +40,15 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Setup Chrome/Chromium
-        uses: browser-actions/setup-chrome@v1
-        with:
-          chrome-version: 'stable'
-
-      - name: Download ChromeDriver
+      - name: Install Chrome (for Selenium functional tests)
         run: |
-          # Install chromium-chromedriver package
           sudo apt-get update
-          sudo apt-get install -y chromium-chromedriver
-          
-          # Verify installation
-          chromedriver --version
-          chromium --version || google-chrome --version
+          sudo apt-get install -y wget gnupg
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+          google-chrome --version
         working-directory: .
       
       - name: Compile project

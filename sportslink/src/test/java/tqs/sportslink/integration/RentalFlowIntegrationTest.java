@@ -38,10 +38,6 @@ import tqs.sportslink.dto.RentalRequestDTO;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-@TestPropertySource(properties = {
-    "spring.datasource.url=jdbc:h2:mem:testdb",
-    "spring.jpa.hibernate.ddl-auto=create-drop"
-})
 public class RentalFlowIntegrationTest {
 
     @LocalServerPort

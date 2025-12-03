@@ -18,6 +18,9 @@ import java.util.stream.Collectors;
 @Service
 public class RentalService {
 
+    private static final String STATUS_CANCELLED = "CANCELLED";
+    private static final String ERROR_RENTAL_NOT_FOUND = "Rental not found";
+
     private final RentalRepository rentalRepository;
     private final FacilityRepository facilityRepository;
     private final EquipmentRepository equipmentRepository;
@@ -68,11 +71,10 @@ public class RentalService {
             .orElseThrow(() -> new IllegalArgumentException("Facility not found"));
         
         // Validação: horários de funcionamento da facility
-        if (facility.getOpeningTime() != null && facility.getClosingTime() != null) {
-            if (request.getStartTime().toLocalTime().isBefore(facility.getOpeningTime()) ||
-                request.getEndTime().toLocalTime().isAfter(facility.getClosingTime())) {
-                throw new IllegalArgumentException("Rental time is outside facility operating hours");
-            }
+        if (facility.getOpeningTime() != null && facility.getClosingTime() != null &&
+            (request.getStartTime().toLocalTime().isBefore(facility.getOpeningTime()) ||
+             request.getEndTime().toLocalTime().isAfter(facility.getClosingTime()))) {
+            throw new IllegalArgumentException("Rental time is outside facility operating hours");
         }
         
         // Validar conflitos - LÓGICA NO SERVICE
@@ -83,7 +85,7 @@ public class RentalService {
         
         // Filtrar rentals cancelados
         boolean hasConflict = conflictingRentals.stream()
-            .anyMatch(r -> !"CANCELLED".equals(r.getStatus()));
+            .anyMatch(r -> !STATUS_CANCELLED.equals(r.getStatus()));
         
         if (hasConflict) {
             throw new IllegalArgumentException("Facility already booked for this time slot");
@@ -113,10 +115,10 @@ public class RentalService {
 
     public RentalResponseDTO cancelRental(Long rentalId) {
         Rental rental = rentalRepository.findById(rentalId)
-            .orElseThrow(() -> new IllegalArgumentException("Rental not found"));
+            .orElseThrow(() -> new IllegalArgumentException(ERROR_RENTAL_NOT_FOUND));
         
         // Validação: não cancelar rental já cancelado
-        if ("CANCELLED".equals(rental.getStatus())) {
+        if (STATUS_CANCELLED.equals(rental.getStatus())) {
             throw new IllegalArgumentException("Rental is already cancelled");
         }
         
@@ -125,14 +127,14 @@ public class RentalService {
             throw new IllegalArgumentException("Cannot cancel rental that has already passed");
         }
         
-        rental.setStatus("CANCELLED");
+        rental.setStatus(STATUS_CANCELLED);
         Rental updated = rentalRepository.save(rental);
         return mapToResponseDTO(updated);
     }
 
     public RentalResponseDTO updateRental(Long rentalId, RentalRequestDTO request) {
         Rental rental = rentalRepository.findById(rentalId)
-            .orElseThrow(() -> new IllegalArgumentException("Rental not found"));
+            .orElseThrow(() -> new IllegalArgumentException(ERROR_RENTAL_NOT_FOUND));
         
         // Validação: não permitir atualizar para horário no passado
         if (request.getStartTime().isBefore(LocalDateTime.now())) {
@@ -153,7 +155,7 @@ public class RentalService {
         
         boolean hasConflict = conflictingRentals.stream()
             .filter(r -> !r.getId().equals(rentalId)) // Excluir o próprio rental
-            .anyMatch(r -> !"CANCELLED".equals(r.getStatus()));
+            .anyMatch(r -> !STATUS_CANCELLED.equals(r.getStatus()));
         
         if (hasConflict) {
             throw new IllegalArgumentException("New time slot conflicts with existing booking");
@@ -167,7 +169,7 @@ public class RentalService {
 
     public RentalResponseDTO getRentalStatus(Long rentalId) {
         Rental rental = rentalRepository.findById(rentalId)
-            .orElseThrow(() -> new IllegalArgumentException("Rental not found"));
+            .orElseThrow(() -> new IllegalArgumentException(ERROR_RENTAL_NOT_FOUND));
         return mapToResponseDTO(rental);
     }
 
@@ -182,7 +184,7 @@ public class RentalService {
         if (rental.getEquipments() != null) {
             dto.setEquipments(rental.getEquipments().stream()
                 .map(Equipment::getName)
-                .collect(Collectors.toList()));
+                .toList());
         }
         return dto;
     }

@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tqs.sportslink.service.FacilityService;
 import tqs.sportslink.data.FacilityRepository;
+import tqs.sportslink.data.RentalRepository;
 import tqs.sportslink.data.model.Facility;
 import tqs.sportslink.data.model.Sport;
 import tqs.sportslink.dto.FacilityResponseDTO;
@@ -22,6 +23,9 @@ public class UnitFacilityTest {
     @Mock
     private FacilityRepository facilityRepository;
 
+    @Mock
+    private RentalRepository rentalRepository;
+
     @InjectMocks
     private FacilityService facilityService;
 
@@ -29,15 +33,19 @@ public class UnitFacilityTest {
     public void whenSearchByLocation_thenReturnsNearbyFacilities() {
         // Given - Maria searching in Aveiro
         Facility facility1 = new Facility();
+        facility1.setId(1L);
         facility1.setName("Padel Club Aveiro");
         facility1.setStatus("ACTIVE");
         
         Facility facility2 = new Facility();
+        facility2.setId(2L);
         facility2.setName("Sports Center Aveiro");
         facility2.setStatus("ACTIVE");
         
         when(facilityRepository.findByCityAndSportType("Aveiro", Sport.PADEL))
             .thenReturn(List.of(facility1, facility2));
+        when(rentalRepository.findByFacilityId(anyLong()))
+            .thenReturn(List.of());
         
         // When
         List<FacilityResponseDTO> result = facilityService.searchFacilities("Aveiro", "Padel", "19:00");
@@ -52,11 +60,14 @@ public class UnitFacilityTest {
     public void whenSearchBySport_thenReturnsCorrectFacilities() {
         // Given - Maria looking for Padel courts
         Facility facility = new Facility();
+        facility.setId(1L);
         facility.setName("Padel Club Aveiro");
         facility.setStatus("ACTIVE");
         
         when(facilityRepository.findByCityAndSportType("Aveiro", Sport.PADEL))
             .thenReturn(List.of(facility));
+        when(rentalRepository.findByFacilityId(anyLong()))
+            .thenReturn(List.of());
         
         // When
         List<FacilityResponseDTO> result = facilityService.searchFacilities("Aveiro", "Padel", "19:00");
@@ -84,11 +95,14 @@ public class UnitFacilityTest {
     public void whenCheckAvailability_duringOpenHours_thenReturnsTrue() {
         // Given - Check if facility available
         Facility facility = new Facility();
+        facility.setId(1L);
         facility.setName("Padel Club Aveiro");
         facility.setStatus("ACTIVE");
         
         when(facilityRepository.findByCityAndSportType("Aveiro", Sport.PADEL))
             .thenReturn(List.of(facility));
+        when(rentalRepository.findByFacilityId(anyLong()))
+            .thenReturn(List.of());
         
         // When
         List<FacilityResponseDTO> result = facilityService.searchFacilities("Aveiro", "Padel", "19:00");
@@ -104,6 +118,9 @@ public class UnitFacilityTest {
         String sport = "Padel";
         String time = "19:00";
         
+        when(facilityRepository.findByCityAndSportType("Aveiro", Sport.PADEL))
+            .thenReturn(List.of());
+        
         // When
         List<FacilityResponseDTO> result = facilityService.searchFacilities(location, sport, time);
         
@@ -111,3 +128,4 @@ public class UnitFacilityTest {
         assertThat(result).isNotNull();
     }
 }
+

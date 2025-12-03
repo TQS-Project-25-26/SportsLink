@@ -2,13 +2,14 @@ package tqs.sportslink.functionals;
 
 import io.cucumber.java.After;
 import io.cucumber.java.en.*;
+import io.github.bonigarcia.wdm.WebDriverManager;
+
 import org.openqa.selenium.*;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.*;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
 
 import java.time.Duration;
 

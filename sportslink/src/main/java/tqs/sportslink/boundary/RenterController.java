@@ -2,7 +2,6 @@ package tqs.sportslink.boundary;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.access.prepost.PreAuthorize;
 import tqs.sportslink.service.RentalService;
 import tqs.sportslink.service.EquipmentService;
 import tqs.sportslink.service.FacilityService;

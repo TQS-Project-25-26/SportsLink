@@ -23,7 +23,7 @@ public class EquipmentService {
         return equipments.stream()
             .filter(e -> "AVAILABLE".equals(e.getStatus()))
             .map(this::toDTO)
-            .collect(Collectors.toList());
+            .toList();
     }
     
     private EquipmentResponseDTO toDTO(Equipment equipment) {

@@ -42,7 +42,7 @@ Feature: Functional testing for facility search and booking
   # ============================================================
   # TIME SLOT SELECTION & BOOKING
   # User Story: SL-29 (Time slot selection and reservation)
-  # User Story: SL-26 (Book slot) - se ainda existir
+  # User Story: SL-26 (Book slot)
   # Epic: SL-20 (Booking & Reservation System)
   # ============================================================
 

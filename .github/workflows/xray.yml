@@ -2,7 +2,7 @@ name: Testes + Xray Cloud
 
 on:
   push:
-    branches: [ main, dev, "feature/*" ]
+    branches: [ main, dev ]
   pull_request:
 
 jobs:
@@ -23,9 +23,12 @@ jobs:
           cache: maven
 
       - name: Run tests
-        run: mvn -B test
+        run: mvn clean verify
 
-      - name: Import results to Xray
+      # ==================================
+      # IMPORTA TESTES UNITÁRIOS (JUnit)
+      # ==================================
+      - name: Import JUnit results to Xray
         uses: mikepenz/xray-action@v3
         with:
           username: ${{ secrets.XRAY_CLIENT_ID }}
@@ -34,6 +37,43 @@ jobs:
           testPaths: "**/target/surefire-reports/TEST-*.xml"
           projectKey: SL
           combineInSingleTestExec: true
+          testPlanKey: SL-103
           testEnvironments: GitHub-Actions
           revision: ${{ github.sha }}
           failOnImportError: true
+
+      # ==================================
+      # IMPORTA TESTES DE INTEGRAÇÃO (JUnit)
+      # ==================================
+      - name: Import Integration Test results to Xray
+        if: always()
+        uses: mikepenz/xray-action@v3
+        with:
+          username: ${{ secrets.XRAY_CLIENT_ID }}
+          password: ${{ secrets.XRAY_CLIENT_SECRET }}
+          testFormat: junit
+          testPaths: "**/target/failsafe-reports/TEST-*.xml"
+          projectKey: SL
+          combineInSingleTestExec: true
+          testPlanKey: SL-102
+          testEnvironments: GitHub-Actions
+          revision: ${{ github.sha }}
+          failOnImportError: false
+
+      # ==================================
+      # IMPORTA TESTES BDD (Cucumber JSON)
+      # ==================================
+      - name: Import Cucumber results to Xray
+        if: always()
+        uses: mikepenz/xray-action@v3
+        with:
+          username: ${{ secrets.XRAY_CLIENT_ID }}
+          password: ${{ secrets.XRAY_CLIENT_SECRET }}
+          testFormat: cucumber
+          testPaths: "**/target/cucumber-reports/*.json"
+          projectKey: SL
+          combineInSingleTestExec: true
+          testPlanKey: SL-104
+          testEnvironments: GitHub-Actions
+          revision: ${{ github.sha }}
+          failOnImportError: false

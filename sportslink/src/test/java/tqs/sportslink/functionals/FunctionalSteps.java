@@ -2,11 +2,10 @@ package tqs.sportslink.functionals;
 
 import io.cucumber.java.After;
 import io.cucumber.java.en.*;
-import io.github.bonigarcia.wdm.WebDriverManager;
 
 import org.openqa.selenium.*;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.*;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
@@ -20,7 +19,7 @@ public class FunctionalSteps {
     @LocalServerPort
     private int port;
 
-    private FirefoxDriver driver;
+    private ChromeDriver driver;
     private WebDriverWait wait;
 
     private String getBaseUrl() {
@@ -38,11 +37,13 @@ public class FunctionalSteps {
             return;
         }
 
-        //WebDriverManager.firefoxdriver().setup();
+        //WebDriverManager.chromedriver().setup();
         
-        FirefoxOptions options = new FirefoxOptions();
+        ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless"); // Run in headless mode for CI
-        driver = new FirefoxDriver(options);
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        driver = new ChromeDriver(options);
         driver.manage().window().maximize();
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
@@ -87,12 +88,16 @@ public class FunctionalSteps {
     @When("I press the search button")
     public void press_search_button() {
         driver.findElement(By.id("searchBtn")).click();
+        // Wait a bit for the page to process the search and load results
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Then("I should see facilities related to {string}")
     public void facilities_related_to(String sport) {
-        wait.until(d -> !d.findElements(FACILITY_CARD).isEmpty());
-
         // Ajuste para diferença de idioma entre o feature e o texto real
         String expected = sport.toLowerCase();
         if (expected.equals("football")) {
@@ -101,20 +106,68 @@ public class FunctionalSteps {
 
         final String expectedText = expected;
 
+        // Wait for cards and re-fetch them to avoid stale references
+        // Increase timeout and add more robust waiting
+        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(15));
+        longWait.until(d -> {
+            var cards = d.findElements(FACILITY_CARD);
+            if (cards.isEmpty()) {
+                return false;
+            }
+            // Check if any card contains the expected text
+            return cards.stream().anyMatch(card -> {
+                try {
+                    String text = card.getText().toLowerCase();
+                    return text.contains(expectedText);
+                } catch (StaleElementReferenceException e) {
+                    return false;
+                }
+            });
+        });
+        
+        // Final verification
         boolean match = driver.findElements(FACILITY_CARD)
                 .stream()
-                .anyMatch(card -> card.getText().toLowerCase().contains(expectedText));
+                .anyMatch(card -> {
+                    try {
+                        return card.getText().toLowerCase().contains(expectedText);
+                    } catch (StaleElementReferenceException e) {
+                        return false;
+                    }
+                });
 
         assertTrue(match, "No facilities found containing sport: " + sport);
     }
 
     @Then("I should see facilities located in {string}")
     public void facilities_in_location(String location) {
-        wait.until(d -> !d.findElements(FACILITY_CARD).isEmpty());
+        // Increase timeout and add more robust waiting
+        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(15));
+        longWait.until(d -> {
+            var cards = d.findElements(FACILITY_CARD);
+            if (cards.isEmpty()) {
+                return false;
+            }
+            // Check if any card contains the expected location
+            return cards.stream().anyMatch(card -> {
+                try {
+                    String text = card.getText().toLowerCase();
+                    return text.contains(location.toLowerCase());
+                } catch (StaleElementReferenceException e) {
+                    return false;
+                }
+            });
+        });
 
         boolean match = driver.findElements(FACILITY_CARD)
                 .stream()
-                .anyMatch(card -> card.getText().toLowerCase().contains(location.toLowerCase()));
+                .anyMatch(card -> {
+                    try {
+                        return card.getText().toLowerCase().contains(location.toLowerCase());
+                    } catch (StaleElementReferenceException e) {
+                        return false;
+                    }
+                });
 
         assertTrue(match, "No facilities found in location: " + location);
     }
@@ -162,7 +215,17 @@ public class FunctionalSteps {
 
     @When("I click the button to view all equipment")
     public void click_view_equipment() {
-        driver.findElement(By.id("btn-view-equipments")).click();
+        WebElement button = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("btn-view-equipments")));
+        
+        // Scroll to element and use JavaScript click to avoid interception
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", button);
+        try {
+            Thread.sleep(500); // Brief pause after scroll
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", button);
         wait.until(ExpectedConditions.urlContains("equipments.html"));
     }
 
@@ -187,7 +250,7 @@ public class FunctionalSteps {
     public void select_equipment() {
         boolean selected = false;
         for (WebElement card : driver.findElements(By.cssSelector(".equipment-card"))) {
-            if (!card.getAttribute("class").contains("unavailable")) {
+            if (!card.getDomAttribute("class").contains("unavailable")) {
                 card.click();
                 selected = true;
                 break;
@@ -232,7 +295,17 @@ public class FunctionalSteps {
 
     @When("I confirm the booking")
     public void confirm_booking() {
-        driver.findElement(By.id("btn-confirm-booking")).click();
+        WebElement button = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("btn-confirm-booking")));
+        
+        // Scroll to element and use JavaScript click to avoid interception
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", button);
+        try {
+            Thread.sleep(500); // Brief pause after scroll
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", button);
     }
 
     @Then("a booking confirmation modal should appear with an ID")

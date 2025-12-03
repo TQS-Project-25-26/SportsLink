@@ -92,7 +92,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
-    public void whenCreateRental_withValidRequest_thenSuccess() {
+    void whenCreateRental_withValidRequest_thenSuccess() {
         // Given
         when(rentalRepository.findByFacilityIdAndStartTimeLessThanEqualAndEndTimeGreaterThanEqual(
                 anyLong(), any(), any())).thenReturn(List.of()); // Sem conflitos
@@ -110,7 +110,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
-    public void whenCreateRental_withEquipment_thenSuccess() {
+    void whenCreateRental_withEquipment_thenSuccess() {
         // Given
         validRequest.setEquipmentIds(List.of(1L, 2L));
         Equipment eq1 = new Equipment();
@@ -139,7 +139,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
-    public void whenCreateRental_facilityAlreadyBooked_shouldThrowException() {
+    void whenCreateRental_facilityAlreadyBooked_shouldThrowException() {
         // Given - Facility já tem reserva
         Rental conflicting = new Rental();
         conflicting.setStatus("CONFIRMED");
@@ -154,7 +154,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
-    public void whenCreateRental_facilityNotFound_shouldThrowException() {
+    void whenCreateRental_facilityNotFound_shouldThrowException() {
         // Given
         when(facilityRepository.findById(1L)).thenReturn(Optional.empty());
         
@@ -165,7 +165,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
-    public void whenCancelRental_validId_thenSuccess() {
+    void whenCancelRental_validId_thenSuccess() {
         // Given
         when(rentalRepository.findById(1L)).thenReturn(Optional.of(mockRental));
         Rental cancelledRental = new Rental();
@@ -187,7 +187,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
-    public void whenCancelRental_invalidId_shouldThrowException() {
+    void whenCancelRental_invalidId_shouldThrowException() {
         // Given
         when(rentalRepository.findById(999L)).thenReturn(Optional.empty());
         
@@ -198,7 +198,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
-    public void whenUpdateRental_validChange_thenSuccess() {
+    void whenUpdateRental_validChange_thenSuccess() {
         // Given
         RentalRequestDTO updateRequest = new RentalRequestDTO();
         updateRequest.setUserId(1L);
@@ -220,7 +220,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
-    public void whenGetRentalStatus_validId_thenReturnsStatus() {
+    void whenGetRentalStatus_validId_thenReturnsStatus() {
         // Given
         when(rentalRepository.findById(1L)).thenReturn(Optional.of(mockRental));
         
@@ -234,7 +234,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
-    public void whenCreateRental_inPast_shouldThrowException() {
+    void whenCreateRental_inPast_shouldThrowException() {
         // Given - Tentar criar rental no passado
         validRequest.setStartTime(LocalDateTime.now().minusDays(1));
         validRequest.setEndTime(LocalDateTime.now().minusDays(1).plusHours(2));
@@ -246,7 +246,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
-    public void whenCreateRental_endTimeBeforeStartTime_shouldThrowException() {
+    void whenCreateRental_endTimeBeforeStartTime_shouldThrowException() {
         // Given
         validRequest.setStartTime(LocalDateTime.now().plusDays(1).withHour(21).withMinute(0));
         validRequest.setEndTime(LocalDateTime.now().plusDays(1).withHour(19).withMinute(0));
@@ -258,7 +258,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
-    public void whenCreateRental_durationTooShort_shouldThrowException() {
+    void whenCreateRental_durationTooShort_shouldThrowException() {
         // Given - Duração menor que 1 hora
         validRequest.setStartTime(LocalDateTime.now().plusDays(1).withHour(19).withMinute(0).withSecond(0).withNano(0));
         validRequest.setEndTime(LocalDateTime.now().plusDays(1).withHour(19).withMinute(30).withSecond(0).withNano(0));
@@ -270,7 +270,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
-    public void whenUpdateRental_toPastTime_shouldThrowException() {
+    void whenUpdateRental_toPastTime_shouldThrowException() {
         // Given
         RentalRequestDTO updateRequest = new RentalRequestDTO();
         updateRequest.setUserId(1L);
@@ -296,7 +296,7 @@ public class UnitRentalServiceTest {
     // - Cancelar rental já passada/cancelada
 
     @Test
-    public void whenCancelRental_alreadyCancelled_shouldThrowException() {
+    void whenCancelRental_alreadyCancelled_shouldThrowException() {
         // Given
         mockRental.setStatus("CANCELLED");
         when(rentalRepository.findById(1L)).thenReturn(Optional.of(mockRental));    
@@ -307,7 +307,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
-    public void whenCreateRental_outsideFacilityHours_shouldThrowException() {
+    void whenCreateRental_outsideFacilityHours_shouldThrowException() {
         // Given - Horário fora do horário de funcionamento da facility
         
         RentalRequestDTO invalidRequest = new RentalRequestDTO();
@@ -324,7 +324,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
-    public void whenCreateRental_durationTooLong_shouldThrowException() {
+    void whenCreateRental_durationTooLong_shouldThrowException() {
         // Given - Duração maior que 4 horas
         validRequest.setStartTime(LocalDateTime.now().plusDays(1).withHour(18).withMinute(0).withSecond(0).withNano(0));
         validRequest.setEndTime(LocalDateTime.now().plusDays(1).withHour(23).withMinute(0).withSecond(0).withNano(0)); // 5 horas
@@ -336,7 +336,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
-    public void whenCreateRental_tooCloseToStartTime_shouldThrowException() {
+    void whenCreateRental_tooCloseToStartTime_shouldThrowException() {
         // Given - Tentar reservar com menos de 1 hora de antecedência
         validRequest.setStartTime(LocalDateTime.now().plusMinutes(30));
         validRequest.setEndTime(LocalDateTime.now().plusMinutes(90));
@@ -348,7 +348,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
-    public void whenCreateRental_tooFarInFuture_shouldThrowException() {
+    void whenCreateRental_tooFarInFuture_shouldThrowException() {
         // Given - Tentar reservar com mais de 30 dias de antecedência
         validRequest.setStartTime(LocalDateTime.now().plusDays(31).withHour(19).withMinute(0).withSecond(0).withNano(0));
         validRequest.setEndTime(LocalDateTime.now().plusDays(31).withHour(21).withMinute(0).withSecond(0).withNano(0));
@@ -360,7 +360,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
-    public void whenCreateRental_endTimeAfterClosingTime_shouldThrowException() {
+    void whenCreateRental_endTimeAfterClosingTime_shouldThrowException() {
         // Given - Termina depois do horário de fecho (22:00)
         RentalRequestDTO invalidRequest = new RentalRequestDTO();
         invalidRequest.setUserId(1L);
@@ -377,7 +377,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
-    public void whenCancelRental_alreadyPassed_shouldThrowException() {
+    void whenCancelRental_alreadyPassed_shouldThrowException() {
         // Given - Rental já passou
         mockRental.setStartTime(LocalDateTime.now().minusDays(2));
         mockRental.setEndTime(LocalDateTime.now().minusDays(2).plusHours(2));
@@ -390,7 +390,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
-    public void whenCreateRental_partialOverlap_shouldThrowException() {
+    void whenCreateRental_partialOverlap_shouldThrowException() {
         // Given - Nova rental sobrepõe-se parcialmente com existente
         Rental existingRental = new Rental();
         existingRental.setId(2L);
@@ -412,7 +412,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
-    public void whenCreateRental_exactTimeMatch_shouldThrowException() {
+    void whenCreateRental_exactTimeMatch_shouldThrowException() {
         // Given - Mesma hora exata de outra rental
         Rental existingRental = new Rental();
         existingRental.setId(2L);

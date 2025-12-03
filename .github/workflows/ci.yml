@@ -40,22 +40,20 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Setup Firefox
-        uses: browser-actions/setup-firefox@v1
+      - name: Setup Chrome/Chromium
+        uses: browser-actions/setup-chrome@v1
         with:
-          firefox-version: 'latest'
+          chrome-version: 'stable'
 
-      - name: Download geckodriver
+      - name: Download ChromeDriver
         run: |
-          # Download latest version (v0.36.0 as of Feb 2025)
-          wget https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-linux64.tar.gz
-          tar -xzf geckodriver-v0.36.0-linux64.tar.gz
-          chmod +x geckodriver
-          sudo mv geckodriver /usr/local/bin/
+          # Install chromium-chromedriver package
+          sudo apt-get update
+          sudo apt-get install -y chromium-chromedriver
           
           # Verify installation
-          geckodriver --version
-          firefox --version
+          chromedriver --version
+          chromium --version || google-chrome --version
         working-directory: .
       
       - name: Compile project

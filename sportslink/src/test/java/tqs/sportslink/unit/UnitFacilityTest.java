@@ -30,7 +30,7 @@ public class UnitFacilityTest {
     private FacilityService facilityService;
 
     @Test
-    public void whenSearchByLocation_thenReturnsNearbyFacilities() {
+    void whenSearchByLocation_thenReturnsNearbyFacilities() {
         // Given - Maria searching in Aveiro
         Facility facility1 = new Facility();
         facility1.setId(1L);
@@ -57,7 +57,7 @@ public class UnitFacilityTest {
     }
 
     @Test
-    public void whenSearchBySport_thenReturnsCorrectFacilities() {
+    void whenSearchBySport_thenReturnsCorrectFacilities() {
         // Given - Maria looking for Padel courts
         Facility facility = new Facility();
         facility.setId(1L);
@@ -79,7 +79,7 @@ public class UnitFacilityTest {
     }
 
     @Test
-    public void whenSearchWithInvalidLocation_thenReturnsEmpty() {
+    void whenSearchWithInvalidLocation_thenReturnsEmpty() {
         // Given
         when(facilityRepository.findByCityAndSportType("InvalidLocation", Sport.PADEL))
             .thenReturn(List.of());
@@ -92,7 +92,7 @@ public class UnitFacilityTest {
     }
 
     @Test
-    public void whenCheckAvailability_duringOpenHours_thenReturnsTrue() {
+    void whenCheckAvailability_duringOpenHours_thenReturnsTrue() {
         // Given - Check if facility available
         Facility facility = new Facility();
         facility.setId(1L);
@@ -112,7 +112,7 @@ public class UnitFacilityTest {
     }
 
     @Test
-    public void whenGetFacilityDetails_thenReturnsCompleteInfo() {
+    void whenGetFacilityDetails_thenReturnsCompleteInfo() {
         // Given
         String location = "Aveiro";
         String sport = "Padel";

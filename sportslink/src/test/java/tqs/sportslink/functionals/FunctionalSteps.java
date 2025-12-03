@@ -37,7 +37,6 @@ public class FunctionalSteps {
             return;
         }
 
-        //WebDriverManager.chromedriver().setup();
         
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless"); // Run in headless mode for CI
@@ -88,12 +87,9 @@ public class FunctionalSteps {
     @When("I press the search button")
     public void press_search_button() {
         driver.findElement(By.id("searchBtn")).click();
-        // Wait a bit for the page to process the search and load results
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        // Wait for the page to process the search and load results
+        wait.until(webDriver -> !webDriver.findElements(FACILITY_CARD).isEmpty() || 
+                        webDriver.findElements(By.cssSelector(".no-results")).size() > 0);
     }
 
     @Then("I should see facilities related to {string}")
@@ -186,8 +182,8 @@ public class FunctionalSteps {
 
     @When("I click on the first facility result")
     public void click_first_result() {
-        WebElement firstCard = wait.until(driver -> {
-            var cards = driver.findElements(FACILITY_CARD);
+        WebElement firstCard = wait.until(webDriver -> {
+            var cards = webDriver.findElements(FACILITY_CARD);
             return cards.isEmpty() ? null : cards.get(0);
         });
 
@@ -219,11 +215,7 @@ public class FunctionalSteps {
         
         // Scroll to element and use JavaScript click to avoid interception
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", button);
-        try {
-            Thread.sleep(500); // Brief pause after scroll
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        wait.until(ExpectedConditions.elementToBeClickable(button));
         
         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", button);
         wait.until(ExpectedConditions.urlContains("equipments.html"));
@@ -299,11 +291,7 @@ public class FunctionalSteps {
         
         // Scroll to element and use JavaScript click to avoid interception
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", button);
-        try {
-            Thread.sleep(500); // Brief pause after scroll
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        wait.until(ExpectedConditions.elementToBeClickable(button));
         
         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", button);
     }

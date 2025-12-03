@@ -64,7 +64,7 @@ public class RentalFlowIntegrationTest {
     private User testUser;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         RestAssured.port = port;
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 

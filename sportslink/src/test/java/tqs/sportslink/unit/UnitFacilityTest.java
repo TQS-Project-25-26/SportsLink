@@ -1,21 +1,23 @@
 package tqs.sportslink.unit;
 
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.anyLong;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
-import tqs.sportslink.service.FacilityService;
+
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import tqs.sportslink.data.FacilityRepository;
 import tqs.sportslink.data.RentalRepository;
 import tqs.sportslink.data.model.Facility;
 import tqs.sportslink.data.model.Sport;
 import tqs.sportslink.dto.FacilityResponseDTO;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import tqs.sportslink.service.FacilityService;
 
 @ExtendWith(MockitoExtension.class)
 public class UnitFacilityTest {
@@ -53,10 +55,11 @@ public class UnitFacilityTest {
         // Then
         assertThat(result).hasSize(2);
         assertThat(result).extracting(FacilityResponseDTO::getName)
-            .contains("Padel Club Aveiro", "Sports Center Aveiro");
+        .contains("Padel Club Aveiro", "Sports Center Aveiro");
     }
-
+    
     @Test
+    @Requirement("SL-27")
     void whenSearchBySport_thenReturnsCorrectFacilities() {
         // Given - Maria looking for Padel courts
         Facility facility = new Facility();
@@ -92,6 +95,7 @@ public class UnitFacilityTest {
     }
 
     @Test
+    @Requirement("SL-26")
     void whenCheckAvailability_duringOpenHours_thenReturnsTrue() {
         // Given - Check if facility available
         Facility facility = new Facility();
@@ -112,6 +116,7 @@ public class UnitFacilityTest {
     }
 
     @Test
+    @Requirement("SL-24")
     void whenGetFacilityDetails_thenReturnsCompleteInfo() {
         // Given
         String location = "Aveiro";

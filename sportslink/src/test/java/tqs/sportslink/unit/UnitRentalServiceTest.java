@@ -1,23 +1,5 @@
 package tqs.sportslink.unit;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import tqs.sportslink.service.RentalService;
-import tqs.sportslink.data.RentalRepository;
-import tqs.sportslink.data.FacilityRepository;
-import tqs.sportslink.data.EquipmentRepository;
-import tqs.sportslink.data.UserRepository;
-import tqs.sportslink.data.model.Rental;
-import tqs.sportslink.data.model.Facility;
-import tqs.sportslink.data.model.Equipment;
-import tqs.sportslink.data.model.User;
-import tqs.sportslink.dto.RentalRequestDTO;
-import tqs.sportslink.dto.RentalResponseDTO;
-
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
@@ -25,11 +7,31 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@XrayTest(key = "SL-30")
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
+import tqs.sportslink.data.EquipmentRepository;
+import tqs.sportslink.data.FacilityRepository;
+import tqs.sportslink.data.RentalRepository;
+import tqs.sportslink.data.UserRepository;
+import tqs.sportslink.data.model.Equipment;
+import tqs.sportslink.data.model.Facility;
+import tqs.sportslink.data.model.Rental;
+import tqs.sportslink.data.model.User;
+import tqs.sportslink.dto.RentalRequestDTO;
+import tqs.sportslink.dto.RentalResponseDTO;
+import tqs.sportslink.service.RentalService;
+
 @ExtendWith(MockitoExtension.class)
 public class UnitRentalServiceTest {
 
@@ -92,6 +94,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
+    @Requirement("SL-26")
     void whenCreateRental_withValidRequest_thenSuccess() {
         // Given
         when(rentalRepository.findByFacilityIdAndStartTimeLessThanEqualAndEndTimeGreaterThanEqual(
@@ -110,6 +113,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
+    @Requirement("SL-26")
     void whenCreateRental_withEquipment_thenSuccess() {
         // Given
         validRequest.setEquipmentIds(List.of(1L, 2L));
@@ -139,6 +143,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
+    @Requirement("SL-26")
     void whenCreateRental_facilityAlreadyBooked_shouldThrowException() {
         // Given - Facility já tem reserva
         Rental conflicting = new Rental();
@@ -154,6 +159,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
+    @Requirement("SL-26")
     void whenCreateRental_facilityNotFound_shouldThrowException() {
         // Given
         when(facilityRepository.findById(1L)).thenReturn(Optional.empty());
@@ -165,6 +171,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
+    @Requirement("SL-26")
     void whenCancelRental_validId_thenSuccess() {
         // Given
         when(rentalRepository.findById(1L)).thenReturn(Optional.of(mockRental));
@@ -187,6 +194,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
+    @Requirement("SL-26")
     void whenCancelRental_invalidId_shouldThrowException() {
         // Given
         when(rentalRepository.findById(999L)).thenReturn(Optional.empty());
@@ -198,6 +206,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
+    @Requirement("SL-26")
     void whenUpdateRental_validChange_thenSuccess() {
         // Given
         RentalRequestDTO updateRequest = new RentalRequestDTO();
@@ -220,6 +229,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
+    @Requirement("SL-26")
     void whenGetRentalStatus_validId_thenReturnsStatus() {
         // Given
         when(rentalRepository.findById(1L)).thenReturn(Optional.of(mockRental));
@@ -234,6 +244,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
+    @Requirement("SL-28")
     void whenCreateRental_inPast_shouldThrowException() {
         // Given - Tentar criar rental no passado
         validRequest.setStartTime(LocalDateTime.now().minusDays(1));
@@ -246,6 +257,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
+    @Requirement("SL-26")
     void whenCreateRental_endTimeBeforeStartTime_shouldThrowException() {
         // Given
         validRequest.setStartTime(LocalDateTime.now().plusDays(1).withHour(21).withMinute(0));
@@ -258,6 +270,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
+    @Requirement("SL-26")
     void whenCreateRental_durationTooShort_shouldThrowException() {
         // Given - Duração menor que 1 hora
         validRequest.setStartTime(LocalDateTime.now().plusDays(1).withHour(19).withMinute(0).withSecond(0).withNano(0));
@@ -270,6 +283,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
+    @Requirement("SL-26")
     void whenUpdateRental_toPastTime_shouldThrowException() {
         // Given
         RentalRequestDTO updateRequest = new RentalRequestDTO();
@@ -296,6 +310,7 @@ public class UnitRentalServiceTest {
     // - Cancelar rental já passada/cancelada
 
     @Test
+    @Requirement("SL-30")
     void whenCancelRental_alreadyCancelled_shouldThrowException() {
         // Given
         mockRental.setStatus("CANCELLED");
@@ -307,6 +322,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
+    @Requirement("SL-26")
     void whenCreateRental_outsideFacilityHours_shouldThrowException() {
         // Given - Horário fora do horário de funcionamento da facility
         
@@ -324,6 +340,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
+    @Requirement("SL-26")
     void whenCreateRental_durationTooLong_shouldThrowException() {
         // Given - Duração maior que 4 horas
         validRequest.setStartTime(LocalDateTime.now().plusDays(1).withHour(18).withMinute(0).withSecond(0).withNano(0));
@@ -336,6 +353,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
+    @Requirement("SL-26")
     void whenCreateRental_tooCloseToStartTime_shouldThrowException() {
         // Given - Tentar reservar com menos de 1 hora de antecedência
         validRequest.setStartTime(LocalDateTime.now().plusMinutes(30));
@@ -348,6 +366,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
+    @Requirement("SL-28")
     void whenCreateRental_tooFarInFuture_shouldThrowException() {
         // Given - Tentar reservar com mais de 30 dias de antecedência
         validRequest.setStartTime(LocalDateTime.now().plusDays(31).withHour(19).withMinute(0).withSecond(0).withNano(0));
@@ -360,6 +379,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
+    @Requirement("SL-29")
     void whenCreateRental_endTimeAfterClosingTime_shouldThrowException() {
         // Given - Termina depois do horário de fecho (22:00)
         RentalRequestDTO invalidRequest = new RentalRequestDTO();
@@ -377,6 +397,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
+    @Requirement("SL-29")
     void whenCancelRental_alreadyPassed_shouldThrowException() {
         // Given - Rental já passou
         mockRental.setStartTime(LocalDateTime.now().minusDays(2));
@@ -390,6 +411,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
+    @Requirement("SL-29")
     void whenCreateRental_partialOverlap_shouldThrowException() {
         // Given - Nova rental sobrepõe-se parcialmente com existente
         Rental existingRental = new Rental();
@@ -412,6 +434,7 @@ public class UnitRentalServiceTest {
     }
 
     @Test
+    @Requirement("SL-29")
     void whenCreateRental_exactTimeMatch_shouldThrowException() {
         // Given - Mesma hora exata de outra rental
         Rental existingRental = new Rental();

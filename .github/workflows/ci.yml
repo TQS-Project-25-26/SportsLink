@@ -10,6 +10,23 @@ jobs:
   test-and-analyze:
     name: Build, Test and Analyze
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: sportslink_test
+          POSTGRES_USER: sportslink
+          POSTGRES_PASSWORD: sportslink
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U sportslink -d sportslink_test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+
     defaults:
       run:
         working-directory: ./sportslink
@@ -40,22 +57,15 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Setup Firefox
-        uses: browser-actions/setup-firefox@v1
-        with:
-          firefox-version: 'latest'
-
-      - name: Download geckodriver
+      - name: Install Chrome (for Selenium functional tests)
         run: |
-          # Download latest version (v0.36.0 as of Feb 2025)
-          wget https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-linux64.tar.gz
-          tar -xzf geckodriver-v0.36.0-linux64.tar.gz
-          chmod +x geckodriver
-          sudo mv geckodriver /usr/local/bin/
-          
-          # Verify installation
-          geckodriver --version
-          firefox --version
+          sudo apt-get update
+          sudo apt-get install -y wget gnupg
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+          google-chrome --version
         working-directory: .
       
       - name: Compile project

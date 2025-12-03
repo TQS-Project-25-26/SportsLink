@@ -5,7 +5,6 @@ import tqs.sportslink.data.EquipmentRepository;
 import tqs.sportslink.data.model.Equipment;
 import tqs.sportslink.dto.EquipmentResponseDTO;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class EquipmentService {
@@ -23,7 +22,7 @@ public class EquipmentService {
         return equipments.stream()
             .filter(e -> "AVAILABLE".equals(e.getStatus()))
             .map(this::toDTO)
-            .collect(Collectors.toList());
+            .toList();
     }
     
     private EquipmentResponseDTO toDTO(Equipment equipment) {

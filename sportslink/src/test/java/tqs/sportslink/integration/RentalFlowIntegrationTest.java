@@ -38,10 +38,6 @@ import tqs.sportslink.dto.RentalRequestDTO;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-@TestPropertySource(properties = {
-    "spring.datasource.url=jdbc:h2:mem:testdb",
-    "spring.jpa.hibernate.ddl-auto=create-drop"
-})
 public class RentalFlowIntegrationTest {
 
     @LocalServerPort
@@ -64,7 +60,7 @@ public class RentalFlowIntegrationTest {
     private User testUser;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         RestAssured.port = port;
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 
@@ -108,7 +104,7 @@ public class RentalFlowIntegrationTest {
      * Teste do fluxo completo: buscar -> consultar equipamentos -> criar rental -> atualizar -> cancelar
      */
     @Test
-    public void whenCompleteRentalFlow_thenSuccess() {
+    void whenCompleteRentalFlow_thenSuccess() {
         // STEP 1: Maria busca facilities em Aveiro para Padel
         given()
             .queryParam("location", "Aveiro")
@@ -192,7 +188,7 @@ public class RentalFlowIntegrationTest {
      * Teste de detecção de conflito ao criar dois rentals no mesmo horário
      */
     @Test
-    public void whenCreateConflictingRental_thenStatus400() {
+    void whenCreateConflictingRental_thenStatus400() {
         LocalDateTime start = LocalDateTime.now().plusDays(2).withHour(14).withMinute(0).withSecond(0).withNano(0);
         LocalDateTime end = LocalDateTime.now().plusDays(2).withHour(16).withMinute(0).withSecond(0).withNano(0);
 
@@ -231,7 +227,7 @@ public class RentalFlowIntegrationTest {
      * Teste de criação de rental com facility inexistente
      */
     @Test
-    public void whenCreateRentalWithInvalidFacility_thenStatus400() {
+    void whenCreateRentalWithInvalidFacility_thenStatus400() {
         RentalRequestDTO request = new RentalRequestDTO();
         request.setUserId(testUser.getId());
         request.setFacilityId(9999L); // Facility inexistente
@@ -251,7 +247,7 @@ public class RentalFlowIntegrationTest {
      * Teste de criação de rental no passado
      */
     @Test
-    public void whenCreateRentalInPast_thenStatus400() {
+    void whenCreateRentalInPast_thenStatus400() {
         RentalRequestDTO request = new RentalRequestDTO();
         request.setUserId(testUser.getId());
         request.setFacilityId(testFacility.getId());
@@ -271,7 +267,7 @@ public class RentalFlowIntegrationTest {
      * Teste de cancelamento de rental inexistente
      */
     @Test
-    public void whenCancelInvalidRental_thenStatus400() {
+    void whenCancelInvalidRental_thenStatus400() {
         given()
         .when()
             .put("/api/rentals/rental/99999/cancel")
@@ -283,7 +279,7 @@ public class RentalFlowIntegrationTest {
      * Teste de update causando conflito com outro rental existente
      */
     @Test
-    public void whenUpdateRentalCausesConflict_thenStatus400() {
+    void whenUpdateRentalCausesConflict_thenStatus400() {
         // Criar primeiro rental 14:00-16:00
         RentalRequestDTO request1 = new RentalRequestDTO();
         request1.setUserId(testUser.getId());
@@ -337,7 +333,7 @@ public class RentalFlowIntegrationTest {
      * Teste de filtro de equipamentos AVAILABLE
      */
     @Test
-    public void whenGetEquipments_thenOnlyAvailableReturned() {
+    void whenGetEquipments_thenOnlyAvailableReturned() {
         // Criar equipamento UNAVAILABLE
         Equipment unavailable = new Equipment();
         unavailable.setName("Bola Furada");

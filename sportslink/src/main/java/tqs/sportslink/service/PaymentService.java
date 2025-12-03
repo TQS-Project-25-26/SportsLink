@@ -1,5 +1,5 @@
 package tqs.sportslink.service;
 
-public class PaymentService {
+public interface PaymentService {
     
 }

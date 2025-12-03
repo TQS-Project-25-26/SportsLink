@@ -25,6 +25,7 @@ public class DataInitializer {
     private static final String STATUS_ACTIVE = "ACTIVE";
     private static final String STATUS_AVAILABLE = "AVAILABLE";
     private static final String STATUS_UNAVAILABLE = "UNAVAILABLE";
+    private static final String CITY_AVEIRO = "Aveiro";
 
     @Bean
     CommandLineRunner initDatabase(FacilityRepository facilityRepository, EquipmentRepository equipmentRepository, UserRepository userRepository) {
@@ -59,7 +60,7 @@ public class DataInitializer {
             Facility facility1 = new Facility();
             facility1.setName("Campo de Futebol da Universidade de Aveiro");
             facility1.setSportsType(List.of(Sport.FOOTBALL));
-            facility1.setCity("Aveiro");
+            facility1.setCity(CITY_AVEIRO);
             facility1.setAddress("Campus Universitário de Santiago, 3810-193 Aveiro");
             facility1.setDescription("Campo de futebol sintético com iluminação");
             facility1.setPricePerHour(25.0);
@@ -71,7 +72,7 @@ public class DataInitializer {
             Facility facility2 = new Facility();
             facility2.setName("Padel Center Aveiro");
             facility2.setSportsType(List.of(Sport.PADEL));
-            facility2.setCity("Aveiro");
+            facility2.setCity(CITY_AVEIRO);
             facility2.setAddress("Rua do Clube dos Galitos, 3800-000 Aveiro");
             facility2.setDescription("Courts de padel cobertos e descobertos");
             facility2.setPricePerHour(15.0);
@@ -83,7 +84,7 @@ public class DataInitializer {
             Facility facility3 = new Facility();
             facility3.setName("Tennis Club Aveiro");
             facility3.setSportsType(List.of(Sport.TENNIS));
-            facility3.setCity("Aveiro");
+            facility3.setCity(CITY_AVEIRO);
             facility3.setAddress("Av. Dr. Lourenço Peixinho, 3800-000 Aveiro");
             facility3.setDescription("Courts de ténis com piso rápido");
             facility3.setPricePerHour(20.0);

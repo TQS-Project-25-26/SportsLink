@@ -1,5 +1,5 @@
 package tqs.sportslink.service;
 
-public class AdminService {
+public interface AdminService {
     
 }

@@ -1,5 +1,5 @@
 package tqs.sportslink.data;
 
-public class PaymentRepository {
+public interface PaymentRepository {
     
 }

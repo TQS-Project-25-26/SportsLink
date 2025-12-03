@@ -46,7 +46,7 @@ public class RentalControllerTest {
     private EquipmentService equipmentService;
 
     @Test
-    public void test_searchFacilities_returns200_validParams() throws Exception {
+    void test_searchFacilities_returns200_validParams() throws Exception {
         // Given - Maria's search scenario
         FacilityResponseDTO dto1 = new FacilityResponseDTO();
         dto1.setId(1L);
@@ -76,7 +76,7 @@ public class RentalControllerTest {
     }
 
     @Test
-    public void test_searchFacilities_returns200_emptyList_noMatches() throws Exception {
+    void test_searchFacilities_returns200_emptyList_noMatches() throws Exception {
         // Given
         when(facilityService.searchFacilities("Porto", "Tennis", "02:00")).thenReturn(List.of());
 
@@ -90,7 +90,7 @@ public class RentalControllerTest {
     }
 
     @Test
-    public void test_createRental_returns200_validRequest() throws Exception {
+    void test_createRental_returns200_validRequest() throws Exception {
         // Given - Maria booking Padel Club Aveiro
         RentalRequestDTO request = new RentalRequestDTO();
         request.setUserId(1L);
@@ -115,7 +115,7 @@ public class RentalControllerTest {
     }
 
     @Test
-    public void test_cancelRental_returns200_validId() throws Exception {
+    void test_cancelRental_returns200_validId() throws Exception {
         // Given
         RentalResponseDTO response = new RentalResponseDTO();
         response.setId(1L);
@@ -130,7 +130,7 @@ public class RentalControllerTest {
     }
 
     @Test
-    public void test_updateRental_returns200_validChanges() throws Exception {
+    void test_updateRental_returns200_validChanges() throws Exception {
         // Given
         RentalRequestDTO request = new RentalRequestDTO();
         request.setUserId(1L);
@@ -153,7 +153,7 @@ public class RentalControllerTest {
     }
 
     @Test
-    public void test_getRentalStatus_returns200_validId() throws Exception {
+    void test_getRentalStatus_returns200_validId() throws Exception {
         // Given
         RentalResponseDTO response = new RentalResponseDTO();
         response.setId(1L);
@@ -168,7 +168,7 @@ public class RentalControllerTest {
     }
 
     @Test
-    public void test_getEquipments_returns200_validFacilityId() throws Exception {
+    void test_getEquipments_returns200_validFacilityId() throws Exception {
         // Given - Maria checking equipment
         EquipmentResponseDTO eq1 = new EquipmentResponseDTO();
         eq1.setId(1L);

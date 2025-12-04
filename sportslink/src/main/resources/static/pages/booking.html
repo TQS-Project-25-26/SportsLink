@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Reservar - SportsLink</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="../css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="../pages/main_page_user.html">
+                <i class="material-icons me-2 text-accent">sports_soccer</i>
+                <span class="text-gradient fw-bold fs-4">SportsLink</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="container mt-4 mb-5">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="../pages/main_page_user.html">Home</a></li>
+                <li class="breadcrumb-item"><a href="#" id="breadcrumb-field">Campo</a></li>
+                <li class="breadcrumb-item active">Reservar</li>
+            </ol>
+        </nav>
+
+        <h2 class="fw-bold mb-4">Finalizar Reserva</h2>
+
+        <div class="row">
+            <!-- Formulário de Reserva -->
+            <div class="col-md-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">Detalhes da Reserva</h5>
+                        
+                        <form id="booking-form">
+                            <!-- Data e Hora -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Data</label>
+                                    <input type="date" class="form-control" id="booking-date" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Hora de Início</label>
+                                    <input type="time" class="form-control" id="start-time" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Duração (horas)</label>
+                                <select class="form-select" id="duration" required>
+                                    <option value="1">1 hora</option>
+                                    <option value="2">2 horas</option>
+                                    <option value="3">3 horas</option>
+                                    <option value="4">4 horas</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Hora de Fim</label>
+                                <input type="time" class="form-control" id="end-time" readonly>
+                            </div>
+
+                            <!-- User Info -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Seu Nome</label>
+                                <input type="text" class="form-control" id="user-name" placeholder="Nome completo" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Email</label>
+                                <input type="email" class="form-control" id="user-email" placeholder="email@exemplo.com" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Telefone</label>
+                                <input type="tel" class="form-control" id="user-phone" placeholder="+351 123 456 789" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Notas Adicionais (opcional)</label>
+                                <textarea class="form-control" id="notes" rows="3" placeholder="Alguma informação adicional?"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Equipamentos Adicionais -->
+                <div class="card shadow-sm mb-4" id="equipment-section">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0">Equipamentos Selecionados</h5>
+                            <a href="#" id="add-more-equipment" class="btn btn-sm btn-outline-primary">
+                                <i class="material-icons icon-small align-middle">add</i>
+                                Adicionar Mais
+                            </a>
+                        </div>
+                        <div id="selected-equipment-list">
+                            <!-- Equipment list will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumo da Reserva -->
+            <div class="col-md-4">
+                <div class="card shadow-sm sticky-top" style="top: 80px;">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">Resumo</h5>
+                        
+                        <!-- Campo Info -->
+                        <div class="mb-3 pb-3 border-bottom">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="material-icons text-accent me-2" id="summary-icon">sports_soccer</i>
+                                <strong id="summary-field-name">Loading...</strong>
+                            </div>
+                            <p class="text-muted small mb-0" id="summary-location">-</p>
+                        </div>
+
+                        <!-- Timing -->
+                        <div class="mb-3 pb-3 border-bottom">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Data:</span>
+                                <strong id="summary-date">-</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Horário:</span>
+                                <strong id="summary-time">-</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Duração:</span>
+                                <strong id="summary-duration">-</strong>
+                            </div>
+                        </div>
+
+                        <!-- Pricing -->
+                        <div class="mb-3 pb-3 border-bottom">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Campo:</span>
+                                <span id="field-cost">€0</span>
+                            </div>
+                            <div id="equipment-costs">
+                                <!-- Equipment costs will be rendered here -->
+                            </div>
+                        </div>
+
+                        <!-- Total -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0">Total:</h5>
+                            <h4 class="text-accent fw-bold mb-0" id="total-cost">€0</h4>
+                        </div>
+
+                        <button class="btn bg-accent text-white fw-bold w-100 py-3" id="btn-confirm-booking">
+                            Confirmar Reserva
+                            <i class="material-icons align-middle">check_circle</i>
+                        </button>
+
+                        <p class="text-muted small text-center mt-3 mb-0">
+                            Ao confirmar, você aceita nossos termos e condições
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center p-5">
+                    <i class="material-icons text-success" style="font-size: 80px;">check_circle</i>
+                    <h3 class="fw-bold mt-3 mb-3">Reserva Confirmada!</h3>
+                    <p class="text-muted mb-4">
+                        Sua reserva foi criada com sucesso.<br>
+                        ID da Reserva: <strong id="booking-id">-</strong>
+                    </p>
+                    <button class="btn bg-accent text-white fw-bold" onclick="window.location.href='../pages/main_page_user.html'">
+                        Voltar para Home
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (() => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const facilityId = urlParams.get('facilityId');
+            const equipmentIdsParam = urlParams.get('equipmentIds');
+            const equipmentIds = equipmentIdsParam ? equipmentIdsParam.split(',').map(Number) : [];
+
+            if (!facilityId) {
+                window.location.href = '../pages/main_page_user.html';
+                return;
+            }
+
+            let facilityData = null;
+            let selectedEquipments = [];
+
+            const sportIcons = {
+                'Football': 'sports_soccer',
+                'Padel': 'sports_tennis',
+                'Tennis': 'sports_tennis',
+                'Basketball': 'sports_basketball',
+                'Volleyball': 'sports_volleyball'
+            };
+
+            async function loadData() {
+                try {
+                    // Load facility
+                    const facilityRes = await fetch('/api/rentals/search');
+                    const facilities = await facilityRes.json();
+                    facilityData = facilities.find(f => f.id == facilityId);
+
+                    if (!facilityData) {
+                        alert('Campo não encontrado');
+                        window.location.href = '../pages/main_page_user.html';
+                        return;
+                    }
+
+                    // Load equipments if any selected
+                    if (equipmentIds.length > 0) {
+                        const equipmentRes = await fetch(`/api/rentals/facility/${facilityId}/equipments`);
+                        const allEquipments = await equipmentRes.json();
+                        selectedEquipments = allEquipments.filter(eq => equipmentIds.includes(eq.id));
+                    }
+
+                    updateUI();
+                } catch (err) {
+                    console.error('Error loading data:', err);
+                    alert('Erro ao carregar dados');
+                }
+            }
+
+            function updateUI() {
+                // Update breadcrumb and summary
+                document.getElementById('breadcrumb-field').textContent = facilityData.name;
+                document.getElementById('breadcrumb-field').href = `field_detail.html?id=${facilityId}`;
+                document.getElementById('summary-field-name').textContent = facilityData.name;
+                document.getElementById('summary-location').textContent = `${facilityData.city} - ${facilityData.address}`;
+                
+                const icon = sportIcons[facilityData.sportType] || 'sports';
+                document.getElementById('summary-icon').textContent = icon;
+
+                // Set default date (today)
+                const today = new Date();
+                const tomorrow = new Date(today);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                document.getElementById('booking-date').valueAsDate = tomorrow;
+                document.getElementById('booking-date').min = tomorrow.toISOString().split('T')[0];
+
+                // Set default time
+                document.getElementById('start-time').value = '10:00';
+                updateEndTime();
+
+                // Render selected equipments
+                renderEquipments();
+                updateSummary();
+            }
+
+            function renderEquipments() {
+                const container = document.getElementById('selected-equipment-list');
+                
+                if (selectedEquipments.length === 0) {
+                    container.innerHTML = '<p class="text-muted text-center py-3">Nenhum equipamento selecionado</p>';
+                    return;
+                }
+
+                container.innerHTML = selectedEquipments.map(eq => `
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <div>
+                            <strong>${eq.name}</strong>
+                            <p class="text-muted small mb-0">${eq.description || ''}</p>
+                        </div>
+                        <span class="fw-bold text-accent">€${eq.pricePerHour}/h</span>
+                    </div>
+                `).join('');
+            }
+
+            function updateEndTime() {
+                const startTime = document.getElementById('start-time').value;
+                const duration = parseInt(document.getElementById('duration').value);
+                
+                if (startTime) {
+                    const [hours, minutes] = startTime.split(':').map(Number);
+                    const endHours = (hours + duration) % 24;
+                    const endTime = `${String(endHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+                    document.getElementById('end-time').value = endTime;
+                    updateSummary();
+                }
+            }
+
+            function updateSummary() {
+                const date = document.getElementById('booking-date').value;
+                const startTime = document.getElementById('start-time').value;
+                const endTime = document.getElementById('end-time').value;
+                const duration = parseInt(document.getElementById('duration').value);
+
+                // Update summary display
+                if (date) {
+                    const dateObj = new Date(date + 'T00:00:00');
+                    document.getElementById('summary-date').textContent = 
+                        dateObj.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' });
+                }
+                
+                if (startTime && endTime) {
+                    document.getElementById('summary-time').textContent = `${startTime} - ${endTime}`;
+                }
+
+                document.getElementById('summary-duration').textContent = `${duration}h`;
+
+                // Calculate costs
+                const fieldCost = (facilityData?.pricePerHour || 0) * duration;
+                document.getElementById('field-cost').textContent = `€${fieldCost}`;
+
+                const equipmentCostsDiv = document.getElementById('equipment-costs');
+                let equipmentTotal = 0;
+
+                if (selectedEquipments.length > 0) {
+                    equipmentCostsDiv.innerHTML = selectedEquipments.map(eq => {
+                        const cost = eq.pricePerHour * duration;
+                        equipmentTotal += cost;
+                        return `
+                            <div class="d-flex justify-content-between mb-2 small">
+                                <span>${eq.name}:</span>
+                                <span>€${cost}</span>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    equipmentCostsDiv.innerHTML = '';
+                }
+
+                const total = fieldCost + equipmentTotal;
+                document.getElementById('total-cost').textContent = `€${total}`;
+            }
+
+            document.getElementById('start-time').addEventListener('change', updateEndTime);
+            document.getElementById('duration').addEventListener('change', () => {
+                updateEndTime();
+                updateSummary();
+            });
+            document.getElementById('booking-date').addEventListener('change', updateSummary);
+
+            document.getElementById('add-more-equipment').addEventListener('click', (e) => {
+                e.preventDefault();
+                const currentIds = selectedEquipments.map(eq => eq.id).join(',');
+                window.location.href = `equipments.html?facilityId=${facilityId}`;
+            });
+
+            document.getElementById('btn-confirm-booking').addEventListener('click', async () => {
+                const form = document.getElementById('booking-form');
+                
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+
+                const date = document.getElementById('booking-date').value;
+                const startTime = document.getElementById('start-time').value;
+                const endTime = document.getElementById('end-time').value;
+
+                const startDateTime = `${date}T${startTime}:00`;
+                const endDateTime = `${date}T${endTime}:00`;
+
+                const bookingData = {
+                    userId: 1, // Demo user
+                    facilityId: parseInt(facilityId),
+                    startTime: startDateTime,
+                    endTime: endDateTime,
+                    equipmentIds: selectedEquipments.map(eq => eq.id)
+                };
+
+                try {
+                    const response = await fetch('/api/rentals/rental', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(bookingData)
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.message || 'Erro ao criar reserva');
+                    }
+
+                    const result = await response.json();
+                    document.getElementById('booking-id').textContent = result.id;
+                    
+                    const modal = new bootstrap.Modal(document.getElementById('successModal'));
+                    modal.show();
+                } catch (err) {
+                    alert(`Erro: ${err.message}`);
+                    console.error('Booking error:', err);
+                }
+            });
+
+            loadData();
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SportsLink</title>
+    <!-- Bootstrap + icons for consistent styling with main page -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="brand">
+                <div class="logo">SL</div>
+                <h1>SportsLink</h1>
+            </div>
+            <p class="subtitle">Welcome — sign in to continue</p>
+
+            <form id="loginForm" novalidate>
+                <div class="input-group">
+                    <label for="email">Email</label>
+                    <input id="email" type="email" placeholder="your@example.com" required>
+                </div>
+
+                <div class="input-group password-group">
+                    <label for="password">Password</label>
+                    <input id="password" type="password" placeholder="••••••••" required>
+                    <button type="button" id="togglePwd" class="toggle">Show</button>
+                </div>
+
+                <a class="btn" href="pages/main_page_user.html" role="button">Sign In</a>
+            </form>
+
+            <div class="links">
+                <a href="#">Forgot password?</a>
+                <a href="#">Create account</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" aria-hidden="true">Just simulated login</div>
+    <script>
+        document.getElementById('togglePwd').addEventListener('click', function () {
+            const pwd = document.getElementById('password');
+            const showing = pwd.type === 'text';
+            pwd.type = showing ? 'password' : 'text';
+            this.textContent = showing ? 'Mostrar' : 'Ocultar';
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            e.preventDefault(); // não envia de verdade — apenas demonstração estética
+            const toast = document.getElementById('toast');
+            toast.setAttribute('aria-hidden', 'false');
+            toast.classList.add('visible');
+            setTimeout(() => {
+                toast.classList.remove('visible');
+                toast.setAttribute('aria-hidden', 'true');
+            }, 1800);
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

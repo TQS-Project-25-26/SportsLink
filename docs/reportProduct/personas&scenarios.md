@@ -88,7 +88,47 @@ António is very capable of managing web apps.
 
 ---
 
-**Persona 2: Maria Floro Silva- The Occasional Renter**
+**Demographics:**
+- Age: 23 years old
+- Occupation: Part of an association from Oporto's university
+- Location: Porto, Portugal
+- Education: Degree in Sports Sciences
+- Tech savviness: Moderate (uses email, basic spreadsheets, social media)
+
+**Background & Goals:**
+António is part of an association from Oporto's university that controls ownership of a few courts and sport spaces that are part of the university. As the university grows and more people want to schedule bookings for sport related spaces it became hard to keep track of all the spaces on a singular well kept envirnoment.
+
+**Pain Points:**
+- Currently manages bookings via WhatsApp messages and emails
+- Can't easily see which time slots are available at a glance
+- No systematic way to track available equipment
+- Human errors lead to idle time or congruent bookings
+
+**Technology Comfort:**
+António is very capable of managing web apps.
+
+**Key Quote:**
+"I want my courts full and my maintenance tracked. If I could see bookings in a calendar and know when equipment needs service, I'd be happy."
+
+---
+
+**Scenario 1: Antonio's thrusday evening**
+
+*Time: Thursday 5 PM. Francisco is at is office at university and opens SportsLink.*
+
+1. António opens SportsLink app/web on his phone
+2. Lands on "Owner Dashboard" showing university's spaces assigned to his association
+3. He sees there are requests to book the football court for tomorow at 6 PM
+4. Clicks on the request and accepts the booking
+5. New football equipment was delivered so it adds it to the correct space
+
+**Expected System Interactions:**
+- Manage bookings
+- Manage places and associated material
+
+---
+
+#### **Persona 3: Maria Floro Silva- The Occasional Renter**
 
 **Demographics:**
 - Age: 28 years old
@@ -115,7 +155,7 @@ Maria is a native smartphone user and expects modern, intuitive interfaces. She'
 
 ---
 
-**Scenario 2: Maria's Thursday Evening**
+**Scenario 3: Maria's Thursday Evening**
 
 *Time: Thursday 6 PM. Maria finishes work and decides to play padel. She opens SportsLink.*
 
@@ -141,7 +181,7 @@ Maria is a native smartphone user and expects modern, intuitive interfaces. She'
 
 ---
 
-**Persona 3: Pedro Gustiani Albertino- The Community Builder (Matchmaker)**
+#### **Persona 4: Pedro Gustiani Albertino- The Community Builder (Matchmaker)**
 
 **Demographics:**
 - Age: 24 years old
@@ -167,7 +207,7 @@ Pedro is very comfortable with tech and loves features that enhance his experien
 
 ---
 
-**Scenario 3: Pedro Discovers Community on SportsLink**
+**Scenario 4: Pedro Discovers Community on SportsLink**
 
 *Time: Wednesday 4 PM. Pedro is planning his evening. He opens SportsLink.*
 
@@ -190,7 +230,7 @@ Pedro is very comfortable with tech and loves features that enhance his experien
 
 ---
 
-**Persona 4: Ana Bernolli Jacoco - Platform Administrator**
+#### **Persona 5: Ana Bernolli Jacoco - Platform Administrator**
 
 **Demographics:**
 - Age: 42 years old
@@ -216,7 +256,7 @@ Ana is comfortable with business intelligence tools, dashboards, and spreadsheet
 
 ---
 
-**Scenario 4: Ana's Weekly Operations Review**
+**Scenario 5: Ana's Weekly Operations Review**
 
 *Time: Monday 10 AM. Ana logs into SportsLink Admin Dashboard for her weekly review.*
 
@@ -253,3 +293,51 @@ Ana is comfortable with business intelligence tools, dashboards, and spreadsheet
 - Export functionality creates PDF reports instantly
 
 ---
+
+### **Persona 6: Sofia Mendes - The Casual Group Organizer**
+
+**Demographics:**
+- Age: 35 years old
+- Occupation: HR Manager
+- Location: Lisbon, Portugal
+- Education: University degree (HR Management)
+- Tech savviness: Moderate to High (expert in social apps, uses calendar and messaging apps extensively)
+
+**Background & Goals:**
+Sofia organizes weekly **casual pick-up volleyball games** for her colleagues after work. She is responsible for securing a court and making sure they have the necessary gear (like a quality net or balls, if needed). Her goal is to quickly find an available facility, book a single time slot for the group, and easily add any required equipment rental (like 2 volleyballs) in the same transaction. She needs a simple way to confirm the booking and share the details with her group.
+
+**Pain Points:**
+- It's time-consuming to call facilities to check court availability and equipment availability.
+- Often, facilities only provide the court, and she has to bring or rent equipment separately.
+- Wants a single transaction for both the court and the associated gear.
+- Needs clear visibility on the total cost upfront.
+
+**Technology Comfort:**
+Sofia is comfortable with online booking and expects the system to be as easy as ordering takeout—fast, clear, and focused on the immediate transaction.
+
+**Key Quote:**
+"I just need a decent court and two good balls for Tuesday night. If I can book and pay for both in one place, that's perfect."
+
+---
+
+**Scenario 6 (Revised): Sofia Organizes a Weekly Game**
+
+*Time: Tuesday 1 PM. Sofia is coordinating the evening's game via WhatsApp. She opens SportsLink.*
+
+1. Opens SportsLink app/web and uses the "Find a Facility" search.
+2. Filters by "Volleyball," "Lisbon," and "Today, 7 PM - 9 PM."
+3. Finds "Lisbon Sports Arena" with an available court.
+4. Selects the 7 PM - 9 PM time slot.
+5. On the booking page, she sees an optional **Equipment Rental** section associated with the court.
+6. She selects: **"Volleyball (High Quality)"** and specifies **Quantity: 2**.
+7. The system instantly updates the cost summary: Court (€40) + 2 Volleyballs (€5 each) = **Total €50**.
+8. Completes the payment (Credit Card) quickly.
+9. Receives a simple confirmation screen with a single, unique link to share with her teammates via WhatsApp. The confirmation clearly lists the court time and the two reserved volleyballs.
+10. Closes the app, ready to share the good news with the team.
+
+**Expected System Interactions:**
+- Search and filter results are fast and accurate.
+- Equipment inventory is tied directly to the selected facility and time slot.
+- The cost summary clearly breaks down facility rental and equipment rental.
+- Payment is a single, unified transaction for both items.
+- Provides a simple, shareable confirmation link/message.

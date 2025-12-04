@@ -59,7 +59,7 @@ public class DataInitializer {
             // Create sample facilities
             Facility facility1 = new Facility();
             facility1.setName("Campo de Futebol da Universidade de Aveiro");
-            facility1.setSportsType(List.of(Sport.FOOTBALL));
+            facility1.setSports(List.of(Sport.FOOTBALL));
             facility1.setCity(CITY_AVEIRO);
             facility1.setAddress("Campus Universitário de Santiago, 3810-193 Aveiro");
             facility1.setDescription("Campo de futebol sintético com iluminação");
@@ -71,7 +71,7 @@ public class DataInitializer {
 
             Facility facility2 = new Facility();
             facility2.setName("Padel Center Aveiro");
-            facility2.setSportsType(List.of(Sport.PADEL));
+            facility2.setSports(List.of(Sport.PADEL));
             facility2.setCity(CITY_AVEIRO);
             facility2.setAddress("Rua do Clube dos Galitos, 3800-000 Aveiro");
             facility2.setDescription("Courts de padel cobertos e descobertos");
@@ -83,7 +83,7 @@ public class DataInitializer {
 
             Facility facility3 = new Facility();
             facility3.setName("Tennis Club Aveiro");
-            facility3.setSportsType(List.of(Sport.TENNIS));
+            facility3.setSports(List.of(Sport.TENNIS));
             facility3.setCity(CITY_AVEIRO);
             facility3.setAddress("Av. Dr. Lourenço Peixinho, 3800-000 Aveiro");
             facility3.setDescription("Courts de ténis com piso rápido");
@@ -95,7 +95,7 @@ public class DataInitializer {
 
             Facility facility4 = new Facility();
             facility4.setName("Basketball Arena Lisboa");
-            facility4.setSportsType(List.of(Sport.BASKETBALL));
+            facility4.setSports(List.of(Sport.BASKETBALL));
             facility4.setCity("Lisboa");
             facility4.setAddress("Rua do Ouro, 1100-000 Lisboa");
             facility4.setDescription("Pavilhão coberto com bancadas");
@@ -107,7 +107,7 @@ public class DataInitializer {
 
             Facility facility5 = new Facility();
             facility5.setName("Volleyball Beach Porto");
-            facility5.setSportsType(List.of(Sport.VOLLEYBALL));
+            facility5.setSports(List.of(Sport.VOLLEYBALL));
             facility5.setCity("Porto");
             facility5.setAddress("Praia de Matosinhos, 4450-000 Porto");
             facility5.setDescription("Campo de voleibol de praia");

@@ -82,7 +82,7 @@ public class RentalFlowIntegrationTest {
         // Criar facility de teste (Padel em Aveiro)
         testFacility = new Facility();
         testFacility.setName("Padel Club Aveiro");
-        testFacility.setSportsType(List.of(Sport.PADEL));
+        testFacility.setSports(List.of(Sport.PADEL));
         testFacility.setCity("Aveiro");
         testFacility.setAddress("Rua do Padel, 123");
         testFacility.setPricePerHour(15.0);

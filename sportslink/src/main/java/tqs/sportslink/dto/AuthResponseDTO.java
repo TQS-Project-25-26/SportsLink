@@ -1,20 +1,12 @@
 
 package tqs.sportslink.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
 public class AuthResponseDTO {
     private String token;
     private String role;
-
-    public AuthResponseDTO(String token, String role) {
-        this.token = token;
-        this.role = role;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public String getToken() {
-        return token;
-    }
 }

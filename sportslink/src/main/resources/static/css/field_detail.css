@@ -1,0 +1,182 @@
+/* Specific Styles for Field Detail Page */
+
+/* Base animations */
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Page Container styling */
+.container {
+    max-width: 1200px;
+}
+
+
+
+/* Main Field Card */
+#field-card {
+    background: #ffffff;
+    border: none;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    /* Glassmorphism subtle effect mainly on borders/shadows */
+}
+
+/* Header Section */
+#field-name {
+    font-size: 2.5rem;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    font-weight: 800;
+}
+
+#field-icon {
+    font-size: 64px;
+    color: var(--accent);
+    filter: drop-shadow(0 4px 10px rgba(255, 122, 0, 0.2));
+}
+
+#field-location {
+    font-weight: 500;
+    color: var(--accent);
+}
+
+/* Info Badges & Sections */
+.info-label {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+#field-hours,
+#field-rating,
+#field-address {
+    font-size: 1.1rem;
+    color: var(--text);
+    font-weight: 500;
+}
+
+#field-sport {
+    font-size: 0.9rem;
+    padding: 0.5em 1em;
+    border-radius: 50px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    box-shadow: 0 4px 12px rgba(255, 122, 0, 0.2);
+}
+
+/* Booking Section (Right column) */
+.bg-light.rounded {
+    background: linear-gradient(145deg, #f8fafc, #f1f5f9) !important;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    border-radius: 20px !important;
+    padding: 2rem !important;
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 1);
+}
+
+#field-price {
+    font-size: 2rem;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+    text-shadow: 0 2px 10px rgba(255, 122, 0, 0.1);
+}
+
+#btn-book {
+    border-radius: 50px;
+    padding: 16px 32px;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: linear-gradient(90deg, var(--accent), #ff9100);
+    box-shadow: 0 10px 30px rgba(255, 122, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+#btn-book:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 40px rgba(255, 122, 0, 0.4);
+    filter: brightness(1.1);
+}
+
+/* Equipment Section styling */
+.card-body h4 {
+    font-weight: 700;
+    color: var(--text);
+}
+
+#btn-view-equipments {
+    border-radius: 50px;
+    background-color: var(--text);
+    border: 2px solid var(--text);
+    color: white;
+    font-weight: 700;
+    padding: 12px 32px;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.9rem;
+}
+
+#btn-view-equipments:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 122, 0, 0.2);
+}
+
+.equipment-preview-card {
+    border: none !important;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.equipment-preview-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+.description-truncate {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.price-tag {
+    color: var(--accent);
+    font-size: 1.1rem;
+}
+
+/* Animations */
+#field-card {
+    animation: fadeUp 0.6s ease-out;
+}
+
+@media (max-width: 768px) {
+    #field-name {
+        font-size: 2rem;
+    }
+
+    #field-price {
+        font-size: 1.75rem;
+    }
+
+    .bg-light.rounded {
+        margin-top: 2rem;
+    }
+}

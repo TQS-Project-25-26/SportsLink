@@ -2,12 +2,27 @@ name: Testes + Xray Cloud
 
 on:
   push:
-    branches: [ main, dev, "feature/*" ]
+    branches: [ main, dev ]
   pull_request:
 
 jobs:
   test-and-report:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: sportslink_test
+          POSTGRES_USER: sportslink
+          POSTGRES_PASSWORD: sportslink
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U sportslink -d sportslink_test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     defaults:
       run:
         working-directory: sportslink
@@ -22,10 +37,20 @@ jobs:
           java-version: 21
           cache: maven
 
-      - name: Run tests
-        run: mvn -B test
+      - name: Wait for PostgreSQL
+        run: |
+          until pg_isready -h localhost -p 5432 -U sportslink; do
+            echo "Aguardando PostgreSQL..."
+            sleep 5
+          done
 
-      - name: Import results to Xray
+      - name: Run tests
+        run: mvn clean verify
+
+      # ===============================
+      # IMPORTA TESTES UNITÁRIOS (JUnit)
+      # ===============================
+      - name: Import Unit Test results to Xray
         uses: mikepenz/xray-action@v3
         with:
           username: ${{ secrets.XRAY_CLIENT_ID }}
@@ -34,6 +59,49 @@ jobs:
           testPaths: "**/target/surefire-reports/TEST-*.xml"
           projectKey: SL
           combineInSingleTestExec: true
+          testExecName: "Unit Tests - GitHub Actions"
+          testPlanKey: SL-103
           testEnvironments: GitHub-Actions
           revision: ${{ github.sha }}
+          verbose: true
           failOnImportError: true
+
+      # ===================================
+      # IMPORTA TESTES DE INTEGRAÇÃO (JUnit)
+      # ===================================
+      - name: Import Integration Test results to Xray
+        if: always()
+        uses: mikepenz/xray-action@v3
+        with:
+          username: ${{ secrets.XRAY_CLIENT_ID }}
+          password: ${{ secrets.XRAY_CLIENT_SECRET }}
+          testFormat: junit
+          testPaths: "**/target/failsafe-reports/TEST-*.xml"
+          projectKey: SL
+          combineInSingleTestExec: true
+          testExecName: "Integration Tests - GitHub Actions"
+          testPlanKey: SL-102
+          testEnvironments: GitHub-Actions
+          revision: ${{ github.sha }}
+          verbose: true
+          failOnImportError: false
+
+      # ===============================
+      # IMPORTA TESTES BDD (Cucumber JSON)
+      # ===============================
+      - name: Import Cucumber results to Xray
+        if: always()
+        uses: mikepenz/xray-action@v3
+        with:
+          username: ${{ secrets.XRAY_CLIENT_ID }}
+          password: ${{ secrets.XRAY_CLIENT_SECRET }}
+          testFormat: cucumber
+          testPaths: "**/target/cucumber-reports/*.json"
+          projectKey: SL
+          combineInSingleTestExec: true
+          testExecName: "BDD Tests - GitHub Actions"
+          testPlanKey: SL-104
+          testEnvironments: GitHub-Actions
+          revision: ${{ github.sha }}
+          verbose: true
+          failOnImportError: false

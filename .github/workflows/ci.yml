@@ -1,0 +1,184 @@
+name: CI/CD with SonarQube
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  test-and-analyze:
+    name: Build, Test and Analyze
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: sportslink_test
+          POSTGRES_USER: sportslink
+          POSTGRES_PASSWORD: sportslink
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U sportslink -d sportslink_test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+
+    defaults:
+      run:
+        working-directory: ./sportslink
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Shallow clones should be disabled for better SonarQube analysis
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: "zulu"
+
+      - name: Cache SonarQube packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Install Chrome (for Selenium functional tests)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget gnupg
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+          google-chrome --version
+        working-directory: .
+      
+      - name: Compile project
+        run: mvn clean compile -B
+
+      - name: Run Unit Tests (Repository & Service layer)
+        run: |
+          echo "========================================="
+          echo "Running Unit Tests (DataJpaTest, Service)"
+          echo "========================================="
+          mvn test -Dtest=**/unit/*Test -B
+        continue-on-error: true
+
+
+      - name: Run Integration Tests (API with MockMvc/RestAssured)
+        run: |
+          echo "========================================="
+          echo "Running Integration Tests (API)"
+          echo "========================================="
+          mvn test -Dtest=**/integration/*Test -B
+        continue-on-error: true
+
+
+      - name: Run Functional Tests (BDD with Selenium)
+        run: |
+          echo "========================================="
+          echo "Running Functional Tests (Cucumber + Selenium)"
+          echo "========================================="
+          mvn test -Dtest=RunCucumberTest -B
+        continue-on-error: true
+
+      - name: Display test results summary
+        if: always()
+        run: |
+          echo "========================================="
+          echo "Test Results Summary"
+          echo "========================================="
+          find target/surefire-reports -name "*.txt" -exec echo "File: {}" \; -exec cat {} \; || echo "No test reports found"
+
+      - name: Upload Surefire Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: sportslink/target/surefire-reports/
+          retention-days: 30
+
+      - name: Upload Cucumber Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-reports
+          path: sportslink/target/cucumber-reports/
+          retention-days: 30
+
+      - name: Upload Application Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: application-logs
+          path: sportslink/app.log
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Generate Coverage Report
+        run: mvn verify jacoco:report
+        
+
+      - name: Build and analyze with SonarQube
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn sonar:sonar \
+              -Dsonar.projectKey=TQS-Project-25-26_SportsLink \
+              -Dsonar.organization=sportslink \
+              -Dsonar.host.url=https://sonarcloud.io
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: sportslink/target/*.jar
+          retention-days: 1
+
+  deploy-to-vm:
+    name: Deploy to VM
+    needs: test-and-analyze
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: self-hosted
+    
+    steps:
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-jar
+          path: ./build-artifacts
+
+      - name: Deploy Application
+        run: |
+          # Stop the service
+          sudo systemctl stop sportslink.service || true
+          
+          # Create destination directory if it doesn't exist
+          mkdir -p ~/sportslink
+          
+          # Backup current version (optional)
+          # mv ~/sportslink/app.jar ~/sportslink/app.jar.bak || true
+
+          # Move new jar to destination
+          mv ./build-artifacts/*.jar ~/sportslink/app.jar
+          
+          # Start the service
+          sudo systemctl start sportslink.service
+          
+          # Verify status
+          sudo systemctl status sportslink.service --no-pager

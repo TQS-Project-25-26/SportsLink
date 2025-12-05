@@ -1,0 +1,26 @@
+.equipment-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.equipment-card.selected {
+    border: 2px solid var(--accent);
+    background-color: rgba(255, 122, 0, 0.05);
+}
+
+.equipment-card:hover:not(.unavailable) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.equipment-card.unavailable {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.selected-count {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}

@@ -274,7 +274,7 @@ body {
 
 .carousel-container,
 .categories {
-    max-width: 1400px;
+    max-width: 100%;
     margin-left: auto;
     margin-right: auto;
 }
@@ -352,9 +352,8 @@ body {
     overflow-y: hidden;
     scroll-snap-type: x mandatory;
     width: 100%;
-    /* Fix: Was 100vw causing overflow */
     padding-bottom: 20px;
-    /* Space for scrollbar/shadows */
+    gap: 16px;
 }
 
 /* Custom scrollbar for carousel */
@@ -374,16 +373,14 @@ body {
 /* Field image ocupa todo o card */
 .field-card .field-image {
     border-radius: 0;
-    /* remove borda arredondada */
     height: 200px;
-    /* ou ajuste conforme necessário */
 }
 
 /* Remove sombra de cards se quiser visual flat */
 .field-card {
-    box-shadow: none;
-    border: none;
-    background: transparent;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    background: white;
 }
 
 
@@ -395,6 +392,9 @@ body {
     position: relative;
     padding: 0;
     background: var(--card);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 /* Field image more prominent */
@@ -452,10 +452,29 @@ body {
     align-items: center;
     justify-content: center;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.favorite-btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 6px 18px rgba(255, 122, 0, 0.2);
 }
 
 .favorite-btn .material-icons {
     font-size: 18px;
+    color: var(--text);
+    transition: color 0.3s ease;
+}
+
+.favorite-btn:hover .material-icons {
+    color: #fff;
+}
+
+.favorite-btn.liked .material-icons {
+    color: var(--accent);
 }
 
 /* Search bar responsive fix */
@@ -533,4 +552,35 @@ body {
         flex-direction: column;
         gap: 8px;
     }
+}
+
+/* Pagination Styling */
+.pagination {
+    margin-top: 2rem;
+}
+
+.pagination .page-link {
+    color: var(--accent);
+    border-color: rgba(255, 122, 0, 0.2);
+    background-color: transparent;
+    transition: all 0.3s ease;
+}
+
+.pagination .page-link:hover:not(.disabled .page-link) {
+    color: #fff;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border-color: var(--accent);
+}
+
+.pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(255, 122, 0, 0.3);
+}
+
+.pagination .page-item.disabled .page-link {
+    color: rgba(107, 107, 107, 0.5);
+    border-color: rgba(107, 107, 107, 0.2);
+    cursor: not-allowed;
 }

@@ -77,9 +77,11 @@
   // UI render helpers
   function createFieldCard(field) {
     const div = document.createElement("div");
-    div.className = "field-card card border-0 shadow-sm";
-    div.style.minWidth = "300px";
+    div.className = "col";
     div.dataset.id = field.id ?? "";
+    
+    const card = document.createElement("div");
+    card.className = "field-card card border-0 shadow-sm h-100";
     
     // Map sportType to icon
     const sportIcons = {
@@ -91,7 +93,7 @@
     };
     const icon = sportIcons[field.sportType] || 'sports';
     
-    div.innerHTML = `
+    card.innerHTML = `
       <div class="field-image card-img-top d-flex align-items-center justify-content-center bg-gradient-orange">
         <i class="material-icons text-accent icon-large">${icon}</i>
       </div>
@@ -121,38 +123,144 @@
         </div>
       </div>
     `;
+    
     // attach handlers
-    div.querySelector(".btn-equip").addEventListener("click", async (e) => {
+    const favoriteBtn = card.querySelector(".favorite-btn");
+    favoriteBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const icon = favoriteBtn.querySelector(".material-icons");
+      favoriteBtn.classList.toggle("liked");
+      icon.textContent = favoriteBtn.classList.contains("liked") ? "favorite" : "favorite_border";
+    });
+    
+    card.querySelector(".btn-equip").addEventListener("click", async (e) => {
       e.stopPropagation();
       const fid = div.dataset.id;
       window.location.href = `equipments.html?facilityId=${fid}`;
     });
-    div.querySelector(".btn-rent").addEventListener("click", async (e) => {
+    card.querySelector(".btn-rent").addEventListener("click", async (e) => {
       e.stopPropagation();
       const fid = div.dataset.id;
       window.location.href = `field_detail.html?id=${fid}`;
     });
     
     // Click on card to view details
-    div.addEventListener("click", () => {
-      window.location.href = `field_detail.html?id=${field.id}`;
+    card.addEventListener("click", (e) => {
+      if (!e.target.closest('button')) {
+        window.location.href = `field_detail.html?id=${field.id}`;
+      }
     });
     
+    div.appendChild(card);
     return div;
   }
 
-  async function renderSearchResults(data = [], containerSelector = '#featured') {
-    const container = document.querySelector(containerSelector) || document.querySelector('.carousel');
+  // Pagination state
+  let allFacilities = [];
+  let currentPage = 1;
+  const itemsPerPage = 8; // 8 items per page (4x2 grid)
+  
+  function renderPagination() {
+    const totalPages = Math.ceil(allFacilities.length / itemsPerPage);
+    const paginationControls = document.getElementById('paginationControls');
+    if (!paginationControls) return;
+    
+    paginationControls.innerHTML = '';
+    
+    // Previous button
+    const prevLi = document.createElement('li');
+    prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+    prevLi.innerHTML = `<a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>`;
+    prevLi.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (currentPage > 1) {
+        currentPage--;
+        renderPage();
+        renderPagination();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+    paginationControls.appendChild(prevLi);
+    
+    // Page numbers
+    for (let i = 1; i <= totalPages; i++) {
+      const li = document.createElement('li');
+      li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+      li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+      li.addEventListener('click', (e) => {
+        e.preventDefault();
+        currentPage = i;
+        renderPage();
+        renderPagination();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      paginationControls.appendChild(li);
+    }
+    
+    // Next button
+    const nextLi = document.createElement('li');
+    nextLi.className = `page-item ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''}`;
+    nextLi.innerHTML = `<a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>`;
+    nextLi.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderPage();
+        renderPagination();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+    paginationControls.appendChild(nextLi);
+  }
+  
+  function renderPage() {
+    const container = document.querySelector('#featured');
     if (!container) return;
+    
+    // Clear but preserve grid classes
+    container.className = 'row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4';
     container.innerHTML = '';
-    if (!Array.isArray(data) || data.length === 0) {
+    
+    if (allFacilities.length === 0) {
       const empty = document.createElement('div');
-      empty.className = 'text-muted';
+      empty.className = 'col text-muted';
       empty.textContent = 'Nenhum resultado encontrado.';
       container.appendChild(empty);
       return;
     }
-    data.forEach(f => container.appendChild(createFieldCard(f)));
+    
+    const startIdx = (currentPage - 1) * itemsPerPage;
+    const endIdx = startIdx + itemsPerPage;
+    const pageData = allFacilities.slice(startIdx, endIdx);
+    
+    pageData.forEach(f => container.appendChild(createFieldCard(f)));
+  }
+  
+  async function renderSearchResults(data = []) {
+    allFacilities = Array.isArray(data) ? data : [];
+    currentPage = 1;
+    renderPage();
+    renderPagination();
+  }
+
+  // Render nearby facilities in carousel
+  function renderNearbyCarousel(data = []) {
+    const container = document.querySelector('#nearbyCarousel .carousel-item .d-flex');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    const facilities = Array.isArray(data) ? data : [];
+    
+    if (facilities.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'text-muted';
+      empty.textContent = 'Nenhuma facilidade próxima encontrada.';
+      container.appendChild(empty);
+      return;
+    }
+    
+    // For carousel, show max 3 items
+    facilities.slice(0, 3).forEach(f => container.appendChild(createFieldCard(f)));
   }
 
   // Simple equipment panel (appends to body)
@@ -315,7 +423,7 @@
     if (res.ok) {
       const body = Array.isArray(res.body) ? res.body : [];
       console.log('Nearby facilities data:', body);
-      renderSearchResults(body, "#nearbyCarousel .carousel-item .d-flex");
+      renderNearbyCarousel(body);
     }
   }
 

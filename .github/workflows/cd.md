@@ -41,4 +41,4 @@ Em vez de usar `./run.sh` (que para se fechar o terminal), usamos o `svc.sh` par
     sudo ./svc.sh uninstall
     ```
 
-> **Nota:** Os artefactos de deploy e logs ficarão localizados na pasta `_work` dentro do diretório do runner.
+

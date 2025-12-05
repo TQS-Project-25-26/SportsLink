@@ -150,6 +150,7 @@ jobs:
           path: sportslink/target/*.jar
           retention-days: 1
 
+
   deploy-to-vm:
     name: Deploy to VM
     needs: test-and-analyze
@@ -157,28 +158,26 @@ jobs:
     runs-on: self-hosted
     
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Download Build Artifact
         uses: actions/download-artifact@v4
         with:
           name: app-jar
-          path: ./build-artifacts
+          path: ./sportslink
 
-      - name: Deploy Application
+      - name: Deploy with Docker Compose
         run: |
-          # Stop the service
-          sudo systemctl stop sportslink.service || true
+          cd sportslink
           
-          # Create destination directory if it doesn't exist
-          mkdir -p ~/sportslink
+          # Rename downloaded artifact to match Dockerfile expectation
+          mv *.jar app.jar
           
-          # Backup current version (optional)
-          # mv ~/sportslink/app.jar ~/sportslink/app.jar.bak || true
-
-          # Move new jar to destination
-          mv ./build-artifacts/*.jar ~/sportslink/app.jar
+          # Build and start containers
+          # -d: Detached mode
+          # --build: Rebuild images (important to update the app image)
+          docker compose up -d --build
           
-          # Start the service
-          sudo systemctl start sportslink.service
-          
-          # Verify status
-          sudo systemctl status sportslink.service --no-pager
+          # Prune unused images to save space
+          docker image prune -f

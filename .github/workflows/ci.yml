@@ -142,3 +142,43 @@ jobs:
               -Dsonar.projectKey=TQS-Project-25-26_SportsLink \
               -Dsonar.organization=sportslink \
               -Dsonar.host.url=https://sonarcloud.io
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: sportslink/target/*.jar
+          retention-days: 1
+
+  deploy-to-vm:
+    name: Deploy to VM
+    needs: test-and-analyze
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: self-hosted
+    
+    steps:
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-jar
+          path: ./build-artifacts
+
+      - name: Deploy Application
+        run: |
+          # Stop the service
+          sudo systemctl stop sportslink.service || true
+          
+          # Create destination directory if it doesn't exist
+          mkdir -p ~/sportslink
+          
+          # Backup current version (optional)
+          # mv ~/sportslink/app.jar ~/sportslink/app.jar.bak || true
+
+          # Move new jar to destination
+          mv ./build-artifacts/*.jar ~/sportslink/app.jar
+          
+          # Start the service
+          sudo systemctl start sportslink.service
+          
+          # Verify status
+          sudo systemctl status sportslink.service --no-pager

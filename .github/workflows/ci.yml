@@ -177,7 +177,7 @@ jobs:
           # Build and start containers
           # -d: Detached mode
           # --build: Rebuild images (important to update the app image)
-          docker compose up -d --build
+          docker-compose up -d --build
           
           # Prune unused images to save space
           docker image prune -f

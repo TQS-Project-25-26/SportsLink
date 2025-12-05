@@ -243,7 +243,11 @@ public class FunctionalSteps {
         boolean selected = false;
         for (WebElement card : driver.findElements(By.cssSelector(".equipment-card"))) {
             if (!card.getDomAttribute("class").contains("unavailable")) {
-                card.click();
+                // Scroll to element and use JavaScript click
+                ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", card);
+                // Optional: small wait or just click via JS
+                ((JavascriptExecutor) driver).executeScript("arguments[0].click();", card);
+                
                 selected = true;
                 break;
             }

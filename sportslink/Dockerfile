@@ -1,0 +1,10 @@
+FROM openjdk:21-jdk-slim
+
+WORKDIR /app
+
+# Copy the jar file (we assume it's placed here by the CI pipeline)
+COPY app.jar app.jar
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

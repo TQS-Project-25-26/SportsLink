@@ -28,24 +28,39 @@ public class DataInitializer {
     private static final String CITY_AVEIRO = "Aveiro";
 
     @Bean
-    CommandLineRunner initDatabase(FacilityRepository facilityRepository, EquipmentRepository equipmentRepository, UserRepository userRepository) {
+    CommandLineRunner initDatabase(FacilityRepository facilityRepository,
+                                   EquipmentRepository equipmentRepository,
+                                   UserRepository userRepository) {
         return args -> {
             // Check if data already exists
             long count = facilityRepository.count();
             logger.info("Current facility count: {}", count);
-            
+
             if (count > 0) {
                 logger.info("Database already has {} facilities", count);
                 // List facilities for debugging
-                facilityRepository.findAll().forEach(f -> 
-                    logger.info("  - {} ({} in {})", f.getName(), f.getSports(), f.getCity())
+                facilityRepository.findAll().forEach(f ->
+                        logger.info("  - {} ({} in {})", f.getName(), f.getSports(), f.getCity())
                 );
                 return; // Data already initialized
             }
-            
+
             logger.info("Initializing sample data...");
 
-            // Create test user for functional tests
+            // =============================================================
+            // OWNER USER (criado primeiro → tipicamente ID = 1)
+            // =============================================================
+            User ownerUser = new User();
+            ownerUser.setEmail("owner@sportslink.com");
+            ownerUser.setPassword("password123"); // Plain text password for testing
+            ownerUser.setName("Owner User");
+            ownerUser.setPhone("911111111");
+            ownerUser.setRole(Role.OWNER);
+            ownerUser.setActive(true);
+            userRepository.save(ownerUser);
+            logger.info("Owner user created: owner@sportslink.com / password123 (id={})", ownerUser.getId());
+
+            // Create test user for functional tests (como tinhas)
             User testUser = new User();
             testUser.setEmail("test@sportslink.com");
             testUser.setPassword("password123"); // Plain text password for testing
@@ -54,7 +69,7 @@ public class DataInitializer {
             testUser.setRole(Role.RENTER);
             testUser.setActive(true);
             userRepository.save(testUser);
-            logger.info("Test user created: test@sportslink.com / password123");
+            logger.info("Test user created: test@sportslink.com / password123 (id={})", testUser.getId());
 
             // Create sample facilities
             Facility facility1 = new Facility();
@@ -200,8 +215,27 @@ public class DataInitializer {
             equipment8.setStatus(STATUS_UNAVAILABLE);
             equipmentRepository.save(equipment8);
 
+            // =============================================================
+            // ASSOCIAR TODAS AS FACILITIES AO OWNER
+            // =============================================================
+            facility1.setOwner(ownerUser);
+            facility2.setOwner(ownerUser);
+            facility3.setOwner(ownerUser);
+            facility4.setOwner(ownerUser);
+            facility5.setOwner(ownerUser);
+
+            facilityRepository.save(facility1);
+            facilityRepository.save(facility2);
+            facilityRepository.save(facility3);
+            facilityRepository.save(facility4);
+            facilityRepository.save(facility5);
+
+            logger.info("All sample facilities associated with owner user (id={})", ownerUser.getId());
+
+            // Logs finais
             logger.info("Database initialized with sample data!");
-            logger.info("   - 1 test user created");
+            logger.info("   - 1 owner user created");
+            logger.info("   - 1 renter test user created");
             logger.info("   - 5 facilities created");
             logger.info("   - 8 equipments created");
         };

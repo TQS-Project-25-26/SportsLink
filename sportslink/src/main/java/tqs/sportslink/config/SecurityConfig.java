@@ -23,6 +23,7 @@ public class SecurityConfig {
                 .requestMatchers("/", "/index.html", "/css/**", "/js/**", "/pages/**").permitAll()  // Recursos estáticos
                 .requestMatchers("/api/rentals/**").permitAll()  // API de rentals pública
                 .requestMatchers("/api/auth/**").permitAll()  // Acesso público ao AuthController
+                .requestMatchers("/api/owner/**").permitAll()   // permitir sem acesso JWT por enquanto TODO:remove after login implemented
                 .requestMatchers("/h2-console/**").permitAll()  // H2 console
                 .anyRequest().authenticated()  // Outros endpoints requerem autenticação
             )

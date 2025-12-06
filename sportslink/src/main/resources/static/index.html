@@ -9,23 +9,26 @@
     </head>
     <body class="login-page">
         <div class="login-card">
+            <!-- Toast Container -->
+            <div id="toastContainer" class="toast-container"></div>
+            
             <div class="brand">
                 <div class="logo">SL</div>
                 <div>
+                    <br>
                     <h4 class="brand-title">SportsLink</h4>
                     <div class="subtitle">Sign in to your account</div>
                 </div>
             </div>
 
-            <div id="formAlert" class="alert alert-danger form-alert" role="alert"></div>
-
+            
             <form id="loginForm" novalidate>
                 <div class="sl-input-group">
                     <label for="email">Email</label>
                     <input id="email" type="email" class="form-control" required />
                     <div class="invalid-feedback">Please enter a valid email.</div>
                 </div>
-
+                
                 <div class="sl-input-group">
                     <label for="password">Password</label>
                     <div class="input-with-button">
@@ -34,7 +37,8 @@
                     </div>
                     <div class="invalid-feedback">Password is required.</div>
                 </div>
-
+                
+                <div id="formAlert" class="alert alert-danger form-alert" role="alert" style="display: none;"></div>
                 <div class="d-flex justify-content-end mb-2">
                     <button id="submitBtn" type="submit" class="btn btn-primary">Sign in</button>
                 </div>
@@ -57,60 +61,110 @@
                 const formAlert = document.getElementById('formAlert');
                 const toggle = document.getElementById('toggleShow');
                 const submitBtn = document.getElementById('submitBtn');
-
+                const toastContainer = document.getElementById('toastContainer');
+                
                 toggle.addEventListener('click', () => {
                     password.type = password.type === 'password' ? 'text' : 'password';
                     toggle.textContent = password.type === 'password' ? 'Show' : 'Hide';
                 });
-
+                
                 function showToast(message, kind='info'){
-                            // simple fallback toast using alert if no toast system
-                            if (window.showBootstrapToast) { window.showBootstrapToast(message, kind); return; }
-                            alert(message);
-                        }
-
+                    if (!message) return;
+                    
+                    // Remove any existing toast
+                    const existingToast = toastContainer.querySelector('.custom-toast');
+                    if (existingToast) {
+                        existingToast.remove();
+                    }
+                    
+                    // Create toast element
+                    const toast = document.createElement('div');
+                    toast.className = `custom-toast toast-${kind}`;
+                    toast.textContent = message;
+                    
+                    toastContainer.appendChild(toast);
+                    
+                    // Auto remove after 3 seconds
+                    setTimeout(() => {
+                        toast.classList.add('toast-exit');
+                        setTimeout(() => toast.remove(), 300);
+                    }, 3000);
+                }
+                
                 form.addEventListener('submit', async (e) => {
                     e.preventDefault();
-                    // simple client validation
-                    email.classList.remove('is-invalid'); password.classList.remove('is-invalid'); formAlert.style.display='none';
-                    let ok = true;
-                    if (!email.value || !email.value.includes('@')) { email.classList.add('is-invalid'); ok = false; }
-                    if (!password.value) { password.classList.add('is-invalid'); ok = false; }
-                    if (!ok) return;
-
+                    
+                    // Clear previous validation states
+                    email.classList.remove('is-invalid');
+                    password.classList.remove('is-invalid');
+                    formAlert.style.display = 'none';
+                    
+                    // Client-side validation
+                    let isValid = true;
+                    
+                    if (!email.value || !email.value.includes('@')) {
+                        email.classList.add('is-invalid');
+                        isValid = false;
+                    }
+                    
+                    if (!password.value) {
+                        password.classList.add('is-invalid');
+                        isValid = false;
+                    }
+                    
+                    if (!isValid) {
+                        showToast('Please fill in all fields correctly', 'warning');
+                        return;
+                    }
+                    
+                    // Disable button and show loading state
                     submitBtn.disabled = true;
-                    try{
+                    const originalText = submitBtn.textContent;
+                    submitBtn.textContent = 'Logging in...';
+                    
+                    try {
                         const res = await fetch('/api/auth/login', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ email: email.value, password: password.value })
+                            body: JSON.stringify({ 
+                                email: email.value, 
+                                password: password.value 
+                            })
                         });
-
-                        if (res.status === 403) {
-                            // invalid credentials — show light inline feedback
-                            showToast('Invalid credentials. Please check your email and password.', 'warning');
-                            email.classList.add('is-invalid'); password.classList.add('is-invalid');
-                            submitBtn.disabled = false;
+                        
+                        const data = await res.json().catch(() => ({}));
+                        
+                        if (res.status === 403 || res.status === 401) {
+                            showToast('Invalid email or password', 'warning');
+                            email.classList.add('is-invalid');
+                            password.classList.add('is-invalid');
+                            password.value = ''; // Clear password for security
                             return;
                         }
-
+                        
                         if (!res.ok) {
-                            const txt = await res.text();
-                            formAlert.textContent = txt || 'Login error';
-                            formAlert.style.display = 'block';
-                            submitBtn.disabled = false;
+                            showToast(data.message || 'Unable to login. Please try again.', 'error');
                             return;
                         }
-
-                        const data = await res.json();
-                        localStorage.setItem('token', data.token);
-                        localStorage.setItem('role', data.role || 'USER');
-                        showToast('Login successful!', 'success');
-                        window.location.href = '/pages/main_page_user.html';
+                        
+                        // Success - store credentials
+                        sessionStorage.setItem('token', data.token);
+                        sessionStorage.setItem('role', data.role || 'USER');
+                        
+                        showToast('Welcome back!', 'success');
+                        
+                        // Redirect after a brief delay
+                        setTimeout(() => {
+                            window.location.href = '/pages/main_page_user.html';
+                        }, 500);
+                        
                     } catch (err) {
-                        formAlert.textContent = 'Network error. Please try again.';
-                        formAlert.style.display = 'block';
+                        console.error('Login error:', err);
+                        showToast('Connection error. Please check your internet.', 'error');
+                    } finally {
+                        // Re-enable button
                         submitBtn.disabled = false;
+                        submitBtn.textContent = originalText;
                     }
                 });
             })();

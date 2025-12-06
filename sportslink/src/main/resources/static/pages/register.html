@@ -7,13 +7,18 @@
   <title>SportsLink — Register</title>
   <link href="../css/styles.css" rel="stylesheet" />
   <link href="../css/login_register.css" rel="stylesheet" />
+
 </head>
 
 <body class="login-page">
   <div class="login-card">
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
     <div class="brand">
       <div class="logo">SL</div>
       <div>
+        <br />
         <h4 class="brand-title">Create Account</h4>
         <div class="subtitle">Sign up to reserve fields and equipment</div>
       </div>
@@ -36,8 +41,6 @@
         </label>
       </div>
 
-
-
       <div class="sl-input-group">
         <label for="phone">Phone</label>
         <input id="phone" type="tel" class="form-control" required />
@@ -53,7 +56,7 @@
       <div class="sl-input-group">
         <label for="password">Password</label>
         <input id="password" type="password" class="form-control" required minlength="4" />
-        <div class="invalid-feedback">Password is required (min 4 characters).</div>
+        <div class="invalid-feedback">Password is required (min 6 characters).</div>
       </div>
 
       <div class="d-flex justify-content-between align-items-center mb-2">
@@ -75,45 +78,78 @@
       const isOwner = document.getElementById("isOwner");
       const formAlert = document.getElementById("formAlert");
       const submitBtn = document.getElementById("submitBtn");
+      const toastContainer = document.getElementById("toastContainer");
 
       function showToast(message, kind = "info") {
-        if (window.showBootstrapToast) {
-          window.showBootstrapToast(message, kind);
-          return;
+        if (!message) return;
+
+        // Remove any existing toast
+        const existingToast = toastContainer.querySelector('.custom-toast');
+        if (existingToast) {
+          existingToast.remove();
         }
-        alert(message);
+
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = `custom-toast toast-${kind}`;
+        toast.textContent = message;
+
+        toastContainer.appendChild(toast);
+
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+          toast.classList.add('toast-exit');
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
       }
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
+        // Clear previous validation states
         [name, email, password, phone].forEach((field) => {
           field.classList.remove("is-invalid");
         });
         formAlert.style.display = "none";
 
-        let ok = true;
-        if (!name.value.trim()) {
-          name.classList.add("is-invalid"); ok = false;
-        }
-        if (!email.value.includes("@")) {
-          email.classList.add("is-invalid"); ok = false;
-        }
-        if (!phone.value.trim()) {
-          phone.classList.add("is-invalid"); ok = false;
-        }
-        if (!password.value || password.value.length < 4) {
-          password.classList.add("is-invalid"); ok = false;
-        }
-        if (!ok) return;
+        // Client-side validation
+        let isValid = true;
 
+        if (!name.value.trim()) {
+          name.classList.add("is-invalid");
+          isValid = false;
+        }
+
+        if (!email.value.includes("@")) {
+          email.classList.add("is-invalid");
+          isValid = false;
+        }
+
+        if (!phone.value.trim()) {
+          phone.classList.add("is-invalid");
+          isValid = false;
+        }
+
+        if (!password.value || password.value.length < 4) {
+          password.classList.add("is-invalid");
+          isValid = false;
+        }
+
+        if (!isValid) {
+          showToast('Please fill in all fields correctly', 'warning');
+          return;
+        }
+
+        // Disable button and show loading state
         submitBtn.disabled = true;
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Creating account...';
 
         // Build request dynamically
         const body = {
-          name: name.value,
-          email: email.value,
-          phone: phone.value,
+          name: name.value.trim(),
+          email: email.value.trim(),
+          phone: phone.value.trim(),
           password: password.value,
         };
 
@@ -129,32 +165,41 @@
             body: JSON.stringify(body),
           });
 
-          if (!res.ok) {
-            const txt = await res.text();
-            formAlert.textContent = txt || "Registration error";
-            formAlert.style.display = "block";
-            submitBtn.disabled = false;
+          const data = await res.json().catch(() => ({}));
+
+          if (res.status === 409) {
+            showToast('This email is already registered', 'warning');
+            email.classList.add('is-invalid');
             return;
           }
 
-          const data = await res.json();
-          localStorage.setItem("token", data.token);
-
-          if (data.role) {
-            localStorage.setItem("role", data.role);
+          if (!res.ok) {
+            showToast(data.message || 'Unable to create account. Please try again.', 'error');
+            return;
           }
 
-          showToast("Account created successfully!", "success");
+          // Success - store credentials
+          sessionStorage.setItem("token", data.token);
+          sessionStorage.setItem("role", data.role || "USER");
 
-          if (data.role === "OWNER") {
-            window.location.href = "/pages/main_page_owner.html";
-          } else {
-            window.location.href = "/pages/main_page_user.html";
-          }
+          showToast('Account created successfully!', 'success');
+
+          // Redirect after a brief delay
+          setTimeout(() => {
+            if (data.role === "OWNER") {
+              window.location.href = "/pages/main_page_owner.html";
+            } else {
+              window.location.href = "/pages/main_page_user.html";
+            }
+          }, 500);
+
         } catch (err) {
-          formAlert.textContent = "Network error. Please try again.";
-          formAlert.style.display = "block";
+          console.error('Registration error:', err);
+          showToast('Connection error. Please check your internet.', 'error');
+        } finally {
+          // Re-enable button
           submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
         }
       });
     })();

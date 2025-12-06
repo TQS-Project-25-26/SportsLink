@@ -1,65 +1,119 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SportsLink</title>
-    <!-- Bootstrap + icons for consistent styling with main page -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
-    <div class="container">
-        <div class="card">
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>SportsLink — Login</title>
+        <link href="./css/styles.css" rel="stylesheet">
+        <link href="./css/login_register.css" rel="stylesheet">
+    </head>
+    <body class="login-page">
+        <div class="login-card">
             <div class="brand">
                 <div class="logo">SL</div>
-                <h1>SportsLink</h1>
+                <div>
+                    <h4 class="brand-title">SportsLink</h4>
+                    <div class="subtitle">Sign in to your account</div>
+                </div>
             </div>
-            <p class="subtitle">Welcome — sign in to continue</p>
+
+            <div id="formAlert" class="alert alert-danger form-alert" role="alert"></div>
 
             <form id="loginForm" novalidate>
-                <div class="input-group">
+                <div class="sl-input-group">
                     <label for="email">Email</label>
-                    <input id="email" type="email" placeholder="your@example.com" required>
+                    <input id="email" type="email" class="form-control" required />
+                    <div class="invalid-feedback">Please enter a valid email.</div>
                 </div>
 
-                <div class="input-group password-group">
+                <div class="sl-input-group">
                     <label for="password">Password</label>
-                    <input id="password" type="password" placeholder="••••••••" required>
-                    <button type="button" id="togglePwd" class="toggle">Show</button>
+                    <div class="input-with-button">
+                        <input id="password" type="password" class="form-control" required />
+                        <button id="toggleShow" type="button" class="btn btn-outline-secondary">Show</button>
+                    </div>
+                    <div class="invalid-feedback">Password is required.</div>
                 </div>
 
-                <a class="btn" href="pages/main_page_user.html" role="button">Sign In</a>
+                <div class="d-flex justify-content-end mb-2">
+                    <button id="submitBtn" type="submit" class="btn btn-primary">Sign in</button>
+                </div>
             </form>
 
-            <div class="links">
-                <a href="#">Forgot password?</a>
-                <a href="#">Create account</a>
+            <div class="text-center mt-3">
+                <br>
+                Don't have an account? <a href="/pages/register.html" class="small-link">Create one</a>
             </div>
+
         </div>
-    </div>
 
-    <div id="toast" class="toast" aria-hidden="true">Just simulated login</div>
-    <script>
-        document.getElementById('togglePwd').addEventListener('click', function () {
-            const pwd = document.getElementById('password');
-            const showing = pwd.type === 'text';
-            pwd.type = showing ? 'password' : 'text';
-            this.textContent = showing ? 'Mostrar' : 'Ocultar';
-        });
+        <script src="/js/auth.js"></script>
+        <script>
+            // Login form handling
+            (function(){
+                const form = document.getElementById('loginForm');
+                const email = document.getElementById('email');
+                const password = document.getElementById('password');
+                const formAlert = document.getElementById('formAlert');
+                const toggle = document.getElementById('toggleShow');
+                const submitBtn = document.getElementById('submitBtn');
 
-        document.getElementById('loginForm').addEventListener('submit', function (e) {
-            e.preventDefault(); // não envia de verdade — apenas demonstração estética
-            const toast = document.getElementById('toast');
-            toast.setAttribute('aria-hidden', 'false');
-            toast.classList.add('visible');
-            setTimeout(() => {
-                toast.classList.remove('visible');
-                toast.setAttribute('aria-hidden', 'true');
-            }, 1800);
-        });
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+                toggle.addEventListener('click', () => {
+                    password.type = password.type === 'password' ? 'text' : 'password';
+                    toggle.textContent = password.type === 'password' ? 'Show' : 'Hide';
+                });
+
+                function showToast(message, kind='info'){
+                            // simple fallback toast using alert if no toast system
+                            if (window.showBootstrapToast) { window.showBootstrapToast(message, kind); return; }
+                            alert(message);
+                        }
+
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    // simple client validation
+                    email.classList.remove('is-invalid'); password.classList.remove('is-invalid'); formAlert.style.display='none';
+                    let ok = true;
+                    if (!email.value || !email.value.includes('@')) { email.classList.add('is-invalid'); ok = false; }
+                    if (!password.value) { password.classList.add('is-invalid'); ok = false; }
+                    if (!ok) return;
+
+                    submitBtn.disabled = true;
+                    try{
+                        const res = await fetch('/api/auth/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: email.value, password: password.value })
+                        });
+
+                        if (res.status === 403) {
+                            // invalid credentials — show light inline feedback
+                            showToast('Invalid credentials. Please check your email and password.', 'warning');
+                            email.classList.add('is-invalid'); password.classList.add('is-invalid');
+                            submitBtn.disabled = false;
+                            return;
+                        }
+
+                        if (!res.ok) {
+                            const txt = await res.text();
+                            formAlert.textContent = txt || 'Login error';
+                            formAlert.style.display = 'block';
+                            submitBtn.disabled = false;
+                            return;
+                        }
+
+                        const data = await res.json();
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('role', data.role || 'USER');
+                        showToast('Login successful!', 'success');
+                        window.location.href = '/pages/main_page_user.html';
+                    } catch (err) {
+                        formAlert.textContent = 'Network error. Please try again.';
+                        formAlert.style.display = 'block';
+                        submitBtn.disabled = false;
+                    }
+                });
+            })();
+        </script>
+    </body>
 </html>

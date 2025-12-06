@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="pt">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SportsLink — Register</title>
+  <link href="../css/styles.css" rel="stylesheet" />
+  <link href="../css/login_register.css" rel="stylesheet" />
+</head>
+
+<body class="login-page">
+  <div class="login-card">
+    <div class="brand">
+      <div class="logo">SL</div>
+      <div>
+        <h4 class="brand-title">Create Account</h4>
+        <div class="subtitle">Sign up to reserve fields and equipment</div>
+      </div>
+    </div>
+
+    <div id="formAlert" class="alert alert-danger form-alert" role="alert" style="display:none;"></div>
+
+    <form id="registerForm" novalidate>
+      <div class="sl-input-group">
+        <label for="name">Name</label>
+        <input id="name" type="text" class="form-control" required />
+        <div class="invalid-feedback">Name is required.</div>
+      </div>
+
+      <div class="sl-input-group">
+        <label for="isOwner">You want to be a field owner?</label>
+        <label class="switch">
+          <input id="isOwner" type="checkbox">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+
+
+      <div class="sl-input-group">
+        <label for="phone">Phone</label>
+        <input id="phone" type="tel" class="form-control" required />
+        <div class="invalid-feedback">Please enter a valid phone number.</div>
+      </div>
+
+      <div class="sl-input-group">
+        <label for="email">Email</label>
+        <input id="email" type="email" class="form-control" required />
+        <div class="invalid-feedback">Please enter a valid email.</div>
+      </div>
+
+      <div class="sl-input-group">
+        <label for="password">Password</label>
+        <input id="password" type="password" class="form-control" required minlength="4" />
+        <div class="invalid-feedback">Password is required (min 4 characters).</div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <a href="/index.html" class="small-link">Back to login</a>
+        <button id="submitBtn" type="submit" class="btn btn-primary">Register</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="../js/auth.js"></script>
+  <script>
+    // Registration page script
+      (function () {
+        const form = document.getElementById("registerForm");
+        const name = document.getElementById("name");
+        const email = document.getElementById("email");
+        const password = document.getElementById("password");
+        const phone = document.getElementById("phone");
+        const isOwner = document.getElementById("isOwner");
+        const formAlert = document.getElementById("formAlert");
+        const submitBtn = document.getElementById("submitBtn");
+
+        function showToast(message, kind = "info") {
+          if (window.showBootstrapToast) {
+            window.showBootstrapToast(message, kind);
+            return;
+          }
+          alert(message);
+        }
+
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          [name, email, password, phone].forEach((field) => {
+            field.classList.remove("is-invalid");
+          });
+          formAlert.style.display = "none";
+
+          let ok = true;
+          if (!name.value.trim()) {
+            name.classList.add("is-invalid");
+            ok = false;
+          }
+          if (!email.value.includes("@")) {
+            email.classList.add("is-invalid");
+            ok = false;
+          }
+          if (!phone.value.trim()) {
+            phone.classList.add("is-invalid");
+            ok = false;
+          }
+          if (!password.value || password.value.length < 4) {
+            password.classList.add("is-invalid");
+            ok = false;
+          }
+          if (!ok) return;
+
+          submitBtn.disabled = true;
+          try {
+            const res = await fetch("/api/auth/register", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                name: name.value,
+                email: email.value,
+                phone: phone.value,
+                password: password.value,
+                isOwner: isOwner.checked,
+              }),
+            });
+
+            if (!res.ok) {
+              const txt = await res.text();
+              formAlert.textContent = txt || "Registration error";
+              formAlert.style.display = "block";
+              submitBtn.disabled = false;
+              return;
+            }
+
+            const data = await res.json();
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("role", data.role || "USER");
+            showToast("Account created successfully!", "success");
+            window.location.href = "/pages/main_page_user.html";
+          } catch (err) {
+            formAlert.textContent = "Network error. Please try again.";
+            formAlert.style.display = "block";
+            submitBtn.disabled = false;
+          }
+        });
+      })();
+  </script>
+</body>
+
+</html>

@@ -1,25 +1,22 @@
 package tqs.sportslink.boundary;
 
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
-
-import tqs.sportslink.service.AuthService;
-import tqs.sportslink.dto.AuthResponseDTO;
-import tqs.sportslink.dto.UserRequestDTO;
-
-import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.validation.Valid;
+import tqs.sportslink.dto.AuthResponseDTO;
+import tqs.sportslink.dto.UserRequestDTO;
+import tqs.sportslink.service.AuthService;
 
 
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*")
-@Profile("production")
 public class AuthController {
 
     private final AuthService authService;

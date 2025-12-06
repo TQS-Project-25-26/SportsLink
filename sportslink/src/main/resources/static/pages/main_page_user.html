@@ -43,9 +43,17 @@
                         <a class="nav-link fw-medium" href="#favoritos">Favorites</a>
                     </li>
                 </ul>
-                <div class="d-flex">
-                    <div class="profile-icon d-flex align-items-center justify-content-center text-white fw-bold"
-                        title="Profile">U
+                <div class="d-flex align-items-center">
+                    <div class="dropdown">
+                        <button id="profileBtn" class="profile-icon d-flex align-items-center justify-content-center text-white fw-bold dropdown-toggle"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            U
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileBtn">
+                            <li><a class="dropdown-item" href="#" id="profileManage">Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" id="logoutBtn">Logout</a></li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -167,6 +175,40 @@
                 })
                 .catch(error => console.error('Error fetching sports:', error));
         });
+
+        // Helper para obter headers com Authorization quando existe token
+            function authHeaders(extra = {}) {
+                const token = localStorage.getItem('authToken');
+                const base = { 'Content-Type': 'application/json' };
+                if (token) base['Authorization'] = token;
+                return Object.assign(base, extra);
+            }
+
+            // Logout: chama endpoint e limpa token
+            document.addEventListener('DOMContentLoaded', () => {
+                const logoutBtn = document.getElementById('logoutBtn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        const token = localStorage.getItem('authToken');
+                        try {
+                            // chama logout no backend (se o token existir)
+                            if (token) {
+                                await fetch('/api/auth/logout', {
+                                    method: 'POST',
+                                    headers: { 'Authorization': token }
+                                }).catch(() => { /* ignore network error, still clear token */ });
+                            }
+                        } finally {
+                            // limpar tudo local
+                            localStorage.removeItem('authToken');
+                            localStorage.removeItem('userRole');
+                            // redirecionar para login
+                            window.location.href = '/';
+                        }
+                    });
+                }
+            });
     </script>
 </body>
 

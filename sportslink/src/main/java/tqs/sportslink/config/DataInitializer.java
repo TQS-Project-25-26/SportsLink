@@ -2,20 +2,21 @@ package tqs.sportslink.config;
 
 import java.time.LocalTime;
 import java.util.List;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import tqs.sportslink.data.FacilityRepository;
-import tqs.sportslink.data.EquipmentRepository;
-import tqs.sportslink.data.UserRepository;
-import tqs.sportslink.data.model.Facility;
-import tqs.sportslink.data.model.Equipment;
-import tqs.sportslink.data.model.Sport;
-import tqs.sportslink.data.model.User;
-import tqs.sportslink.data.model.Role;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import tqs.sportslink.data.EquipmentRepository;
+import tqs.sportslink.data.FacilityRepository;
+import tqs.sportslink.data.UserRepository;
+import tqs.sportslink.data.model.Equipment;
+import tqs.sportslink.data.model.Facility;
+import tqs.sportslink.data.model.Role;
+import tqs.sportslink.data.model.Sport;
+import tqs.sportslink.data.model.User;
 
 @Configuration
 public class DataInitializer {
@@ -159,17 +160,7 @@ public class DataInitializer {
             equipment4.setStatus(STATUS_AVAILABLE);
             equipmentRepository.save(equipment4);
 
-            // Create more equipment for variety
-            Equipment equipment5 = new Equipment();
-            equipment5.setName("Rede de Vólei");
-            equipment5.setType("Net");
-            equipment5.setDescription("Rede profissional de vólei");
-            equipment5.setFacility(facility5);
-            equipment5.setQuantity(2);
-            equipment5.setPricePerHour(8.0);
-            equipment5.setStatus(STATUS_AVAILABLE);
-            equipmentRepository.save(equipment5);
-
+            // Create sample equipment for facility3 (Tennis)
             Equipment equipment6 = new Equipment();
             equipment6.setName("Bola de Ténis");
             equipment6.setType("Ball");
@@ -190,20 +181,52 @@ public class DataInitializer {
             equipment7.setStatus(STATUS_AVAILABLE);
             equipmentRepository.save(equipment7);
 
+            // Create sample equipment for facility4 (Basketball)
             Equipment equipment8 = new Equipment();
-            equipment8.setName("Protetor de Joelho");
-            equipment8.setType("Protection");
-            equipment8.setDescription("Protetor de joelho para vólei");
-            equipment8.setFacility(facility5);
-            equipment8.setQuantity(0);
+            equipment8.setName("Bola de Basquete");
+            equipment8.setType("Ball");
+            equipment8.setDescription("Bola oficial Spalding NBA");
+            equipment8.setFacility(facility4);
+            equipment8.setQuantity(12);
             equipment8.setPricePerHour(3.0);
-            equipment8.setStatus(STATUS_UNAVAILABLE);
+            equipment8.setStatus(STATUS_AVAILABLE);
             equipmentRepository.save(equipment8);
+
+            Equipment equipment9 = new Equipment();
+            equipment9.setName("Colete de Treino");
+            equipment9.setType("Vest");
+            equipment9.setDescription("Coletes reversíveis para treino");
+            equipment9.setFacility(facility4);
+            equipment9.setQuantity(24);
+            equipment9.setPricePerHour(1.5);
+            equipment9.setStatus(STATUS_AVAILABLE);
+            equipmentRepository.save(equipment9);
+
+            // Create more equipment for variety
+            Equipment equipment5 = new Equipment();
+            equipment5.setName("Rede de Vólei");
+            equipment5.setType("Net");
+            equipment5.setDescription("Rede profissional de vólei");
+            equipment5.setFacility(facility5);
+            equipment5.setQuantity(2);
+            equipment5.setPricePerHour(8.0);
+            equipment5.setStatus(STATUS_AVAILABLE);
+            equipmentRepository.save(equipment5);
+
+            Equipment equipment10 = new Equipment();
+            equipment10.setName("Protetor de Joelho");
+            equipment10.setType("Protection");
+            equipment10.setDescription("Protetor de joelho para vólei");
+            equipment10.setFacility(facility5);
+            equipment10.setQuantity(0);
+            equipment10.setPricePerHour(3.0);
+            equipment10.setStatus(STATUS_UNAVAILABLE);
+            equipmentRepository.save(equipment10);
 
             logger.info("Database initialized with sample data!");
             logger.info("   - 1 test user created");
             logger.info("   - 5 facilities created");
-            logger.info("   - 8 equipments created");
+            logger.info("   - 10 equipments created");
         };
     }
 }

@@ -274,7 +274,7 @@ body {
 
 .carousel-container,
 .categories {
-    max-width: 1400px;
+    max-width: 100%;
     margin-left: auto;
     margin-right: auto;
 }
@@ -352,9 +352,8 @@ body {
     overflow-y: hidden;
     scroll-snap-type: x mandatory;
     width: 100%;
-    /* Fix: Was 100vw causing overflow */
     padding-bottom: 20px;
-    /* Space for scrollbar/shadows */
+    gap: 16px;
 }
 
 /* Custom scrollbar for carousel */
@@ -374,16 +373,14 @@ body {
 /* Field image ocupa todo o card */
 .field-card .field-image {
     border-radius: 0;
-    /* remove borda arredondada */
     height: 200px;
-    /* ou ajuste conforme necessário */
 }
 
 /* Remove sombra de cards se quiser visual flat */
 .field-card {
-    box-shadow: none;
-    border: none;
-    background: transparent;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    background: white;
 }
 
 
@@ -395,6 +392,9 @@ body {
     position: relative;
     padding: 0;
     background: var(--card);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 /* Field image more prominent */
@@ -452,10 +452,29 @@ body {
     align-items: center;
     justify-content: center;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.favorite-btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 6px 18px rgba(255, 122, 0, 0.2);
 }
 
 .favorite-btn .material-icons {
     font-size: 18px;
+    color: var(--text);
+    transition: color 0.3s ease;
+}
+
+.favorite-btn:hover .material-icons {
+    color: #fff;
+}
+
+.favorite-btn.liked .material-icons {
+    color: var(--accent);
 }
 
 /* Search bar responsive fix */
@@ -514,23 +533,183 @@ body {
     opacity: 1;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .hero-title {
-        font-size: 2rem;
+/* Login page specific overrides (moved from inline index.html) */
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    background:
+        radial-gradient(600px 360px at 10% 10%, rgba(255,122,0,0.03), transparent),
+        linear-gradient(180deg, #ffffff, #fbfbfb);
+}
+.login-card {
+    width: 100%;
+    max-width: 420px;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 12px 40px rgba(2,6,23,0.06);
+    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.96));
+}
+.brand {
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:8px;
+}
+.logo {
+    width:52px;
+    height:52px;
+    border-radius:12px;
+    background:linear-gradient(135deg,#ff7a00,#c2803d);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:800;
+    font-size:18px;
+    box-shadow: 0 8px 24px rgba(2,6,23,0.06);
+}
+.subtitle {
+    color:var(--muted);
+    margin-bottom:18px;
+}
+.form-alert {
+    display:none;
+    margin-bottom:12px;
+}
+.btn-primary {
+    background: linear-gradient(90deg,#ff7a00,#c2803d);
+    border:none;
+    box-shadow: 0 10px 30px rgba(255,122,0,0.12);
+}
+.btn-primary:disabled {
+    opacity:0.7;
+}
+.small-link {
+    font-size:13px;
+}
+
+/* --- Namespaced form styles to avoid overriding Bootstrap globals --- */
+.sl-input-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 14px;
+}
+.sl-input-group label {
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: var(--muted);
+}
+.sl-input-group .form-control {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    background: var(--glass);
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+}
+.sl-input-group .form-control:focus {
+    box-shadow: 0 6px 18px rgba(255, 122, 0, 0.06);
+    border-color: rgba(255, 122, 0, 0.12);
+}
+
+.input-with-button {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+/* make sure input expands and button keeps same height */
+.input-with-button .form-control {
+    flex: 1 1 auto;
+    margin: 0;
+}
+/* Reduced Show button size, tighter padding and font-size for better fit */
+.input-with-button .btn {
+    padding: 4px 8px;
+    height: calc(1.9rem + 2px); /* smaller than default */
+    font-size: 0.85rem;
+    align-self: stretch;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+/* smaller visual tweak for outline button to match card */
+.input-with-button .btn-outline-secondary {
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: transparent;
+    color: var(--text);
+    transition: all 0.3s ease;
+}
+
+.input-with-button .btn-outline-secondary:hover {
+    background: rgba(255, 122, 0, 0.06);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* Ajustes finos para o formulário de login */
+.login-card {
+    padding: 32px 28px;
+}
+
+.btn-primary {
+    padding: 12px 0;
+    font-size: 16px;
+    border-radius: 10px;
+}
+
+.form-control {
+    padding: 12px 14px;
+    font-size: 15px;
+    border-radius: 8px;
+}
+
+.form-alert {
+    display: none;
+    margin-bottom: 16px;
+    padding: 10px;
+    border-radius: 8px;
+    background: rgba(255, 122, 0, 0.1);
+    color: var(--accent);
+    font-weight: 500;
+    text-align: center;
+}
+
+.material-icons {
+    font-size: 24px;
+    vertical-align: middle;
+    line-height: 1;
+}
+
+.btn-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.btn-link:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 576px) {
+    .login-card {
+        padding: 24px 16px;
     }
 
-    .carousel-control-prev,
-    .carousel-control-next {
-        display: none;
+    .btn-primary {
+        font-size: 14px;
     }
 
-    .field-card {
-        min-width: 280px;
+    .form-control {
+        font-size: 14px;
     }
 
-    .search-bar {
-        flex-direction: column;
-        gap: 8px;
+    .material-icons {
+        font-size: 20px;
     }
 }

@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="pt">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SportsLink — Register</title>
+  <link href="../css/styles.css" rel="stylesheet" />
+  <link href="../css/login_register.css" rel="stylesheet" />
+
+</head>
+
+<body class="login-page">
+  <div class="login-card">
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <div class="brand">
+      <div class="logo">SL</div>
+      <div>
+        <br />
+        <h4 class="brand-title">Create Account</h4>
+        <div class="subtitle">Sign up to reserve fields and equipment</div>
+      </div>
+    </div>
+
+    <div id="formAlert" class="alert alert-danger form-alert" role="alert" style="display:none;"></div>
+
+    <form id="registerForm" novalidate>
+      <div class="sl-input-group">
+        <label for="name">Name</label>
+        <input id="name" type="text" class="form-control" required />
+        <div class="invalid-feedback">Name is required.</div>
+      </div>
+
+      <div class="sl-input-group">
+        <label for="isOwner">You want to be a field owner?</label>
+        <label class="switch">
+          <input id="isOwner" type="checkbox">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="sl-input-group">
+        <label for="phone">Phone</label>
+        <input id="phone" type="tel" class="form-control" required />
+        <div class="invalid-feedback">Please enter a valid phone number.</div>
+      </div>
+
+      <div class="sl-input-group">
+        <label for="email">Email</label>
+        <input id="email" type="email" class="form-control" required />
+        <div class="invalid-feedback">Please enter a valid email.</div>
+      </div>
+
+      <div class="sl-input-group">
+        <label for="password">Password</label>
+        <input id="password" type="password" class="form-control" required minlength="4" />
+        <div class="invalid-feedback">Password is required (min 6 characters).</div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <a href="/index.html" class="small-link">Back to login</a>
+        <button id="submitBtn" type="submit" class="btn btn-primary">Register</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="../js/auth.js"></script>
+  <script>
+    // Registration page script
+    (function () {
+      const form = document.getElementById("registerForm");
+      const name = document.getElementById("name");
+      const email = document.getElementById("email");
+      const password = document.getElementById("password");
+      const phone = document.getElementById("phone");
+      const isOwner = document.getElementById("isOwner");
+      const formAlert = document.getElementById("formAlert");
+      const submitBtn = document.getElementById("submitBtn");
+      const toastContainer = document.getElementById("toastContainer");
+
+      function showToast(message, kind = "info") {
+        if (!message) return;
+
+        // Remove any existing toast
+        const existingToast = toastContainer.querySelector('.custom-toast');
+        if (existingToast) {
+          existingToast.remove();
+        }
+
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = `custom-toast toast-${kind}`;
+        toast.textContent = message;
+
+        toastContainer.appendChild(toast);
+
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+          toast.classList.add('toast-exit');
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        // Clear previous validation states
+        [name, email, password, phone].forEach((field) => {
+          field.classList.remove("is-invalid");
+        });
+        formAlert.style.display = "none";
+
+        // Client-side validation
+        let isValid = true;
+
+        if (!name.value.trim()) {
+          name.classList.add("is-invalid");
+          isValid = false;
+        }
+
+        if (!email.value.includes("@")) {
+          email.classList.add("is-invalid");
+          isValid = false;
+        }
+
+        if (!phone.value.trim()) {
+          phone.classList.add("is-invalid");
+          isValid = false;
+        }
+
+        if (!password.value || password.value.length < 4) {
+          password.classList.add("is-invalid");
+          isValid = false;
+        }
+
+        if (!isValid) {
+          showToast('Please fill in all fields correctly', 'warning');
+          return;
+        }
+
+        // Disable button and show loading state
+        submitBtn.disabled = true;
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Creating account...';
+
+        // Build request dynamically
+        const body = {
+          name: name.value.trim(),
+          email: email.value.trim(),
+          phone: phone.value.trim(),
+          password: password.value,
+        };
+
+        // Add role only if checkbox is checked
+        if (isOwner.checked) {
+          body.role = "OWNER";
+        }
+
+        try {
+          const res = await fetch("/api/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+
+          const data = await res.json().catch(() => ({}));
+
+          if (res.status === 409) {
+            showToast('This email is already registered', 'warning');
+            email.classList.add('is-invalid');
+            return;
+          }
+
+          if (!res.ok) {
+            showToast(data.message || 'Unable to create account. Please try again.', 'error');
+            return;
+          }
+
+          // Success - store credentials
+          sessionStorage.setItem("token", data.token);
+          sessionStorage.setItem("role", data.role || "USER");
+
+          showToast('Account created successfully!', 'success');
+
+          // Redirect after a brief delay
+          setTimeout(() => {
+            if (data.role === "OWNER") {
+              window.location.href = "/pages/main_page_owner.html";
+            } else {
+              window.location.href = "/pages/main_page_user.html";
+            }
+          }, 500);
+
+        } catch (err) {
+          console.error('Registration error:', err);
+          showToast('Connection error. Please check your internet.', 'error');
+        } finally {
+          // Re-enable button
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+        }
+      });
+    })();
+  </script>
+
+</body>
+
+</html>

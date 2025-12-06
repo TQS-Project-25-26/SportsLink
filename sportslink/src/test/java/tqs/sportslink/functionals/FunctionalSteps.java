@@ -1,18 +1,24 @@
 package tqs.sportslink.functionals;
 
-import io.cucumber.java.After;
-import io.cucumber.java.en.*;
-
-import org.openqa.selenium.*;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.support.ui.*;
-import org.springframework.boot.test.web.server.LocalServerPort;
-
-
 import java.time.Duration;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.springframework.boot.test.web.server.LocalServerPort;
+
+import io.cucumber.java.After;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 
 public class FunctionalSteps {
 
@@ -223,8 +229,21 @@ public class FunctionalSteps {
 
     @Then("I should see at least one equipment card")
     public void see_equipment_cards() {
-        wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector(".equipment-card")));
-        assertFalse(driver.findElements(By.cssSelector(".equipment-card")).isEmpty());
+        // Wait for loading to disappear (API call completed)
+        wait.until(webDriver -> {
+            WebElement loading = webDriver.findElement(By.id("loading"));
+            return loading != null && "none".equals(loading.getCssValue("display"));
+        });
+        
+        // Wait for either equipment cards OR no-results message
+        wait.until(webDriver -> 
+            !webDriver.findElements(By.cssSelector(".equipment-card")).isEmpty() ||
+            webDriver.findElement(By.id("no-results")).isDisplayed()
+        );
+        
+        // Assert that we have equipment cards (not the no-results message)
+        assertFalse(driver.findElements(By.cssSelector(".equipment-card")).isEmpty(),
+            "Expected to find equipment cards, but none were found. Check if the facility has equipment.");
     }
 
     // ------------------------------

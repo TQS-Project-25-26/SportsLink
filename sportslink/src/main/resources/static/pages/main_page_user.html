@@ -14,6 +14,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="../css/styles.css" rel="stylesheet">
+    
+    <script>
+        // Verificar autenticação ANTES de carregar a página
+        (function() {
+            // Tentar obter token do localStorage
+            const token = localStorage.getItem('token');
+            
+            // Se não houver token, redirecionar para login
+            if (!token) {
+                window.location.href = '/index.html';
+            }
+        })();
+    </script>
 </head>
 
 <body>
@@ -37,7 +50,7 @@
                         <a class="nav-link fw-medium" href="#reservas">My Bookings</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link fw-medium" href="#explorar">Explore Fields</a>
+                        <a class="nav-link fw-medium" href="#explorar" id="facilitiesNavLink">Explore Fields</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link fw-medium" href="#favoritos">Favorites</a>
@@ -124,6 +137,9 @@
         integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
         crossorigin="anonymous"></script>
 
+    <!-- Auth helpers (JWT, logout, toasts) -->
+    <script src="../js/auth.js"></script>
+
     <!-- App JS -->
     <script src="../js/app.js"></script>
 
@@ -174,38 +190,26 @@
                     });
                 })
                 .catch(error => console.error('Error fetching sports:', error));
+
+            // Verificar role do utilizador e alterar navbar
+            const role = getRole();
+            if (role === 'OWNER') {
+                // Se for OWNER, alterar o link "Explore Fields" para "My Facilities"
+                const facilitiesLink = document.getElementById('facilitiesNavLink');
+                if (facilitiesLink) {
+                    facilitiesLink.textContent = 'My Facilities';
+                    facilitiesLink.href = 'owner_dashboard.html';
+                }
+            }
         });
 
-        // Helper para obter headers com Authorization quando existe token
-            function authHeaders(extra = {}) {
-                const token = localStorage.getItem('authToken');
-                const base = { 'Content-Type': 'application/json' };
-                if (token) base['Authorization'] = token;
-                return Object.assign(base, extra);
-            }
-
-            // Logout: chama endpoint e limpa token
+            // Logout: usa função centralizada de auth.js
             document.addEventListener('DOMContentLoaded', () => {
                 const logoutBtn = document.getElementById('logoutBtn');
                 if (logoutBtn) {
-                    logoutBtn.addEventListener('click', async (e) => {
+                    logoutBtn.addEventListener('click', (e) => {
                         e.preventDefault();
-                        const token = localStorage.getItem('authToken');
-                        try {
-                            // chama logout no backend (se o token existir)
-                            if (token) {
-                                await fetch('/api/auth/logout', {
-                                    method: 'POST',
-                                    headers: { 'Authorization': token }
-                                }).catch(() => { /* ignore network error, still clear token */ });
-                            }
-                        } finally {
-                            // limpar tudo local
-                            localStorage.removeItem('authToken');
-                            localStorage.removeItem('userRole');
-                            // redirecionar para login
-                            window.location.href = '/';
-                        }
+                        logout();
                     });
                 }
             });

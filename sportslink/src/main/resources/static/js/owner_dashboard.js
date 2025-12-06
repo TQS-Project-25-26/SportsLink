@@ -24,7 +24,7 @@ function notify(message, kind = 'info') {
 // ==================================
 document.addEventListener("DOMContentLoaded", async () => {
     // Verificar se há token
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token = getToken();
     if (!token) {
         window.location.href = '/index.html';
         return;

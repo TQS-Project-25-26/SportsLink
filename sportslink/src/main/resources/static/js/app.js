@@ -22,7 +22,27 @@
 
   async function apiFetch(path, options = {}) {
     try {
-      const res = await fetch(path, options);
+      // Adicionar headers de autenticação se não estiverem já presentes
+      const headers = options.headers || {};
+      const allHeaders = {
+        ...authHeaders(),  // Inclui Authorization e Content-Type
+        ...headers
+      };
+      
+      const fetchOptions = {
+        ...options,
+        headers: allHeaders,
+        credentials: 'include'  // Incluir cookies
+      };
+
+      const res = await fetch(path, fetchOptions);
+      
+      // Se 403 Forbidden, redirecionar para login
+      if (res.status === 403) {
+        logout();
+        return { ok: false, status: 403, body: { message: "Session expired" } };
+      }
+      
       // try to parse JSON if possible
       const contentType = res.headers.get("content-type") || "";
       const body = contentType.includes("application/json")
@@ -57,7 +77,6 @@
   async function createRental(payload) {
     return apiFetch(`${BASE}/rental`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
   }
@@ -65,7 +84,6 @@
   async function updateRental(id, payload) {
     return apiFetch(`${BASE}/rental/${id}/update`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
   }

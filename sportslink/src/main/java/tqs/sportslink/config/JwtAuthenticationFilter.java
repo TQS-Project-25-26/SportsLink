@@ -3,8 +3,13 @@ package tqs.sportslink.config;
 import java.io.IOException;
 import java.util.Collections;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -12,17 +17,9 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 import tqs.sportslink.data.UserRepository;
-import tqs.sportslink.data.model.User;
 import tqs.sportslink.data.model.Role;
+import tqs.sportslink.data.model.User;
 import tqs.sportslink.service.AuthService;
 import tqs.sportslink.util.JwtUtil;
 
@@ -49,11 +46,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         try {
+            String token = null;
+            
+            // 1. Tentar obter token do header Authorization
             String authHeader = request.getHeader("Authorization");
-
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                String token = authHeader.substring(7); // token "limpo"
+                token = authHeader.substring(7); // token "limpo"
+            }
+            
+            // 2. Se não encontrou no header, tentar cookie
+            if (token == null) {
+                jakarta.servlet.http.Cookie[] cookies = request.getCookies();
+                if (cookies != null) {
+                    for (jakarta.servlet.http.Cookie cookie : cookies) {
+                        if ("authToken".equals(cookie.getName())) {
+                            token = cookie.getValue();
+                            break;
+                        }
+                    }
+                }
+            }
 
+            if (token != null && !token.isBlank()) {
                 // Verificar se o token foi "logoutado"
                 if (!authService.isTokenBlacklisted(token)) {
                     String email = null;

@@ -101,13 +101,19 @@ public class AuthService {
     }
 
     /**
-     * Logout: adiciona token à blacklist
+     * Logout: adiciona token à blacklist (apenas a parte útil do token, sem "Bearer ")
      */
     public void logout(String authHeader) {
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String jwtToken = authHeader.substring(7);
-            blacklistedTokens.add(jwtToken);
-            logger.info("Token added to blacklist");
+        if (authHeader != null && !authHeader.isBlank()) {
+            // Remove "Bearer " prefix if present
+            String token = authHeader.startsWith("Bearer ") 
+                ? authHeader.substring(7) 
+                : authHeader;
+            
+            if (!token.isBlank()) {
+                blacklistedTokens.add(token);
+                logger.info("Token added to blacklist for logout");
+            }
         }
     }
 

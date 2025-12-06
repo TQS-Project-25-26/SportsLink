@@ -14,6 +14,16 @@
 
     <!-- Shared CSS -->
     <link href="../css/styles.css" rel="stylesheet">
+    
+    <script>
+        // Verificar autenticação ANTES de carregar a página
+        (function() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/index.html';
+            }
+        })();
+    </script>
 </head>
 
 <body>
@@ -36,6 +46,19 @@
                     <a class="nav-link fw-medium" href="../pages/main_page_user.html">Home</a>
                 </li>
             </ul>
+            <div class="d-flex align-items-center">
+                <div class="dropdown">
+                    <button id="profileBtn" class="profile-icon d-flex align-items-center justify-content-center text-white fw-bold dropdown-toggle"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        O
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileBtn">
+                        <li><a class="dropdown-item" href="profile_page.html" id="profileManage">Profile</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="#" id="logoutBtn">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 </nav>
@@ -161,6 +184,19 @@
 
 <!-- Owner Dashboard Script -->
 <script src="../js/owner_dashboard.js"></script>
+
+<!-- Logout handler -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                logout();
+            });
+        }
+    });
+</script>
 
 </body>
 </html>

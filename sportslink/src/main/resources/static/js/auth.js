@@ -1,74 +1,84 @@
 // Auth helper utilities used by pages
 
-// Sincronizar sessionStorage -> localStorage, para compatibilizar login/register com outras páginas
-(function syncAuthStorage() {
-  try {
-    const sessionToken = sessionStorage.getItem('token');
-    const sessionRole = sessionStorage.getItem('role');
-
-    if (sessionToken && !localStorage.getItem('token')) {
-      localStorage.setItem('token', sessionToken);
-    }
-    if (sessionRole && !localStorage.getItem('role')) {
-      localStorage.setItem('role', sessionRole);
-    }
-  } catch (e) {
-    console.warn('Failed to sync auth storage', e);
-  }
-})();
-
-function authHeaders() {
-  // Tenta vários sítios para garantir compatibilidade
-  const sessionToken = sessionStorage.getItem('token');
-  const localToken = localStorage.getItem('token');
-  const authTokenRaw = localStorage.getItem('authToken'); // pode já vir com "Bearer "
-
-  let headerValue = null;
-
-  if (authTokenRaw) {
-    // Se já tiver "Bearer", mantemos; senão, adicionamos
-    headerValue = authTokenRaw.startsWith('Bearer ')
-      ? authTokenRaw
-      : 'Bearer ' + authTokenRaw;
-  } else {
-    const bareToken = localToken || sessionToken;
-    if (bareToken) {
-      headerValue = 'Bearer ' + bareToken;
-    }
-  }
-
-  if (!headerValue) return {};
-  return { 'Authorization': headerValue };
+/**
+ * Obtém o token JWT armazenado em localStorage
+ */
+function getToken() {
+  return localStorage.getItem('token');
 }
 
-function logout() {
-  // tenta fazer logout com o token atual (de onde quer que venha)
-  const headers = Object.assign({ 'Content-Type': 'application/json' }, authHeaders());
+/**
+ * Obtém o role do utilizador armazenado em localStorage
+ */
+function getRole() {
+  return localStorage.getItem('role');
+}
 
-  if (headers['Authorization']) {
+/**
+ * Verifica se o utilizador está autenticado
+ */
+function isAuthenticated() {
+  return !!getToken();
+}
+
+/**
+ * Armazena credenciais de autenticação
+ */
+function setAuthCredentials(token, role) {
+  localStorage.setItem('token', token);
+  localStorage.setItem('role', role || 'RENTER');
+}
+
+/**
+ * Retorna headers com autenticação JWT
+ */
+function authHeaders() {
+  const token = getToken();
+  
+  const headers = {
+    'Content-Type': 'application/json'
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  return headers;
+}
+
+/**
+ * Logout do utilizador
+ * 1. Notifica o backend para adicionar o token à blacklist
+ * 2. Limpa localStorage
+ * 3. Redireciona para login
+ */
+function logout() {
+  const token = getToken();
+
+  // Tentar fazer logout no backend (blacklist token)
+  if (token) {
     fetch('/api/auth/logout', {
       method: 'POST',
-      headers: headers
-    }).catch(() => { /* ignorar erros de rede */ });
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include'  // Incluir cookies
+    })
+    .catch(err => {
+      console.warn('Logout request failed (continuing anyway):', err);
+    });
   }
 
-  // Limpar auth em ambos storages
-  try {
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('role');
-  } catch (e) {
-    console.warn('Error clearing sessionStorage auth', e);
-  }
-
+  // Limpar credenciais do localStorage
   try {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userRole');
   } catch (e) {
-    console.warn('Error clearing localStorage auth', e);
+    console.warn('Error clearing localStorage:', e);
   }
 
+  // Redirecionar para página de login
   window.location.href = '/index.html';
 }
 
@@ -94,4 +104,15 @@ function showBootstrapToast(message, kind='info'){
     container.appendChild(toast);
     setTimeout(()=>{ toast.remove(); }, 4000);
   } catch(e) { alert(message); }
+}
+
+/**
+ * Proteção de página: redireciona para login se não autenticado
+ * Use isto no <head> de páginas protegidas:
+ * <script> requireAuth(); </script>
+ */
+function requireAuth() {
+  if (!isAuthenticated()) {
+    window.location.href = '/index.html';
+  }
 }

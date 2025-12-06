@@ -1,27 +1,31 @@
 package tqs.sportslink.boundary;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
-import tqs.sportslink.dto.FacilityRequestDTO;
-import tqs.sportslink.dto.FacilityResponseDTO;
-import tqs.sportslink.dto.EquipmentRequestDTO;
-import tqs.sportslink.dto.EquipmentResponseDTO;
-import tqs.sportslink.service.OwnerService;
-import tqs.sportslink.data.UserRepository;
-import tqs.sportslink.data.model.User;
-
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import tqs.sportslink.data.UserRepository;
+import tqs.sportslink.data.model.User;
+import tqs.sportslink.dto.EquipmentRequestDTO;
+import tqs.sportslink.dto.EquipmentResponseDTO;
+import tqs.sportslink.dto.FacilityRequestDTO;
+import tqs.sportslink.dto.FacilityResponseDTO;
+import tqs.sportslink.service.OwnerService;
 
 @RestController
 @RequestMapping("/api/owner")
 @PreAuthorize("hasRole('OWNER')")
-@CrossOrigin(origins = "*")
 public class OwnerController {
 
     private final OwnerService ownerService;

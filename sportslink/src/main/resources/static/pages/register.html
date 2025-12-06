@@ -161,6 +161,7 @@
           const res = await fetch("/api/auth/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            credentials: 'include',  // Incluir cookies na resposta
             body: JSON.stringify(body),
           });
 
@@ -177,9 +178,8 @@
             return;
           }
 
-          // Success - store credentials (sessionStorage, depois auth.js sincroniza para localStorage)
-          sessionStorage.setItem("token", data.token);
-          sessionStorage.setItem("role", data.role || "RENTER");
+          // Success - store credentials in localStorage
+          setAuthCredentials(data.token, data.role || 'RENTER');
 
           showToast('Account created successfully!', 'success');
 

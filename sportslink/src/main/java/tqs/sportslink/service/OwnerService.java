@@ -57,6 +57,9 @@ public class OwnerService {
 
         Facility saved = facilityRepository.save(facility);
 
+        String openingTimeStr = saved.getOpeningTime() != null ? saved.getOpeningTime().toString() : null;
+        String closingTimeStr = saved.getClosingTime() != null ? saved.getClosingTime().toString() : null;
+
         return new FacilityResponseDTO(
                 saved.getId(),
                 saved.getName(),
@@ -66,8 +69,8 @@ public class OwnerService {
                 saved.getDescription(),
                 saved.getPricePerHour(),
                 saved.getRating(),
-                saved.getOpeningTime().toString(),
-                saved.getClosingTime().toString()
+                openingTimeStr,
+                closingTimeStr
         );
     }
 
@@ -79,18 +82,23 @@ public class OwnerService {
         List<Facility> facilities = owner.getFacilities();
 
         return facilities.stream()
-                .map(f -> new FacilityResponseDTO(
-                        f.getId(),
-                        f.getName(),
-                        f.getSports(),
-                        f.getCity(),
-                        f.getAddress(),
-                        f.getDescription(),
-                        f.getPricePerHour(),
-                        f.getRating(),
-                        f.getOpeningTime().toString(),
-                        f.getClosingTime().toString()
-                ))
+                .map(f -> {
+                    String openingTimeStr = f.getOpeningTime() != null ? f.getOpeningTime().toString() : null;
+                    String closingTimeStr = f.getClosingTime() != null ? f.getClosingTime().toString() : null;
+
+                    return new FacilityResponseDTO(
+                            f.getId(),
+                            f.getName(),
+                            f.getSports(),
+                            f.getCity(),
+                            f.getAddress(),
+                            f.getDescription(),
+                            f.getPricePerHour(),
+                            f.getRating(),
+                            openingTimeStr,
+                            closingTimeStr
+                    );
+                })
                 .collect(Collectors.toList());
     }
 
@@ -114,6 +122,9 @@ public class OwnerService {
 
         Facility saved = facilityRepository.save(facility);
 
+        String openingTimeStr = saved.getOpeningTime() != null ? saved.getOpeningTime().toString() : null;
+        String closingTimeStr = saved.getClosingTime() != null ? saved.getClosingTime().toString() : null;
+
         return new FacilityResponseDTO(
                 saved.getId(),
                 saved.getName(),
@@ -123,8 +134,8 @@ public class OwnerService {
                 saved.getDescription(),
                 saved.getPricePerHour(),
                 saved.getRating(),
-                saved.getOpeningTime().toString(),
-                saved.getClosingTime().toString()
+                openingTimeStr,
+                closingTimeStr
         );
     }
 

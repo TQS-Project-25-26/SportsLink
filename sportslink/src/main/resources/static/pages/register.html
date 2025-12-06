@@ -83,20 +83,24 @@
       function showToast(message, kind = "info") {
         if (!message) return;
 
-        // Remove any existing toast
+        // Se já tivermos showBootstrapToast global (auth.js), usa esse
+        if (typeof showBootstrapToast === 'function') {
+          showBootstrapToast(message, kind === 'error' ? 'danger' : kind);
+          return;
+        }
+
+        // Fallback: implementação local
         const existingToast = toastContainer.querySelector('.custom-toast');
         if (existingToast) {
           existingToast.remove();
         }
 
-        // Create toast element
         const toast = document.createElement('div');
         toast.className = `custom-toast toast-${kind}`;
         toast.textContent = message;
 
         toastContainer.appendChild(toast);
 
-        // Auto remove after 3 seconds
         setTimeout(() => {
           toast.classList.add('toast-exit');
           setTimeout(() => toast.remove(), 300);
@@ -106,13 +110,11 @@
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        // Clear previous validation states
         [name, email, password, phone].forEach((field) => {
           field.classList.remove("is-invalid");
         });
         formAlert.style.display = "none";
 
-        // Client-side validation
         let isValid = true;
 
         if (!name.value.trim()) {
@@ -140,12 +142,10 @@
           return;
         }
 
-        // Disable button and show loading state
         submitBtn.disabled = true;
         const originalText = submitBtn.textContent;
         submitBtn.textContent = 'Creating account...';
 
-        // Build request dynamically
         const body = {
           name: name.value.trim(),
           email: email.value.trim(),
@@ -153,7 +153,6 @@
           password: password.value,
         };
 
-        // Add role only if checkbox is checked
         if (isOwner.checked) {
           body.role = "OWNER";
         }
@@ -178,16 +177,15 @@
             return;
           }
 
-          // Success - store credentials
+          // Success - store credentials (sessionStorage, depois auth.js sincroniza para localStorage)
           sessionStorage.setItem("token", data.token);
-          sessionStorage.setItem("role", data.role || "USER");
+          sessionStorage.setItem("role", data.role || "RENTER");
 
           showToast('Account created successfully!', 'success');
 
-          // Redirect after a brief delay
           setTimeout(() => {
             if (data.role === "OWNER") {
-              window.location.href = "/pages/main_page_owner.html";
+              window.location.href = "/pages/owner_dashboard.html";
             } else {
               window.location.href = "/pages/main_page_user.html";
             }
@@ -197,7 +195,6 @@
           console.error('Registration error:', err);
           showToast('Connection error. Please check your internet.', 'error');
         } finally {
-          // Re-enable button
           submitBtn.disabled = false;
           submitBtn.textContent = originalText;
         }

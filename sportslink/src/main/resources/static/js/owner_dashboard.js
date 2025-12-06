@@ -2,20 +2,66 @@
 // OWNER DASHBOARD JS
 // ===============================
 
-// Temporary ownerId
-const ownerId = 1;
+// OwnerId passa a vir do JWT (inicialmente null)
+let ownerId = null;
 
 // Elements
 const facilitiesGrid = document.getElementById("facilities-grid");
 const noFacilitiesDiv = document.getElementById("no-facilities");
 const btnAddFacility = document.getElementById("btn-open-add-facility");
 
+// Helper para mensagens
+function notify(message, kind = 'info') {
+    if (typeof showBootstrapToast === 'function') {
+        showBootstrapToast(message, kind);
+    } else {
+        alert(message);
+    }
+}
 
 // ==================================
-// LOAD FACILITIES ON PAGE LOAD
+// LOAD OWNER + FACILITIES ON PAGE LOAD
 // ==================================
-document.addEventListener("DOMContentLoaded", () => {
-    loadFacilities();
+document.addEventListener("DOMContentLoaded", async () => {
+    // Verificar se há token
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/index.html';
+        return;
+    }
+
+    // Buscar perfil para obter ownerId e validar role OWNER
+    try {
+        const res = await fetch('/api/auth/profile', {
+            headers: authHeaders()
+        });
+
+        if (!res.ok) {
+            if (res.status === 401) {
+                // Token inválido/expirado
+                logout();
+                return;
+            }
+            throw new Error('Não foi possível carregar o perfil.');
+        }
+
+        const user = await res.json();
+        if (user.role !== 'OWNER') {
+            // Se não for OWNER, mandar de volta para a página principal de utilizador
+            window.location.href = '/pages/main_page_user.html';
+            return;
+        }
+
+        ownerId = user.id;
+
+    } catch (error) {
+        console.error(error);
+        notify("Erro ao carregar o perfil do proprietário.", 'danger');
+        return;
+    }
+
+    // Só depois de ter ownerId é que carregamos as instalações
+    await loadFacilities();
 });
 
 
@@ -23,21 +69,32 @@ document.addEventListener("DOMContentLoaded", () => {
 // FETCH FACILITIES FROM BACKEND
 // ==================================
 async function loadFacilities() {
+    if (!facilitiesGrid) return;
+
     facilitiesGrid.innerHTML = "";
 
     try {
-        const response = await fetch(`/api/owner/${ownerId}/facilities`);
-        if (!response.ok) throw new Error("Erro ao carregar instalações.");
+        const response = await fetch(`/api/owner/${ownerId}/facilities`, {
+            headers: authHeaders()
+        });
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                logout();
+                return;
+            }
+            throw new Error("Erro ao carregar instalações.");
+        }
 
         const facilities = await response.json();
 
-        if (facilities.length === 0) {
-            noFacilitiesDiv.style.display = "block";
+        if (!facilities || facilities.length === 0) {
+            if (noFacilitiesDiv) noFacilitiesDiv.style.display = "block";
             facilitiesGrid.style.display = "none";
             return;
         }
 
-        noFacilitiesDiv.style.display = "none";
+        if (noFacilitiesDiv) noFacilitiesDiv.style.display = "none";
         facilitiesGrid.style.display = "flex";
 
         facilities.forEach(facility => {
@@ -46,7 +103,7 @@ async function loadFacilities() {
 
     } catch (error) {
         console.error(error);
-        alert("Não foi possível carregar os seus campos.");
+        notify("Não foi possível carregar os seus campos.", 'danger');
     }
 }
 
@@ -58,6 +115,8 @@ function createFacilityCard(facility) {
 
     const col = document.createElement("div");
     col.className = "col-md-6 col-lg-4";
+
+    const sportsList = Array.isArray(facility.sports) ? facility.sports.join(", ") : "";
 
     col.innerHTML = `
         <div class="card shadow-sm p-0 border-0" style="border-radius: 16px; overflow: hidden;">
@@ -72,7 +131,7 @@ function createFacilityCard(facility) {
 
                 <p class="text-muted mb-2">
                     <i class="material-icons text-accent align-middle me-1">sports</i>
-                    ${facility.sports.join(", ")}
+                    ${sportsList}
                 </p>
 
                 <div class="d-flex gap-2 mt-3 flex-wrap">
@@ -105,20 +164,31 @@ function openEquipmentPage(facilityId) {
 // ==================================
 // OPEN ADD FACILITY MODAL
 // ==================================
-btnAddFacility.addEventListener("click", () => {
-    const modal = new bootstrap.Modal(document.getElementById("addFacilityModal"));
-    modal.show();
-});
+if (btnAddFacility) {
+    btnAddFacility.addEventListener("click", () => {
+        const modalElement = document.getElementById("addFacilityModal");
+        if (!modalElement) return;
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    });
+}
 
 
 // ==================================
 // CREATE FACILITY
 // ==================================
-document.getElementById("btnConfirmAddFacility").addEventListener("click", async () => {
-    await createFacility();
-});
+const btnConfirmAddFacility = document.getElementById("btnConfirmAddFacility");
+if (btnConfirmAddFacility) {
+    btnConfirmAddFacility.addEventListener("click", async () => {
+        await createFacility();
+    });
+}
 
 async function createFacility() {
+    if (!ownerId) {
+        notify("Utilizador não identificado como proprietário.", 'danger');
+        return;
+    }
 
     const name = document.getElementById("facilityName").value.trim();
     const city = document.getElementById("facilityCity").value.trim();
@@ -133,7 +203,7 @@ async function createFacility() {
 
     // Simple validation
     if (!name || !city || !address || !price || !opening || !closing || selectedSports.length === 0) {
-        alert("Por favor preencha todos os campos obrigatórios.");
+        notify("Por favor preencha todos os campos obrigatórios.", 'warning');
         return;
     }
 
@@ -151,24 +221,33 @@ async function createFacility() {
     try {
         const response = await fetch(`/api/owner/${ownerId}/facilities`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()),
             body: JSON.stringify(facilityData)
         });
 
-        if (!response.ok) throw new Error("Erro ao criar campo");
+        if (!response.ok) {
+            if (response.status === 401) {
+                logout();
+                return;
+            }
+            throw new Error("Erro ao criar campo");
+        }
 
         const modalElement = document.getElementById("addFacilityModal");
-        const modal = bootstrap.Modal.getInstance(modalElement);
-        modal.hide();
+        if (modalElement) {
+            const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+            modal.hide();
+        }
 
-        document.getElementById("addFacilityForm").reset();
+        const form = document.getElementById("addFacilityForm");
+        if (form) form.reset();
 
         await loadFacilities();
 
-        alert("Campo criado com sucesso!");
+        notify("Campo criado com sucesso!", 'success');
 
     } catch (error) {
         console.error(error);
-        alert("Não foi possível criar o campo.");
+        notify("Não foi possível criar o campo.", 'danger');
     }
 }

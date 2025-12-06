@@ -45,13 +45,16 @@
                 </ul>
                 <div class="d-flex align-items-center">
                     <div class="dropdown">
-                        <button id="profileBtn" class="profile-icon d-flex align-items-center justify-content-center text-white fw-bold dropdown-toggle"
+                        <button id="profileBtn"
+                            class="profile-icon d-flex align-items-center justify-content-center text-white fw-bold dropdown-toggle"
                             data-bs-toggle="dropdown" aria-expanded="false">
                             U
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileBtn">
                             <li><a class="dropdown-item" href="#" id="profileManage">Profile</a></li>
-                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             <li><a class="dropdown-item text-danger" href="#" id="logoutBtn">Logout</a></li>
                         </ul>
                     </div>
@@ -129,18 +132,21 @@
     <script>
         // Profile page script
         document.addEventListener('DOMContentLoaded', async () => {
-            // Update profile button initial
+            // Update profile button initial (mantemos simples por agora)
             const profileBtn = document.getElementById('profileBtn');
             const token = localStorage.getItem('token');
             if (token) {
-                // Decode token to get user initial or something, but for now keep U
+                // Poderíamos decodificar JWT aqui, mas neste momento não é necessário
             }
 
-            // Bind logout
-            document.getElementById('logoutBtn').addEventListener('click', (e) => {
-                e.preventDefault();
-                logout();
-            });
+            // Bind logout (função vem de auth.js)
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    logout();
+                });
+            }
 
             // Load profile data
             await loadProfile();
@@ -160,6 +166,7 @@
 
                 if (!res.ok) {
                     if (res.status === 401) {
+                        // Token inválido/expirado → faz logout e volta ao login
                         logout();
                         return;
                     }
@@ -168,26 +175,49 @@
 
                 const user = await res.json();
 
+                // Campos básicos
                 document.getElementById('userName').textContent = user.name || 'N/A';
                 document.getElementById('userEmail').textContent = user.email || 'N/A';
                 document.getElementById('userPhone').textContent = user.phone || 'N/A';
                 document.getElementById('userRole').textContent = user.role || 'N/A';
                 document.getElementById('userActive').textContent = user.active ? 'Active' : 'Inactive';
-                document.getElementById('userCreatedAt').textContent = new Date(user.createdAt).toLocaleDateString();
-                document.getElementById('userRentalsCount').textContent = user.rentals ? user.rentals.length : 0;
+                document.getElementById('userCreatedAt').textContent =
+                    user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A';
 
+                // Contagem de rentals (novo campo rentalsCount do UserProfileDTO)
+                const rentalsCount = typeof user.rentalsCount === 'number' ? user.rentalsCount : 0;
+                document.getElementById('userRentalsCount').textContent = rentalsCount;
+
+                // Secção de facilities apenas para OWNER, com facilitiesCount
                 if (user.role === 'OWNER') {
-                    document.getElementById('facilitiesSection').style.display = 'block';
-                    document.getElementById('userFacilitiesCount').textContent = user.facilities ? user.facilities.length : 0;
+                    const facilitiesSection = document.getElementById('facilitiesSection');
+                    if (facilitiesSection) {
+                        facilitiesSection.style.display = 'block';
+                    }
+                    const facilitiesCount = typeof user.facilitiesCount === 'number' ? user.facilitiesCount : 0;
+                    const facilitiesCountEl = document.getElementById('userFacilitiesCount');
+                    if (facilitiesCountEl) {
+                        facilitiesCountEl.textContent = facilitiesCount;
+                    }
+                } else {
+                    const facilitiesSection = document.getElementById('facilitiesSection');
+                    if (facilitiesSection) {
+                        facilitiesSection.style.display = 'none';
+                    }
                 }
 
                 // Update profile initial
                 const initial = user.name ? user.name.charAt(0).toUpperCase() : 'U';
-                document.getElementById('profileBtn').textContent = initial;
+                const profileBtn = document.getElementById('profileBtn');
+                if (profileBtn) {
+                    profileBtn.textContent = initial;
+                }
 
             } catch (err) {
                 console.error('Error loading profile:', err);
-                showBootstrapToast('Error loading profile', 'danger');
+                if (typeof showBootstrapToast === 'function') {
+                    showBootstrapToast('Error loading profile', 'danger');
+                }
             }
         }
     </script>

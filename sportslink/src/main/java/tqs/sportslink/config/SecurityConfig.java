@@ -16,7 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
             .cors(cors -> cors.disable())
             .csrf(csrf -> csrf.disable())
@@ -24,16 +24,12 @@ public class SecurityConfig {
                 .requestMatchers("/", "/index.html", "/css/**", "/js/**", "/pages/**").permitAll()  // Recursos estáticos
                 .requestMatchers("/api/rentals/**").permitAll()  // API de rentals pública
                 .requestMatchers("/api/auth/**").permitAll()  // Acesso público ao AuthController
-                .requestMatchers("/api/owner/**").permitAll()   // permitir sem acesso JWT por enquanto TODO:remove after login implemented
+                .requestMatchers("/api/owner/**").authenticated()   // agora requer utilizador autenticado
                 .requestMatchers("/h2-console/**").permitAll()  // H2 console
                 .anyRequest().authenticated()  // Outros endpoints requerem autenticação
             )
-            .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-        return http.build();
-    }
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-    @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter();
+        return http.build();
     }
 }

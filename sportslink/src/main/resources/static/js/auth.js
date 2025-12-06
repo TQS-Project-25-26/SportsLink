@@ -1,17 +1,74 @@
 // Auth helper utilities used by pages
+
+// Sincronizar sessionStorage -> localStorage, para compatibilizar login/register com outras páginas
+(function syncAuthStorage() {
+  try {
+    const sessionToken = sessionStorage.getItem('token');
+    const sessionRole = sessionStorage.getItem('role');
+
+    if (sessionToken && !localStorage.getItem('token')) {
+      localStorage.setItem('token', sessionToken);
+    }
+    if (sessionRole && !localStorage.getItem('role')) {
+      localStorage.setItem('role', sessionRole);
+    }
+  } catch (e) {
+    console.warn('Failed to sync auth storage', e);
+  }
+})();
+
 function authHeaders() {
-  const token = localStorage.getItem('token');
-  if (!token) return {};
-  return { 'Authorization': 'Bearer ' + token };
+  // Tenta vários sítios para garantir compatibilidade
+  const sessionToken = sessionStorage.getItem('token');
+  const localToken = localStorage.getItem('token');
+  const authTokenRaw = localStorage.getItem('authToken'); // pode já vir com "Bearer "
+
+  let headerValue = null;
+
+  if (authTokenRaw) {
+    // Se já tiver "Bearer", mantemos; senão, adicionamos
+    headerValue = authTokenRaw.startsWith('Bearer ')
+      ? authTokenRaw
+      : 'Bearer ' + authTokenRaw;
+  } else {
+    const bareToken = localToken || sessionToken;
+    if (bareToken) {
+      headerValue = 'Bearer ' + bareToken;
+    }
+  }
+
+  if (!headerValue) return {};
+  return { 'Authorization': headerValue };
 }
 
 function logout() {
-  const token = localStorage.getItem('token');
-  if (token) {
-    fetch('/api/auth/logout', { method: 'POST', headers: Object.assign({'Content-Type':'application/json'}, authHeaders()) }).catch(()=>{});
+  // tenta fazer logout com o token atual (de onde quer que venha)
+  const headers = Object.assign({ 'Content-Type': 'application/json' }, authHeaders());
+
+  if (headers['Authorization']) {
+    fetch('/api/auth/logout', {
+      method: 'POST',
+      headers: headers
+    }).catch(() => { /* ignorar erros de rede */ });
   }
-  localStorage.removeItem('token');
-  localStorage.removeItem('role');
+
+  // Limpar auth em ambos storages
+  try {
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('role');
+  } catch (e) {
+    console.warn('Error clearing sessionStorage auth', e);
+  }
+
+  try {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userRole');
+  } catch (e) {
+    console.warn('Error clearing localStorage auth', e);
+  }
+
   window.location.href = '/index.html';
 }
 

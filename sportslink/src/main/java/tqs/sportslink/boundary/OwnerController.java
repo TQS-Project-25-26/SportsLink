@@ -1,6 +1,3 @@
-// TODO: Como o projeto ainda não tem JWT real implementado, iremos temporariamente receber o ownerId no request.
-// Quando mais tarde implementarmos o token, basta substituir isso pelo SecurityContext.
-
 package tqs.sportslink.boundary;
 
 import org.springframework.http.ResponseEntity;
@@ -12,19 +9,54 @@ import tqs.sportslink.dto.FacilityResponseDTO;
 import tqs.sportslink.dto.EquipmentRequestDTO;
 import tqs.sportslink.dto.EquipmentResponseDTO;
 import tqs.sportslink.service.OwnerService;
+import tqs.sportslink.data.UserRepository;
+import tqs.sportslink.data.model.User;
 
 import java.util.List;
+import java.util.NoSuchElementException;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @RestController
 @RequestMapping("/api/owner")
-// @PreAuthorize("hasRole('OWNER')")    #temp para testes sem JWT
+@PreAuthorize("hasRole('OWNER')")
 @CrossOrigin(origins = "*")
 public class OwnerController {
 
     private final OwnerService ownerService;
+    private final UserRepository userRepository;
 
-    public OwnerController(OwnerService ownerService) {
+    public OwnerController(OwnerService ownerService, UserRepository userRepository) {
         this.ownerService = ownerService;
+        this.userRepository = userRepository;
+    }
+
+    /**
+     * Obtém o ID do owner autenticado com base no email presente no JWT.
+     */
+    private Long getAuthenticatedOwnerId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("User not authenticated");
+        }
+
+        String email = authentication.getName(); // definido no JwtAuthenticationFilter
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
+
+        return user.getId();
+    }
+
+    /**
+     * Valida se o ownerId do path corresponde ao utilizador autenticado.
+     */
+    private void validateOwnerId(Long ownerIdFromPath) {
+        Long authOwnerId = getAuthenticatedOwnerId();
+        if (!authOwnerId.equals(ownerIdFromPath)) {
+            throw new IllegalArgumentException("Owner ID does not match authenticated user");
+        }
     }
 
     // ============================
@@ -36,6 +68,7 @@ public class OwnerController {
             @PathVariable Long ownerId,
             @RequestBody FacilityRequestDTO request
     ) {
+        validateOwnerId(ownerId);
         return ResponseEntity.ok(ownerService.createFacility(ownerId, request));
     }
 
@@ -43,6 +76,7 @@ public class OwnerController {
     public ResponseEntity<List<FacilityResponseDTO>> getOwnerFacilities(
             @PathVariable Long ownerId
     ) {
+        validateOwnerId(ownerId);
         return ResponseEntity.ok(ownerService.getFacilities(ownerId));
     }
 
@@ -52,6 +86,7 @@ public class OwnerController {
             @PathVariable Long facilityId,
             @RequestBody FacilityRequestDTO request
     ) {
+        validateOwnerId(ownerId);
         return ResponseEntity.ok(ownerService.updateFacility(ownerId, facilityId, request));
     }
 
@@ -65,6 +100,7 @@ public class OwnerController {
             @PathVariable Long facilityId,
             @RequestBody EquipmentRequestDTO request
     ) {
+        validateOwnerId(ownerId);
         return ResponseEntity.ok(ownerService.addEquipment(ownerId, facilityId, request));
     }
 
@@ -73,6 +109,7 @@ public class OwnerController {
             @PathVariable Long ownerId,
             @PathVariable Long facilityId
     ) {
+        validateOwnerId(ownerId);
         return ResponseEntity.ok(ownerService.getEquipment(ownerId, facilityId));
     }
 
@@ -82,7 +119,7 @@ public class OwnerController {
             @PathVariable Long equipmentId,
             @RequestBody EquipmentRequestDTO request
     ) {
+        validateOwnerId(ownerId);
         return ResponseEntity.ok(ownerService.updateEquipment(ownerId, equipmentId, request));
     }
 }
-

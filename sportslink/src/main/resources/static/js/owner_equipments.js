@@ -2,8 +2,8 @@
 // OWNER EQUIPMENTS JS
 // =======================================
 
-// Temporarily hardcoded ownerId (trocar quando houver auth real)
-const ownerId = 1;
+// OwnerId passa a vir do JWT (inicialmente null)
+let ownerId = null;
 
 // Elements
 const equipmentGrid = document.getElementById("equipment-grid");
@@ -23,44 +23,97 @@ const equipmentCache = new Map();
 const urlParams = new URLSearchParams(window.location.search);
 const facilityId = urlParams.get("facilityId");
 
+// Helper para mensagens
+function notify(message, kind = 'info') {
+    if (typeof showBootstrapToast === 'function') {
+        showBootstrapToast(message, kind);
+    } else {
+        alert(message);
+    }
+}
+
 // =======================================
 // ON LOAD
 // =======================================
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
     if (!facilityId) {
-        alert("Nenhum campo selecionado.");
+        notify("Nenhum campo selecionado.", 'warning');
         window.location.href = "owner_dashboard.html";
         return;
     }
 
+    // Verificar se há token
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/index.html';
+        return;
+    }
+
+    // Carregar perfil para obter ownerId e validar role OWNER
+    try {
+        const res = await fetch('/api/auth/profile', {
+            headers: authHeaders()
+        });
+
+        if (!res.ok) {
+            if (res.status === 401) {
+                logout();
+                return;
+            }
+            throw new Error('Não foi possível carregar o perfil.');
+        }
+
+        const user = await res.json();
+        if (user.role !== 'OWNER') {
+            // Se não for OWNER, manda para a página principal de utilizador
+            window.location.href = '/pages/main_page_user.html';
+            return;
+        }
+
+        ownerId = user.id;
+    } catch (error) {
+        console.error(error);
+        notify("Erro ao carregar o perfil do proprietário.", 'danger');
+        return;
+    }
+
     // Set label simples
-    facilityLabel.textContent = ` (Campo #${facilityId})`;
+    if (facilityLabel) {
+        facilityLabel.textContent = ` (Campo #${facilityId})`;
+    }
 
     // Inicializar modals
     addEquipmentModal = new bootstrap.Modal(document.getElementById("addEquipmentModal"));
     editEquipmentModal = new bootstrap.Modal(document.getElementById("editEquipmentModal"));
 
     // Botão "Adicionar Equipamento"
-    btnOpenAddEquipment.addEventListener("click", () => {
-        document.getElementById("addEquipmentForm").reset();
-        addEquipmentModal.show();
-    });
+    if (btnOpenAddEquipment) {
+        btnOpenAddEquipment.addEventListener("click", () => {
+            const form = document.getElementById("addEquipmentForm");
+            if (form) form.reset();
+            addEquipmentModal.show();
+        });
+    }
 
     // Botão confirmar adicionar
-    document.getElementById("btnConfirmAddEquipment")
-        .addEventListener("click", async () => {
+    const btnConfirmAdd = document.getElementById("btnConfirmAddEquipment");
+    if (btnConfirmAdd) {
+        btnConfirmAdd.addEventListener("click", async () => {
             await createEquipment();
         });
+    }
 
     // Botão confirmar editar
-    document.getElementById("btnConfirmEditEquipment")
-        .addEventListener("click", async () => {
+    const btnConfirmEdit = document.getElementById("btnConfirmEditEquipment");
+    if (btnConfirmEdit) {
+        btnConfirmEdit.addEventListener("click", async () => {
             await updateEquipment();
         });
+    }
 
     // Carregar equipamentos do campo
-    loadEquipments();
+    await loadEquipments();
 });
 
 
@@ -68,28 +121,36 @@ document.addEventListener("DOMContentLoaded", () => {
 // LOAD EQUIPMENTS
 // =======================================
 async function loadEquipments() {
+    if (!equipmentGrid) return;
+
     equipmentGrid.innerHTML = "";
     equipmentCache.clear();
 
-    loadingDiv.style.display = "block";
-    noEquipmentDiv.style.display = "none";
+    if (loadingDiv) loadingDiv.style.display = "block";
+    if (noEquipmentDiv) noEquipmentDiv.style.display = "none";
 
     try {
-        const response = await fetch(`/api/owner/${ownerId}/facilities/${facilityId}/equipment`);
+        const response = await fetch(`/api/owner/${ownerId}/facilities/${facilityId}/equipment`, {
+            headers: authHeaders()
+        });
         if (!response.ok) {
+            if (response.status === 401) {
+                logout();
+                return;
+            }
             throw new Error("Erro ao carregar equipamentos.");
         }
 
         const equipments = await response.json();
 
-        loadingDiv.style.display = "none";
+        if (loadingDiv) loadingDiv.style.display = "none";
 
         if (!equipments || equipments.length === 0) {
-            noEquipmentDiv.style.display = "block";
+            if (noEquipmentDiv) noEquipmentDiv.style.display = "block";
             return;
         }
 
-        noEquipmentDiv.style.display = "none";
+        if (noEquipmentDiv) noEquipmentDiv.style.display = "none";
 
         equipments.forEach(eq => {
             equipmentCache.set(eq.id, eq);
@@ -98,8 +159,8 @@ async function loadEquipments() {
 
     } catch (error) {
         console.error(error);
-        loadingDiv.style.display = "none";
-        alert("Não foi possível carregar os equipamentos.");
+        if (loadingDiv) loadingDiv.style.display = "none";
+        notify("Não foi possível carregar os equipamentos.", 'danger');
     }
 }
 
@@ -184,6 +245,11 @@ function statusLabel(status) {
 // =======================================
 async function createEquipment() {
 
+    if (!ownerId) {
+        notify("Utilizador não identificado como proprietário.", 'danger');
+        return;
+    }
+
     const name = document.getElementById("equipmentName").value.trim();
     const type = document.getElementById("equipmentType").value;
     const description = document.getElementById("equipmentDescription").value.trim();
@@ -192,7 +258,7 @@ async function createEquipment() {
     const status = document.getElementById("equipmentStatus").value;
 
     if (!name || !type || !quantity || !status) {
-        alert("Por favor preencha os campos obrigatórios.");
+        notify("Por favor preencha os campos obrigatórios.", 'warning');
         return;
     }
 
@@ -210,24 +276,29 @@ async function createEquipment() {
     try {
         const response = await fetch(`/api/owner/${ownerId}/facilities/${facilityId}/equipment`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()),
             body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
+            if (response.status === 401) {
+                logout();
+                return;
+            }
             throw new Error("Erro ao criar equipamento.");
         }
 
         addEquipmentModal.hide();
-        document.getElementById("addEquipmentForm").reset();
+        const form = document.getElementById("addEquipmentForm");
+        if (form) form.reset();
 
         await loadEquipments();
 
-        alert("Equipamento criado com sucesso!");
+        notify("Equipamento criado com sucesso!", 'success');
 
     } catch (error) {
         console.error(error);
-        alert("Não foi possível criar o equipamento.");
+        notify("Não foi possível criar o equipamento.", 'danger');
     }
 }
 
@@ -238,7 +309,7 @@ async function createEquipment() {
 function openEditEquipment(equipmentId) {
     const eq = equipmentCache.get(equipmentId);
     if (!eq) {
-        alert("Equipamento não encontrado.");
+        notify("Equipamento não encontrado.", 'warning');
         return;
     }
 
@@ -258,6 +329,11 @@ function openEditEquipment(equipmentId) {
 // UPDATE EQUIPMENT
 // =======================================
 async function updateEquipment() {
+    if (!ownerId) {
+        notify("Utilizador não identificado como proprietário.", 'danger');
+        return;
+    }
+
     const equipmentId = document.getElementById("editEquipmentId").value;
 
     const name = document.getElementById("editEquipmentName").value.trim();
@@ -268,7 +344,7 @@ async function updateEquipment() {
     const status = document.getElementById("editEquipmentStatus").value;
 
     if (!name || !type || !quantity || !status) {
-        alert("Por favor preencha os campos obrigatórios.");
+        notify("Por favor preencha os campos obrigatórios.", 'warning');
         return;
     }
 
@@ -286,11 +362,15 @@ async function updateEquipment() {
     try {
         const response = await fetch(`/api/owner/${ownerId}/equipment/${equipmentId}`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()),
             body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
+            if (response.status === 401) {
+                logout();
+                return;
+            }
             throw new Error("Erro ao atualizar equipamento.");
         }
 
@@ -298,10 +378,10 @@ async function updateEquipment() {
 
         await loadEquipments();
 
-        alert("Equipamento atualizado com sucesso!");
+        notify("Equipamento atualizado com sucesso!", 'success');
 
     } catch (error) {
         console.error(error);
-        alert("Não foi possível atualizar o equipamento.");
+        notify("Não foi possível atualizar o equipamento.", 'danger');
     }
 }

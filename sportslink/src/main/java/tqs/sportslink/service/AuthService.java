@@ -12,6 +12,7 @@ import tqs.sportslink.data.UserRepository;
 import tqs.sportslink.data.model.Role;
 import tqs.sportslink.data.model.User;
 import tqs.sportslink.dto.AuthResponseDTO;
+import tqs.sportslink.dto.UserProfileDTO;
 import tqs.sportslink.dto.UserRequestDTO;
 import tqs.sportslink.util.JwtUtil;
 
@@ -115,5 +116,24 @@ public class AuthService {
      */
     public boolean isTokenBlacklisted(String token) {
         return blacklistedTokens.contains(token);
+    }
+
+    /**
+     * Get user profile information
+     */
+    public UserProfileDTO getProfile(String token) {
+        String email = jwtUtil.extractRole(token);
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        return new UserProfileDTO(
+            user.getId(),
+            user.getEmail(),
+            user.getName(),
+            user.getPhone(),
+            user.getRole(),
+            user.getActive(),
+            user.getRentals().size(),
+            user.getFacilities().size(),
+            user.getCreatedAt()
+        );
     }
 }

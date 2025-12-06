@@ -66,86 +66,100 @@
   <script src="../js/auth.js"></script>
   <script>
     // Registration page script
-      (function () {
-        const form = document.getElementById("registerForm");
-        const name = document.getElementById("name");
-        const email = document.getElementById("email");
-        const password = document.getElementById("password");
-        const phone = document.getElementById("phone");
-        const isOwner = document.getElementById("isOwner");
-        const formAlert = document.getElementById("formAlert");
-        const submitBtn = document.getElementById("submitBtn");
+    (function () {
+      const form = document.getElementById("registerForm");
+      const name = document.getElementById("name");
+      const email = document.getElementById("email");
+      const password = document.getElementById("password");
+      const phone = document.getElementById("phone");
+      const isOwner = document.getElementById("isOwner");
+      const formAlert = document.getElementById("formAlert");
+      const submitBtn = document.getElementById("submitBtn");
 
-        function showToast(message, kind = "info") {
-          if (window.showBootstrapToast) {
-            window.showBootstrapToast(message, kind);
-            return;
-          }
-          alert(message);
+      function showToast(message, kind = "info") {
+        if (window.showBootstrapToast) {
+          window.showBootstrapToast(message, kind);
+          return;
+        }
+        alert(message);
+      }
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        [name, email, password, phone].forEach((field) => {
+          field.classList.remove("is-invalid");
+        });
+        formAlert.style.display = "none";
+
+        let ok = true;
+        if (!name.value.trim()) {
+          name.classList.add("is-invalid"); ok = false;
+        }
+        if (!email.value.includes("@")) {
+          email.classList.add("is-invalid"); ok = false;
+        }
+        if (!phone.value.trim()) {
+          phone.classList.add("is-invalid"); ok = false;
+        }
+        if (!password.value || password.value.length < 4) {
+          password.classList.add("is-invalid"); ok = false;
+        }
+        if (!ok) return;
+
+        submitBtn.disabled = true;
+
+        // Build request dynamically
+        const body = {
+          name: name.value,
+          email: email.value,
+          phone: phone.value,
+          password: password.value,
+        };
+
+        // Add role only if checkbox is checked
+        if (isOwner.checked) {
+          body.role = "OWNER";
         }
 
-        form.addEventListener("submit", async (e) => {
-          e.preventDefault();
-
-          [name, email, password, phone].forEach((field) => {
-            field.classList.remove("is-invalid");
+        try {
+          const res = await fetch("/api/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
           });
-          formAlert.style.display = "none";
 
-          let ok = true;
-          if (!name.value.trim()) {
-            name.classList.add("is-invalid");
-            ok = false;
-          }
-          if (!email.value.includes("@")) {
-            email.classList.add("is-invalid");
-            ok = false;
-          }
-          if (!phone.value.trim()) {
-            phone.classList.add("is-invalid");
-            ok = false;
-          }
-          if (!password.value || password.value.length < 4) {
-            password.classList.add("is-invalid");
-            ok = false;
-          }
-          if (!ok) return;
-
-          submitBtn.disabled = true;
-          try {
-            const res = await fetch("/api/auth/register", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                name: name.value,
-                email: email.value,
-                phone: phone.value,
-                password: password.value,
-                isOwner: isOwner.checked,
-              }),
-            });
-
-            if (!res.ok) {
-              const txt = await res.text();
-              formAlert.textContent = txt || "Registration error";
-              formAlert.style.display = "block";
-              submitBtn.disabled = false;
-              return;
-            }
-
-            const data = await res.json();
-            localStorage.setItem("token", data.token);
-            localStorage.setItem("role", data.role || "USER");
-            showToast("Account created successfully!", "success");
-            window.location.href = "/pages/main_page_user.html";
-          } catch (err) {
-            formAlert.textContent = "Network error. Please try again.";
+          if (!res.ok) {
+            const txt = await res.text();
+            formAlert.textContent = txt || "Registration error";
             formAlert.style.display = "block";
             submitBtn.disabled = false;
+            return;
           }
-        });
-      })();
+
+          const data = await res.json();
+          localStorage.setItem("token", data.token);
+
+          if (data.role) {
+            localStorage.setItem("role", data.role);
+          }
+
+          showToast("Account created successfully!", "success");
+
+          if (data.role === "OWNER") {
+            window.location.href = "/pages/main_page_owner.html";
+          } else {
+            window.location.href = "/pages/main_page_user.html";
+          }
+        } catch (err) {
+          formAlert.textContent = "Network error. Please try again.";
+          formAlert.style.display = "block";
+          submitBtn.disabled = false;
+        }
+      });
+    })();
   </script>
+
 </body>
 
 </html>

@@ -34,6 +34,12 @@ public class User {
     @Column(length = 20)
     private String phone;
 
+    @Column
+    private Double latitude; // User's preferred/home location latitude
+
+    @Column
+    private Double longitude; // User's preferred/home location longitude
+
     @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)

@@ -29,7 +29,9 @@ public class RestExceptionHandler {
 
     // Método utilitário para criar respostas de erro
     private ResponseEntity<Map<String, Object>> buildErrorResponse(HttpStatus status, String error, String message) {
-        return ResponseEntity.status(status).body(Map.of(
+        return ResponseEntity.status(status)
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .body(Map.of(
                 TIMESTAMP, OffsetDateTime.now(),
                 STATUS, status.value(),
                 ERROR, error,
@@ -62,7 +64,7 @@ public class RestExceptionHandler {
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNoResourceFound(NoResourceFoundException ex) {
         // Não loga como erro - é normal o navegador pedir favicon.ico
-        logger.debug("Static resource not found: {}", ex.getResourcePath());
+        // logger.debug("Static resource not found: {}", ex.getResourcePath());
         return buildErrorResponse(HttpStatus.NOT_FOUND, "Not Found", "Recurso não encontrado");
     }
 
@@ -80,6 +82,11 @@ public class RestExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
+        // Ignore ClientAbortException (Connection broken by client)
+        if (ex.getClass().getSimpleName().equals("ClientAbortException")) {
+            return null;
+        }
+        
         logger.error("Internal error", ex);
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error",
                 "Ocorreu um erro inesperado");

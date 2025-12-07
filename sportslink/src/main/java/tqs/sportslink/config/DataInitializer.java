@@ -178,7 +178,7 @@ public class DataInitializer {
             facility7.setDescription("Courts premium de padel com ar condicionado");
             facility7.setPricePerHour(28.0);
             facility7.setOpeningTime(LocalTime.parse("08:00"));
-            facility7.setClosingTime(LocalTime.parse("00:00"));
+            facility7.setClosingTime(LocalTime.parse("23:59"));
             facility7.setStatus(STATUS_ACTIVE);
             facility7.setLatitude(38.7250);
             facility7.setLongitude(-9.1450);

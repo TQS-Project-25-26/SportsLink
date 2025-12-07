@@ -1,4 +1,4 @@
-package tqs.sportslink.integration;
+package tqs.sportslink.D_Tests_integration;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
@@ -37,7 +37,7 @@ import tqs.sportslink.dto.RentalRequestDTO;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-public class RentalFlowIntegrationTest {
+public class RentalIntegrationTest {
 
     @LocalServerPort
     private int port;

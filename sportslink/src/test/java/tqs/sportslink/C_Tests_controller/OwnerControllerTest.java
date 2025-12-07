@@ -1,4 +1,4 @@
-package tqs.sportslink.unit;
+package tqs.sportslink.C_Tests_controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

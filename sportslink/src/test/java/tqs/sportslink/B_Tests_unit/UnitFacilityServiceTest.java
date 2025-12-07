@@ -1,4 +1,4 @@
-package tqs.sportslink.unit;
+package tqs.sportslink.B_Tests_unit;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ import tqs.sportslink.dto.FacilityResponseDTO;
 import tqs.sportslink.service.FacilityService;
 
 @ExtendWith(MockitoExtension.class)
-public class UnitFacilityTest {
+public class UnitFacilityServiceTest {
 
     @Mock
     private FacilityRepository facilityRepository;

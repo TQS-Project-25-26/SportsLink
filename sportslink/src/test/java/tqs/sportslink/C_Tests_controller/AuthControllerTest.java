@@ -1,4 +1,4 @@
-package tqs.sportslink.unit;
+package tqs.sportslink.C_Tests_controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;

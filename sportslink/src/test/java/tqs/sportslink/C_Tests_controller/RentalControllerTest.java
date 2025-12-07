@@ -1,4 +1,4 @@
-package tqs.sportslink.isolation.controllerlayer;
+package tqs.sportslink.C_Tests_controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package tqs.sportslink.unit;
+package tqs.sportslink.B_Tests_unit;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

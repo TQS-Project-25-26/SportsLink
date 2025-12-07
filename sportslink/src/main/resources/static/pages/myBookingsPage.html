@@ -13,6 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="../css/styles.css" rel="stylesheet">
+    <link href="../css/my_rentals.css" rel="stylesheet">
 
     <script>
         // Check auth
@@ -30,12 +31,40 @@
     <div id="navbar-placeholder"></div>
 
     <div class="container-fluid px-lg-5 py-5">
-        <h1 class="fw-bold mb-4">My Bookings</h1>
-        <p class="text-muted">Manage your upcoming and past reservations.</p>
+        <h1 class="fw-bold mb-4">My Rentals</h1>
+        <p class="text-muted mb-4">Manage your upcoming and past reservations.</p>
 
-        <!-- Placeholder content -->
-        <div class="alert alert-info" role="alert">
-            Bookings list functionality coming soon.
+        <!-- Tabs -->
+        <ul class="nav nav-tabs mb-4" id="rentalsTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="active-tab" data-bs-toggle="tab" data-bs-target="#active-rentals"
+                    type="button" role="tab" aria-controls="active-rentals" aria-selected="true">
+                    Upcoming
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="past-tab" data-bs-toggle="tab" data-bs-target="#past-rentals" type="button"
+                    role="tab" aria-controls="past-rentals" aria-selected="false">
+                    History
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="rentalsTabContent">
+            <!-- Active Rentals -->
+            <div class="tab-pane fade show active" id="active-rentals" role="tabpanel" aria-labelledby="active-tab">
+                <div id="active-rentals-list">
+                    <!-- Javascript will populate this -->
+                </div>
+            </div>
+
+            <!-- Past Rentals -->
+            <div class="tab-pane fade" id="past-rentals" role="tabpanel" aria-labelledby="past-tab">
+                <div id="past-rentals-list">
+                    <!-- Javascript will populate this -->
+                </div>
+            </div>
         </div>
     </div>
 
@@ -45,6 +74,8 @@
     <script src="../js/auth.js"></script>
     <!-- Navbar Component -->
     <script src="../js/components/navbar.js"></script>
+    <!-- My Rentals Logic -->
+    <script src="../js/my_rentals.js"></script>
 </body>
 
 </html>

@@ -198,6 +198,7 @@ public class UnitRentalServiceTest {
         updateRequest.setEndTime(LocalDateTime.now().plusDays(31).withHour(22).withMinute(0).withSecond(0).withNano(0));
 
         when(rentalRepository.findById(1L)).thenReturn(Optional.of(mockRental));
+        when(facilityRepository.findById(1L)).thenReturn(Optional.of(mockFacility)); // Mock facility requirement for update
         when(rentalRepository.findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(
                 anyLong(), any(), any())).thenReturn(List.of(mockRental));
         when(rentalRepository.save(any(Rental.class))).thenReturn(mockRental);
@@ -267,6 +268,92 @@ public class UnitRentalServiceTest {
         assertThatThrownBy(() -> rentalService.updateRental(1L, updateRequest))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Cannot update rental to past time");
+    }
+
+    @Test
+    @Requirement("SL-26")
+    void whenUpdateRental_toTimeLessThan24HoursAhead_shouldThrowException() {
+        RentalRequestDTO updateRequest = new RentalRequestDTO();
+        updateRequest.setUserId(1L);
+        updateRequest.setFacilityId(1L);
+        // 2 hours from now (less than 24h)
+        updateRequest.setStartTime(LocalDateTime.now().plusHours(2));
+        updateRequest.setEndTime(LocalDateTime.now().plusHours(4));
+
+        when(rentalRepository.findById(1L)).thenReturn(Optional.of(mockRental));
+
+        assertThatThrownBy(() -> rentalService.updateRental(1L, updateRequest))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Updates must be made for a time at least 24 hours in the future");
+    }
+
+    @Test
+    @Requirement("SL-26")
+    void whenUpdateRental_withValidTimeLimit_thenSuccess() {
+        RentalRequestDTO updateRequest = new RentalRequestDTO();
+        updateRequest.setUserId(1L);
+        updateRequest.setFacilityId(1L);
+        // 25 hours from now (valid), ensuring it falls within operating hours (08:00 - 22:00)
+        // Using plusDays(2).withHour(14) makes it 2PM the day after tomorrow, which is safe (> 24h) and within hours.
+        LocalDateTime validStart = LocalDateTime.now().plusDays(2).withHour(14).withMinute(0).withSecond(0).withNano(0);
+        
+        updateRequest.setStartTime(validStart);
+        updateRequest.setEndTime(validStart.plusHours(2));
+
+        when(rentalRepository.findById(1L)).thenReturn(Optional.of(mockRental));
+        when(facilityRepository.findById(1L)).thenReturn(Optional.of(mockFacility)); // Mock facility requirement for update
+        when(rentalRepository.findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(
+                anyLong(), any(), any())).thenReturn(List.of(mockRental)); // Self conflict ignored in service
+        when(rentalRepository.save(any(Rental.class))).thenReturn(mockRental);
+
+        RentalResponseDTO result = rentalService.updateRental(1L, updateRequest);
+
+        assertThat(result).isNotNull();
+        verify(rentalRepository).save(any(Rental.class));
+    }
+
+    @Test
+    @Requirement("SL-29")
+    void whenUpdateRental_outsideFacilityHours_shouldThrowException() {
+        RentalRequestDTO updateRequest = new RentalRequestDTO();
+        updateRequest.setUserId(1L);
+        updateRequest.setFacilityId(1L);
+        // Valid future time (25h+) but outside operating hours (e.g. 02:00 AM)
+        LocalDateTime invalidTime = LocalDateTime.now().plusHours(30).withHour(2).withMinute(0);
+        updateRequest.setStartTime(invalidTime);
+        updateRequest.setEndTime(invalidTime.plusHours(2));
+
+        when(rentalRepository.findById(1L)).thenReturn(Optional.of(mockRental));
+        when(facilityRepository.findById(1L)).thenReturn(Optional.of(mockFacility)); // Mock facility return
+
+        assertThatThrownBy(() -> rentalService.updateRental(1L, updateRequest))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("outside facility operating hours");
+    }
+
+    @Test
+    @Requirement("SL-29")
+    void whenUpdateRental_conflictsWithExistingBooking_shouldThrowException() {
+        RentalRequestDTO updateRequest = new RentalRequestDTO();
+        updateRequest.setUserId(1L);
+        updateRequest.setFacilityId(1L);
+        
+        LocalDateTime validStart = LocalDateTime.now().plusHours(30).withHour(15).withMinute(0);
+        updateRequest.setStartTime(validStart);
+        updateRequest.setEndTime(validStart.plusHours(1));
+
+        Rental conflicting = new Rental();
+        conflicting.setId(2L); // Different ID
+        conflicting.setStatus("CONFIRMED");
+
+        when(rentalRepository.findById(1L)).thenReturn(Optional.of(mockRental));
+        when(facilityRepository.findById(1L)).thenReturn(Optional.of(mockFacility));
+        when(rentalRepository.findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(
+                anyLong(), any(), any())).thenReturn(List.of(conflicting));
+
+        assertThatThrownBy(() -> rentalService.updateRental(1L, updateRequest))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("conflicts with existing booking");
     }
 
     @Test

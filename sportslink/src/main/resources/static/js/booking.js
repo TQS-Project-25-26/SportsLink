@@ -564,7 +564,7 @@
         const endDateTime = `${date}T${endTime}:00`;
 
         const bookingData = {
-            userId: 1,
+            userId: parseInt(localStorage.getItem('userId')),
             facilityId: parseInt(facilityId),
             startTime: startDateTime,
             endTime: endDateTime,

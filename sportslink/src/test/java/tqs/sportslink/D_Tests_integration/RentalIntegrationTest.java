@@ -129,8 +129,8 @@ public class RentalIntegrationTest {
         RentalRequestDTO request = new RentalRequestDTO();
         request.setUserId(testUser.getId());
         request.setFacilityId(testFacility.getId());
-        request.setStartTime(LocalDateTime.now().plusDays(1).withHour(19).withMinute(0).withSecond(0).withNano(0));
-        request.setEndTime(LocalDateTime.now().plusDays(1).withHour(21).withMinute(0).withSecond(0).withNano(0));
+        request.setStartTime(LocalDateTime.now().plusDays(2).withHour(19).withMinute(0).withSecond(0).withNano(0));
+        request.setEndTime(LocalDateTime.now().plusDays(2).withHour(21).withMinute(0).withSecond(0).withNano(0));
         request.setEquipmentIds(List.of(testEquipment.getId()));
 
         Integer rentalIdInt = given()
@@ -162,8 +162,8 @@ public class RentalIntegrationTest {
         RentalRequestDTO updateRequest = new RentalRequestDTO();
         updateRequest.setUserId(testUser.getId());
         updateRequest.setFacilityId(testFacility.getId());
-        updateRequest.setStartTime(LocalDateTime.now().plusDays(1).withHour(20).withMinute(0).withSecond(0).withNano(0));
-        updateRequest.setEndTime(LocalDateTime.now().plusDays(1).withHour(22).withMinute(0).withSecond(0).withNano(0));
+        updateRequest.setStartTime(LocalDateTime.now().plusDays(2).withHour(20).withMinute(0).withSecond(0).withNano(0));
+        updateRequest.setEndTime(LocalDateTime.now().plusDays(2).withHour(22).withMinute(0).withSecond(0).withNano(0));
 
         given()
             .contentType(ContentType.JSON)
@@ -230,8 +230,8 @@ public class RentalIntegrationTest {
         RentalRequestDTO request = new RentalRequestDTO();
         request.setUserId(testUser.getId());
         request.setFacilityId(9999L); // Facility inexistente
-        request.setStartTime(LocalDateTime.now().plusDays(1).withHour(19).withMinute(0).withSecond(0).withNano(0));
-        request.setEndTime(LocalDateTime.now().plusDays(1).withHour(21).withMinute(0).withSecond(0).withNano(0));
+        request.setStartTime(LocalDateTime.now().plusDays(2).withHour(19).withMinute(0).withSecond(0).withNano(0));
+        request.setEndTime(LocalDateTime.now().plusDays(2).withHour(21).withMinute(0).withSecond(0).withNano(0));
 
         given()
             .contentType(ContentType.JSON)

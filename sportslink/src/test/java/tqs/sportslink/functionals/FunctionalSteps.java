@@ -43,7 +43,7 @@ public class FunctionalSteps {
 
     // ------------------ SETUP ------------------
 
-    private String generateTestToken() {
+    private void setupAuthenticatedState() {
         // Fetch the test user created by DataInitializer
         var user = userRepository.findByEmail("test@sportslink.com")
                 .orElseThrow(() -> new RuntimeException("Test user not found"));
@@ -55,7 +55,10 @@ public class FunctionalSteps {
             roles.add("RENTER");
         }
 
-        return jwtUtil.generateToken(user.getEmail(), roles);
+        String token = jwtUtil.generateToken(user.getEmail(), roles);
+        
+        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', arguments[0]);", token);
+        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('userId', arguments[0]);", user.getId().toString());
     }
 
     private void initDriverIfNeeded() {
@@ -88,8 +91,7 @@ public class FunctionalSteps {
         initDriverIfNeeded();
         // Bypass client-side auth check
         driver.get(getBaseUrl() + "/index.html");
-        String token = generateTestToken();
-        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', arguments[0]);", token);
+        setupAuthenticatedState();
 
         driver.get(getBaseUrl() + "/pages/main_page_user.html");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("searchBtn")));
@@ -236,8 +238,7 @@ public class FunctionalSteps {
         initDriverIfNeeded();
         // Bypass client-side auth check
         driver.get(getBaseUrl() + "/index.html");
-        String token = generateTestToken();
-        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', arguments[0]);", token);
+        setupAuthenticatedState();
 
         driver.get(getBaseUrl() + "/pages/field_detail.html?id=" + id);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("field-name")));
@@ -281,8 +282,7 @@ public class FunctionalSteps {
         initDriverIfNeeded();
         // Bypass client-side auth check
         driver.get(getBaseUrl() + "/index.html");
-        String token = generateTestToken();
-        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', arguments[0]);", token);
+        setupAuthenticatedState();
 
         driver.get(getBaseUrl() + "/pages/equipments.html?facilityId=" + id);
         wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector(".equipment-card")));
@@ -325,8 +325,7 @@ public class FunctionalSteps {
         initDriverIfNeeded();
         // Bypass client-side auth check
         driver.get(getBaseUrl() + "/index.html");
-        String token = generateTestToken();
-        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', arguments[0]);", token);
+        setupAuthenticatedState();
 
         driver.get(getBaseUrl() + "/pages/booking.html?facilityId=" + id);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("btn-confirm-booking")));

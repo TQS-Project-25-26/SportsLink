@@ -62,7 +62,7 @@ public class AuthService {
         String primaryRole = roleNames.contains("OWNER") ? "OWNER" : (roleNames.contains("ADMIN") ? "ADMIN" : "RENTER");
 
         logger.info("User {} logged in successfully", user.getEmail());
-        return new AuthResponseDTO(token, roleNames, primaryRole);
+        return new AuthResponseDTO(token, roleNames, primaryRole, user.getId());
     }
 
     /**
@@ -71,7 +71,6 @@ public class AuthService {
     public AuthResponseDTO register(UserRequestDTO request) {
         logger.debug("Registration attempt for user: {}", request.getEmail());
 
-        // Verificar se email já existe
         // Verificar se email já existe
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalStateException("Email already registered");
@@ -124,7 +123,7 @@ public class AuthService {
         String primaryRole = roleNames.contains("OWNER") ? "OWNER" : (roleNames.contains("ADMIN") ? "ADMIN" : "RENTER");
 
         logger.info("User {} registered successfully with roles {}", savedUser.getEmail(), savedUser.getRoles());
-        return new AuthResponseDTO(token, roleNames, primaryRole);
+        return new AuthResponseDTO(token, roleNames, primaryRole, savedUser.getId());
     }
 
     /**

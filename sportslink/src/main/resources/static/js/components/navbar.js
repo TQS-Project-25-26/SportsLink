@@ -30,7 +30,7 @@ function renderNavbar() {
                         <a class="nav-link fw-medium ${isActive('main_page_user.html')}" href="/pages/main_page_user.html">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link fw-medium ${isActive('myBookingsPage.html')}" href="/pages/myBookingsPage.html">My Bookings</a>
+                        <a class="nav-link fw-medium ${isActive('myBookingsPage.html')}" href="/pages/myBookingsPage.html">My Rentals</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link fw-medium" href="/pages/main_page_user.html#favoritos">Favorites</a>

@@ -24,9 +24,12 @@ function isAuthenticated() {
 /**
  * Armazena credenciais de autenticação
  */
-function setAuthCredentials(token, role) {
+function setAuthCredentials(token, role, userId) {
   localStorage.setItem('token', token);
   localStorage.setItem('role', role || 'RENTER');
+  if (userId) {
+    localStorage.setItem('userId', userId);
+  }
 }
 
 /**
@@ -34,7 +37,7 @@ function setAuthCredentials(token, role) {
  */
 function authHeaders() {
   const token = getToken();
-  
+
   const headers = {
     'Content-Type': 'application/json'
   };
@@ -65,15 +68,16 @@ function logout() {
       },
       credentials: 'include'  // Incluir cookies
     })
-    .catch(err => {
-      console.warn('Logout request failed (continuing anyway):', err);
-    });
+      .catch(err => {
+        console.warn('Logout request failed (continuing anyway):', err);
+      });
   }
 
   // Limpar credenciais do localStorage
   try {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
+    localStorage.removeItem('userId');
   } catch (e) {
     console.warn('Error clearing localStorage:', e);
   }
@@ -83,9 +87,9 @@ function logout() {
 }
 
 // Simple toast helper: projects can override `showBootstrapToast` for nicer UI.
-function showBootstrapToast(message, kind='info'){
+function showBootstrapToast(message, kind = 'info') {
   // kind: 'info'|'success'|'warning'|'danger'
-  try{
+  try {
     // if bootstrap toasts are present, create a temporary one
     const containerId = 'sl-toast-container';
     let container = document.getElementById(containerId);
@@ -102,8 +106,8 @@ function showBootstrapToast(message, kind='info'){
     toast.style.minWidth = '200px';
     toast.innerHTML = `<div class="d-flex"><div class="toast-body">${message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button></div>`;
     container.appendChild(toast);
-    setTimeout(()=>{ toast.remove(); }, 4000);
-  } catch(e) { alert(message); }
+    setTimeout(() => { toast.remove(); }, 4000);
+  } catch (e) { alert(message); }
 }
 
 /**

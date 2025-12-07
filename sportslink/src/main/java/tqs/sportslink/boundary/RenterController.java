@@ -73,6 +73,12 @@ public class RenterController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/history")
+    public ResponseEntity<List<RentalResponseDTO>> getUserHistory(@RequestParam Long userId) {
+        List<RentalResponseDTO> history = rentalService.getUserRentals(userId);
+        return ResponseEntity.ok(history);
+    }
+
     @GetMapping("/facility/{id}/equipments")
     public ResponseEntity<List<EquipmentResponseDTO>> getEquipments(@PathVariable Long id) {
         List<EquipmentResponseDTO> equipments = equipmentService.getEquipmentsByFacility(id);

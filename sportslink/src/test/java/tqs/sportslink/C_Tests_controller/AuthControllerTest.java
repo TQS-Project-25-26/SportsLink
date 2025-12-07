@@ -59,7 +59,7 @@ class UnitAuthControllerTest {
         registerRequest.setRole("RENTER");
 
         // Auth response
-        authResponse = new AuthResponseDTO("jwt-token-123", java.util.Set.of("RENTER"), "RENTER");
+        authResponse = new AuthResponseDTO("jwt-token-123", java.util.Set.of("RENTER"), "RENTER", 1L);
     }
 
     @Test

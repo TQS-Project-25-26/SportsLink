@@ -10,4 +10,5 @@ public class AuthResponseDTO {
     private String token;
     private java.util.Set<String> roles;
     private String role; // Backward compatibility
+    private Long userId;
 }

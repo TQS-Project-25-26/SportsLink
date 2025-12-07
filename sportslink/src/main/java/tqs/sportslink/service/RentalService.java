@@ -147,14 +147,30 @@ public class RentalService {
             .orElseThrow(() -> new IllegalArgumentException(ERROR_RENTAL_NOT_FOUND));
         
         // Validação: não permitir atualizar para horário no passado
+        // Validação: não permitir atualizar para horário no passado ou com menos de 24h
         if (request.getStartTime().isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("Cannot update rental to past time");
+        }
+        
+        if (request.getStartTime().isBefore(LocalDateTime.now().plusHours(24))) {
+            throw new IllegalArgumentException("Updates must be made for a time at least 24 hours in the future");
         }
         
         // Validação: horário de término deve ser depois do início
         if (request.getEndTime().isBefore(request.getStartTime()) || 
             request.getEndTime().equals(request.getStartTime())) {
             throw new IllegalArgumentException("End time must be after start time");
+        }
+
+        // Buscar facility para validar horários de funcionamento
+        Facility facility = facilityRepository.findById(request.getFacilityId())
+            .orElseThrow(() -> new IllegalArgumentException("Facility not found"));
+
+        // Validação: horários de funcionamento da facility
+        if (facility.getOpeningTime() != null && facility.getClosingTime() != null &&
+            (request.getStartTime().toLocalTime().isBefore(facility.getOpeningTime()) ||
+             request.getEndTime().toLocalTime().isAfter(facility.getClosingTime()))) {
+            throw new IllegalArgumentException("Rental time is outside facility operating hours");
         }
         
         // Validar novos horários - LÓGICA NO SERVICE (excluindo o próprio rental)
@@ -181,6 +197,13 @@ public class RentalService {
         Rental rental = rentalRepository.findById(rentalId)
             .orElseThrow(() -> new IllegalArgumentException(ERROR_RENTAL_NOT_FOUND));
         return mapToResponseDTO(rental);
+    }
+
+    public List<RentalResponseDTO> getUserRentals(Long userId) {
+        List<Rental> rentals = rentalRepository.findByUserId(userId);
+        return rentals.stream()
+            .map(this::mapToResponseDTO)
+            .toList();
     }
 
     private RentalResponseDTO mapToResponseDTO(Rental rental) {

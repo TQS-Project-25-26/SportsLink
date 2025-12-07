@@ -165,4 +165,25 @@ public class RenterControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status", is("ACTIVE")));
     }
+
+    @Test
+    void test_getUserHistory_returns200() throws Exception {
+        // Given
+        RentalResponseDTO r1 = new RentalResponseDTO();
+        r1.setId(10L);
+        r1.setStatus("CONFIRMED");
+
+        RentalResponseDTO r2 = new RentalResponseDTO();
+        r2.setId(11L);
+        r2.setStatus("CANCELLED");
+
+        when(rentalService.getUserRentals(1L)).thenReturn(List.of(r1, r2));
+
+        // When & Then
+        mockMvc.perform(get("/api/rentals/history").param("userId", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].id", is(10)))
+                .andExpect(jsonPath("$[1].status", is("CANCELLED")));
+    }
 }

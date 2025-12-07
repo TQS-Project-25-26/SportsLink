@@ -179,7 +179,7 @@
           }
 
           // Success - store credentials in localStorage
-          setAuthCredentials(data.token, data.role || 'RENTER');
+          setAuthCredentials(data.token, data.role || 'RENTER', data.userId);
 
           showToast('Account created successfully!', 'success');
 

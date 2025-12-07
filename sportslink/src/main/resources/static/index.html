@@ -1,177 +1,180 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>SportsLink — Login</title>
-        <link href="./css/styles.css" rel="stylesheet">
-        <link href="./css/login_register.css" rel="stylesheet">
-    </head>
-    <body class="login-page">
-        <div class="login-card">
-            <!-- Toast Container -->
-            <div id="toastContainer" class="toast-container"></div>
-            
-            <div class="brand">
-                <div class="logo">SL</div>
-                <div>
-                    <br>
-                    <h4 class="brand-title">SportsLink</h4>
-                    <div class="subtitle">Sign in to your account</div>
-                </div>
-            </div>
 
-            
-            <form id="loginForm" novalidate>
-                <div class="sl-input-group">
-                    <label for="email">Email</label>
-                    <input id="email" type="email" class="form-control" required />
-                    <div class="invalid-feedback">Please enter a valid email.</div>
-                </div>
-                
-                <div class="sl-input-group">
-                    <label for="password">Password</label>
-                    <div class="input-with-button">
-                        <input id="password" type="password" class="form-control" required />
-                        <button id="toggleShow" type="button" class="btn btn-outline-secondary">Show</button>
-                    </div>
-                    <div class="invalid-feedback">Password is required.</div>
-                </div>
-                
-                <div id="formAlert" class="alert alert-danger form-alert" role="alert" style="display: none;"></div>
-                <div class="d-flex justify-content-end mb-2">
-                    <button id="submitBtn" type="submit" class="btn btn-primary">Sign in</button>
-                </div>
-            </form>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SportsLink — Login</title>
+    <link href="./css/styles.css" rel="stylesheet">
+    <link href="./css/login_register.css" rel="stylesheet">
+</head>
 
-            <div class="text-center mt-3">
+<body class="login-page">
+    <div class="login-card">
+        <!-- Toast Container -->
+        <div id="toastContainer" class="toast-container"></div>
+
+        <div class="brand">
+            <div class="logo">SL</div>
+            <div>
                 <br>
-                Don't have an account? <a href="/pages/register.html" class="small-link">Create one</a>
+                <h4 class="brand-title">SportsLink</h4>
+                <div class="subtitle">Sign in to your account</div>
             </div>
-
         </div>
 
-        <script src="/js/auth.js"></script>
-        <script>
-            // Login form handling
-            (function(){
-                const form = document.getElementById('loginForm');
-                const email = document.getElementById('email');
-                const password = document.getElementById('password');
-                const formAlert = document.getElementById('formAlert');
-                const toggle = document.getElementById('toggleShow');
-                const submitBtn = document.getElementById('submitBtn');
-                const toastContainer = document.getElementById('toastContainer');
-                
-                toggle.addEventListener('click', () => {
-                    password.type = password.type === 'password' ? 'text' : 'password';
-                    toggle.textContent = password.type === 'password' ? 'Show' : 'Hide';
-                });
-                
-                function showToast(message, kind='info'){
-                    if (!message) return;
-                    
-                    // Remove any existing toast
-                    const existingToast = toastContainer.querySelector('.custom-toast');
-                    if (existingToast) {
-                        existingToast.remove();
-                    }
-                    
-                    // Create toast element
-                    const toast = document.createElement('div');
-                    toast.className = `custom-toast toast-${kind}`;
-                    toast.textContent = message;
-                    
-                    toastContainer.appendChild(toast);
-                    
-                    // Auto remove after 3 seconds
-                    setTimeout(() => {
-                        toast.classList.add('toast-exit');
-                        setTimeout(() => toast.remove(), 300);
-                    }, 3000);
+
+        <form id="loginForm" novalidate>
+            <div class="sl-input-group">
+                <label for="email">Email</label>
+                <input id="email" type="email" class="form-control" required />
+                <div class="invalid-feedback">Please enter a valid email.</div>
+            </div>
+
+            <div class="sl-input-group">
+                <label for="password">Password</label>
+                <div class="input-with-button">
+                    <input id="password" type="password" class="form-control" required />
+                    <button id="toggleShow" type="button" class="btn btn-outline-secondary">Show</button>
+                </div>
+                <div class="invalid-feedback">Password is required.</div>
+            </div>
+
+            <div id="formAlert" class="alert alert-danger form-alert" role="alert" style="display: none;"></div>
+            <div class="d-flex justify-content-end mb-2">
+                <button id="submitBtn" type="submit" class="btn btn-primary">Sign in</button>
+            </div>
+        </form>
+
+        <div class="text-center mt-3">
+            <br>
+            Don't have an account? <a href="/pages/register.html" class="small-link">Create one</a>
+        </div>
+
+    </div>
+
+    <script src="/js/auth.js"></script>
+    <script>
+        // Login form handling
+        (function () {
+            const form = document.getElementById('loginForm');
+            const email = document.getElementById('email');
+            const password = document.getElementById('password');
+            const formAlert = document.getElementById('formAlert');
+            const toggle = document.getElementById('toggleShow');
+            const submitBtn = document.getElementById('submitBtn');
+            const toastContainer = document.getElementById('toastContainer');
+
+            toggle.addEventListener('click', () => {
+                password.type = password.type === 'password' ? 'text' : 'password';
+                toggle.textContent = password.type === 'password' ? 'Show' : 'Hide';
+            });
+
+            function showToast(message, kind = 'info') {
+                if (!message) return;
+
+                // Remove any existing toast
+                const existingToast = toastContainer.querySelector('.custom-toast');
+                if (existingToast) {
+                    existingToast.remove();
                 }
-                
-                form.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    
-                    // Clear previous validation states
-                    email.classList.remove('is-invalid');
-                    password.classList.remove('is-invalid');
-                    formAlert.style.display = 'none';
-                    
-                    // Client-side validation
-                    let isValid = true;
-                    
-                    if (!email.value || !email.value.includes('@')) {
+
+                // Create toast element
+                const toast = document.createElement('div');
+                toast.className = `custom-toast toast-${kind}`;
+                toast.textContent = message;
+
+                toastContainer.appendChild(toast);
+
+                // Auto remove after 3 seconds
+                setTimeout(() => {
+                    toast.classList.add('toast-exit');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                // Clear previous validation states
+                email.classList.remove('is-invalid');
+                password.classList.remove('is-invalid');
+                formAlert.style.display = 'none';
+
+                // Client-side validation
+                let isValid = true;
+
+                if (!email.value || !email.value.includes('@')) {
+                    email.classList.add('is-invalid');
+                    isValid = false;
+                }
+
+                if (!password.value) {
+                    password.classList.add('is-invalid');
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    showToast('Please fill in all fields correctly', 'warning');
+                    return;
+                }
+
+                // Disable button and show loading state
+                submitBtn.disabled = true;
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Logging in...';
+
+                try {
+                    const res = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',  // Incluir cookies na resposta
+                        body: JSON.stringify({
+                            email: email.value,
+                            password: password.value
+                        })
+                    });
+
+                    const data = await res.json().catch(() => ({}));
+
+                    if (res.status === 403 || res.status === 401) {
+                        showToast('Invalid email or password', 'warning');
                         email.classList.add('is-invalid');
-                        isValid = false;
-                    }
-                    
-                    if (!password.value) {
                         password.classList.add('is-invalid');
-                        isValid = false;
-                    }
-                    
-                    if (!isValid) {
-                        showToast('Please fill in all fields correctly', 'warning');
+                        password.value = ''; // Clear password for security
                         return;
                     }
-                    
-                    // Disable button and show loading state
-                    submitBtn.disabled = true;
-                    const originalText = submitBtn.textContent;
-                    submitBtn.textContent = 'Logging in...';
-                    
-                    try {
-                        const res = await fetch('/api/auth/login', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            credentials: 'include',  // Incluir cookies na resposta
-                            body: JSON.stringify({ 
-                                email: email.value, 
-                                password: password.value 
-                            })
-                        });
-                        
-                        const data = await res.json().catch(() => ({}));
-                        
-                        if (res.status === 403 || res.status === 401) {
-                            showToast('Invalid email or password', 'warning');
-                            email.classList.add('is-invalid');
-                            password.classList.add('is-invalid');
-                            password.value = ''; // Clear password for security
-                            return;
-                        }
-                        
-                        if (!res.ok) {
-                            showToast(data.message || 'Unable to login. Please try again.', 'error');
-                            return;
-                        }
-                        
-                        // Success - store credentials in localStorage
-                        setAuthCredentials(data.token, data.role || 'RENTER');
-                        
-                        showToast('Welcome back!', 'success');
-                        
-                        // Redirect after a brief delay (OWNER vai para dashboard, RENTER para main page)
-                        setTimeout(() => {
-                            if (data.role === 'OWNER') {
-                                window.location.href = '/pages/owner_dashboard.html';
-                            } else {
-                                window.location.href = '/pages/main_page_user.html';
-                            }
-                        }, 500);
-                        
-                    } catch (err) {
-                        console.error('Login error:', err);
-                        showToast('Connection error. Please check your internet.', 'error');
-                    } finally {
-                        // Re-enable button
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = originalText;
+
+                    if (!res.ok) {
+                        showToast(data.message || 'Unable to login. Please try again.', 'error');
+                        return;
                     }
-                });
-            })();
-        </script>
-    </body>
+
+                    // Success - store credentials in localStorage
+                    setAuthCredentials(data.token, data.role || 'RENTER', data.userId);
+
+                    showToast('Welcome back!', 'success');
+
+                    // Redirect after a brief delay (OWNER vai para dashboard, RENTER para main page)
+                    setTimeout(() => {
+                        if (data.role === 'OWNER') {
+                            window.location.href = '/pages/owner_dashboard.html';
+                        } else {
+                            window.location.href = '/pages/main_page_user.html';
+                        }
+                    }, 500);
+
+                } catch (err) {
+                    console.error('Login error:', err);
+                    showToast('Connection error. Please check your internet.', 'error');
+                } finally {
+                    // Re-enable button
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                }
+            });
+        })();
+    </script>
+</body>
+
 </html>

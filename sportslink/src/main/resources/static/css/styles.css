@@ -370,72 +370,72 @@ body {
     border-radius: 4px;
 }
 
-/* Field image ocupa todo o card */
-.field-card .field-image {
-    border-radius: 0;
-    height: 200px;
-}
-
-/* Remove sombra de cards se quiser visual flat */
+/* Field Card Updates */
 .field-card {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(0, 0, 0, 0.04);
+    min-width: 280px; /* Sane default for carousel */
+    border: none;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
     background: white;
-}
-
-
-/* Tweak field-card global sizing and spacing */
-.field-card {
-    min-width: 300px;
-    max-width: 360px;
-    margin-bottom: 8px;
-    position: relative;
-    padding: 0;
-    background: var(--card);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-/* Field image more prominent */
-.field-image {
-    height: 180px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, rgba(255, 122, 0, 0.06), rgba(255, 182, 107, 0.03));
-}
-
-/* Card body spacing */
-.field-card .card-body {
-    padding: 16px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
 }
 
-/* Button alignment fix */
-.field-details .d-flex {
+.field-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(255, 122, 0, 0.15);
+}
+
+.field-image {
+    height: 200px;
     width: 100%;
-    gap: 8px !important;
-    /* Force gap */
-    flex-wrap: nowrap;
+    background: linear-gradient(135deg, #FF9C40, #FF6F00); /* Fallback/Gradient */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
 }
 
-.field-details .btn {
+/* Icon inside image */
+.field-image i {
+    opacity: 0.3;
+}
+
+/* Button polishing */
+.btn-primary {
+    background: var(--accent);
+    border: none;
+}
+.btn-primary:hover {
+    background: var(--accent-2);
+}
+.btn-outline-dark {
+    border-color: #eee;
+    color: var(--text);
+}
+.btn-outline-dark:hover {
+    background: #f8f9fa;
+    border-color: #ddd;
+}
+
+/* Card Body spacing */
+.field-card .card-body {
+    padding: 1.25rem;
     flex: 1;
-    /* Equal width */
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: 8px 0;
-    /* Horizontal padding 0 to fit long text */
-    font-size: 0.8rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+}
+
+/* Carousel Tweaks */
+.carousel {
+    padding: 20px 4px; /* Space for shadow */
+    scroll-padding: 0 20px;
+    gap: 24px;
+}
+.carousel > .field-card {
+    scroll-snap-align: start;
+    flex: 0 0 auto;
+    width: 300px; /* Fixed width in carousel */
 }
 
 /* Favorite button visual */

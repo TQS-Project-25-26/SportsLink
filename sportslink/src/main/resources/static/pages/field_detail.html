@@ -34,7 +34,14 @@
                 <div class="row align-items-center">
                     <div class="col-lg-8">
                         <div class="d-flex align-items-start mb-4">
-                            <i class="material-icons icon-large me-4" id="field-icon">sports_soccer</i>
+                            <div class="me-4 position-relative" style="width: 120px; height: 120px; min-width: 120px;">
+                                <img id="field-image" src="" class="w-100 h-100 object-fit-cover rounded shadow-sm"
+                                    style="display:none;" alt="Facility Image">
+                                <div id="field-icon-container"
+                                    class="w-100 h-100 d-flex align-items-center justify-content-center bg-light rounded text-muted shadow-sm">
+                                    <i class="material-icons icon-large" id="field-icon">sports_soccer</i>
+                                </div>
+                            </div>
                             <div>
                                 <h1 class="fw-bold mb-2" id="field-name">Loading...</h1>
                                 <p class="text-muted mb-3 fs-5">

@@ -28,6 +28,12 @@ public class FunctionalSteps {
     private ChromeDriver driver;
     private WebDriverWait wait;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private tqs.sportslink.util.JwtUtil jwtUtil;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private tqs.sportslink.data.UserRepository userRepository;
+
     private String getBaseUrl() {
         return "http://localhost:" + port;
     }
@@ -37,6 +43,21 @@ public class FunctionalSteps {
             By.cssSelector("#featured .card, #nearbyCarousel .card");
 
     // ------------------ SETUP ------------------
+
+    private String generateTestToken() {
+        // Fetch the test user created by DataInitializer
+        var user = userRepository.findByEmail("test@sportslink.com")
+            .orElseThrow(() -> new RuntimeException("Test user not found"));
+        
+        java.util.Set<String> roles = new java.util.HashSet<>();
+        if (user.getRoles() != null) {
+            user.getRoles().forEach(r -> roles.add(r.name()));
+        } else {
+            roles.add("RENTER");
+        }
+        
+        return jwtUtil.generateToken(user.getEmail(), roles);
+    }
 
     private void initDriverIfNeeded() {
         if (driver != null) {
@@ -69,7 +90,8 @@ public class FunctionalSteps {
         initDriverIfNeeded();
         // Bypass client-side auth check
         driver.get(getBaseUrl() + "/index.html");
-        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', 'mock_token_for_test');");
+        String token = generateTestToken();
+        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', arguments[0]);", token);
         
         driver.get(getBaseUrl() + "/pages/main_page_user.html");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("searchBtn")));
@@ -217,7 +239,8 @@ public class FunctionalSteps {
         initDriverIfNeeded();
         // Bypass client-side auth check
         driver.get(getBaseUrl() + "/index.html");
-        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', 'mock_token_functional_test');");
+        String token = generateTestToken();
+        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', arguments[0]);", token);
         
         driver.get(getBaseUrl() + "/pages/field_detail.html?id=" + id);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("field-name")));
@@ -263,7 +286,8 @@ public class FunctionalSteps {
         initDriverIfNeeded();
         // Bypass client-side auth check
         driver.get(getBaseUrl() + "/index.html");
-        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', 'mock_token_functional_test');");
+        String token = generateTestToken();
+        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', arguments[0]);", token);
         
         driver.get(getBaseUrl() + "/pages/equipments.html?facilityId=" + id);
         wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector(".equipment-card")));
@@ -306,7 +330,8 @@ public class FunctionalSteps {
         initDriverIfNeeded();
         // Bypass client-side auth check
         driver.get(getBaseUrl() + "/index.html");
-        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', 'mock_token_functional_test');");
+        String token = generateTestToken();
+        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', arguments[0]);", token);
         
         driver.get(getBaseUrl() + "/pages/booking.html?facilityId=" + id);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("btn-confirm-booking")));
@@ -314,6 +339,38 @@ public class FunctionalSteps {
 
     @When("I fill the booking form with valid data")
     public void fill_booking_form() {
+        // Select Date (pick the first non-disabled day, preferrably tomorrow)
+        // Wait for calendar container
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("calendar-days")));
+        
+        // Wait for at least one enabled day to be present
+        wait.until(d -> !d.findElements(By.cssSelector(".calendar-day:not(.disabled)")).isEmpty());
+        
+        // Find available days
+        java.util.List<WebElement> days = driver.findElements(By.cssSelector(".calendar-day:not(.disabled)"));
+        
+        if (days.isEmpty()) {
+            driver.findElement(By.id("next-month")).click();
+            wait.until(d -> !d.findElements(By.cssSelector(".calendar-day:not(.disabled)")).isEmpty());
+            days = driver.findElements(By.cssSelector(".calendar-day:not(.disabled)"));
+        }
+        
+        // Click the last available day using JS to avoid intersection issues
+        WebElement day = days.get(days.size() - 1);
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", day);
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", day);
+        
+        // Wait for slots container
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("slots-container")));
+        
+        // Wait for slots to populate
+        wait.until(d -> !d.findElements(By.className("time-slot")).isEmpty());
+        
+        // Select first available slot using JS
+        WebElement slot = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".time-slot:not(.disabled)")));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", slot);
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", slot);
+
         driver.findElement(By.id("user-name")).clear();
         driver.findElement(By.id("user-name")).sendKeys("Test User");
 

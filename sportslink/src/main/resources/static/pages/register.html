@@ -55,7 +55,7 @@
 
       <div class="sl-input-group">
         <label for="password">Password</label>
-        <input id="password" type="password" class="form-control" required minlength="4" />
+        <input id="password" type="password" class="form-control" required minlength="6" />
         <div class="invalid-feedback">Password is required (min 6 characters).</div>
       </div>
 
@@ -132,7 +132,7 @@
           isValid = false;
         }
 
-        if (!password.value || password.value.length < 4) {
+        if (!password.value || password.value.length < 6) {
           password.classList.add("is-invalid");
           isValid = false;
         }

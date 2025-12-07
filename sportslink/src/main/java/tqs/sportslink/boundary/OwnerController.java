@@ -67,13 +67,14 @@ public class OwnerController {
     // FACILITIES
     // ============================
 
-    @PostMapping("/{ownerId}/facilities")
+    @PostMapping(value = "/{ownerId}/facilities", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<FacilityResponseDTO> createFacility(
             @PathVariable Long ownerId,
-            @RequestBody FacilityRequestDTO request
+            @org.springframework.web.bind.annotation.RequestPart("facility") FacilityRequestDTO request,
+            @org.springframework.web.bind.annotation.RequestPart(value = "image", required = false) org.springframework.web.multipart.MultipartFile image
     ) {
         validateOwnerId(ownerId);
-        return ResponseEntity.ok(ownerService.createFacility(ownerId, request));
+        return ResponseEntity.ok(ownerService.createFacility(ownerId, request, image));
     }
 
     @GetMapping("/{ownerId}/facilities")

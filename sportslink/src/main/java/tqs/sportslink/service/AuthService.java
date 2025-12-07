@@ -72,8 +72,9 @@ public class AuthService {
         logger.debug("Registration attempt for user: {}", request.getEmail());
 
         // Verificar se email já existe
+        // Verificar se email já existe
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email already registered");
+            throw new IllegalStateException("Email already registered");
         }
         
         // Criar novo usuário

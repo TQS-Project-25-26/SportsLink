@@ -18,6 +18,8 @@ public class FacilityRequestDTO {
 
     @NotBlank
     private String name;
+    
+    private String imageUrl;
 
     @NotNull
     private List<Sport> sports;

@@ -1,5 +1,6 @@
 (() => {
     const urlParams = new URLSearchParams(window.location.search);
+
     const facilityId = urlParams.get('facilityId');
     const equipmentIdsParam = urlParams.get('equipmentIds');
     const equipmentIds = equipmentIdsParam ? equipmentIdsParam.split(',').map(Number) : [];
@@ -28,10 +29,20 @@
 
     async function loadData() {
         try {
+            const token = localStorage.getItem('token');
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             // Load facility
-            const facilityRes = await fetch('/api/rentals/search');
+            const facilityRes = await fetch('/api/rentals/search', { headers: headers }); // GET with headers
+            window.debugStatus = 'FETCHED';
             const facilities = await facilityRes.json();
+            window.debugStatus = 'PARSED';
             facilityData = facilities.find(f => f.id == facilityId);
+            window.debugStatus = 'FOUND: ' + (facilityData ? 'YES' : 'NO');
+
 
             if (!facilityData) {
                 alert('Campo não encontrado');
@@ -41,7 +52,7 @@
 
             // Load equipments if any selected
             if (equipmentIds.length > 0) {
-                const equipmentRes = await fetch(`/api/rentals/facility/${facilityId}/equipments`);
+                const equipmentRes = await fetch(`/api/rentals/facility/${facilityId}/equipments`, { headers: headers });
                 const allEquipments = await equipmentRes.json();
                 selectedEquipments = allEquipments.filter(eq => equipmentIds.includes(eq.id));
             }
@@ -61,9 +72,28 @@
 
         document.getElementById('summary-field-name').textContent = facilityData.name;
         document.getElementById('summary-location').textContent = `${facilityData.city} - ${facilityData.address}`;
+        document.getElementById('field-cost').textContent = `€${facilityData.pricePerHour}/h`;
 
         const icon = sportIcons[facilityData.sportType] || 'sports';
-        document.getElementById('summary-icon').textContent = icon;
+        const iconElem = document.getElementById('summary-icon');
+        const iconContainer = document.getElementById('summary-icon-container');
+        const imgElem = document.getElementById('summary-image');
+
+        if (facilityData.imageUrl) {
+            imgElem.src = facilityData.imageUrl;
+            imgElem.style.display = 'block';
+            if (iconContainer) iconContainer.style.display = 'none';
+
+            imgElem.onerror = () => {
+                imgElem.style.display = 'none';
+                if (iconContainer) iconContainer.style.display = 'flex';
+                if (iconElem) iconElem.textContent = icon;
+            };
+        } else {
+            imgElem.style.display = 'none';
+            if (iconContainer) iconContainer.style.display = 'flex';
+            if (iconElem) iconElem.textContent = icon;
+        }
 
         renderEquipments();
         updateSummary();
@@ -157,8 +187,14 @@
     // Mock Availability Logic
     function getMockSlots(date) {
         const slots = [];
-        const startHour = 9;
-        const endHour = 22;
+
+        let startHour = 9;
+        let endHour = 22;
+
+        if (facilityData && facilityData.openingTime && facilityData.closingTime) {
+            startHour = parseInt(facilityData.openingTime.split(':')[0]);
+            endHour = parseInt(facilityData.closingTime.split(':')[0]);
+        }
 
         // Use date string as seed for deterministic "randomness" so it doesn't change on click
         const seed = date.getDate() + date.getMonth();
@@ -166,7 +202,8 @@
         for (let h = startHour; h < endHour; h++) {
             // Mock some booked slots
             // Simple hash logic
-            const isBooked = (seed + h) % 5 === 0;
+            // Make fewer slots booked for testing purposes (e.g. only every 10th slot)
+            const isBooked = (seed + h) % 10 === 0;
 
             const timeString = `${String(h).padStart(2, '0')}:00`;
             slots.push({
@@ -358,9 +395,13 @@
         };
 
         try {
+            const headers = { 'Content-Type': 'application/json' };
+            const token = localStorage.getItem('token');
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
             const response = await fetch('/api/rentals/rental', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: headers,
                 body: JSON.stringify(bookingData)
             });
 

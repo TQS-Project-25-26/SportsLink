@@ -171,7 +171,7 @@ class UnitAuthServiceTest {
         when(userRepository.existsByEmail("newuser@example.com")).thenReturn(true);
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
             authService.register(registerRequest);
         });
 

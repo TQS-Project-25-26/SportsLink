@@ -111,9 +111,19 @@
     };
     const icon = sportIcons[field.sportType] || 'sports';
 
+    // Updated card content to support images
+    let imageContent;
+    if (field.imageUrl) {
+      imageContent = `<img src="${field.imageUrl}" class="w-100 h-100 object-fit-cover" alt="${field.name}" onerror="this.parentElement.innerHTML='<div class=\\'w-100 h-100 d-flex align-items-center justify-content-center bg-light\\'><i class=\\'material-icons text-muted opacity-50 icon-xlarge\\' style=\\'font-size: 64px;\\'>${icon}</i></div>'">`;
+    } else {
+      imageContent = `<div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
+                          <i class="material-icons text-muted opacity-50 icon-xlarge" style="font-size: 64px;">${icon}</i>
+                        </div>`;
+    }
+
     card.innerHTML = `
-      <div class="field-image card-img-top position-relative">
-        <i class="material-icons text-white opacity-50 icon-xlarge" style="font-size: 64px;">${icon}</i>
+      <div class="field-image card-img-top position-relative" style="height: 200px; overflow: hidden;">
+        ${imageContent}
         <div class="position-absolute top-0 start-0 m-3 px-3 py-1 bg-white text-accent rounded-pill fs-7 fw-bold shadow-sm text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">
           ${field.sportType || "Sport"}
         </div>

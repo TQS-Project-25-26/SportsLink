@@ -128,6 +128,12 @@ function createFacilityCard(facility) {
 
     col.innerHTML = `
         <div class="card shadow-sm p-0 border-0" style="border-radius: 16px; overflow: hidden;">
+            <div style="height: 180px; overflow: hidden; background-color: #f0f0f0;">
+                <img src="${facility.imageUrl || '../images/facilities/default.jpg'}" 
+                     class="w-100 h-100 object-fit-cover" 
+                     alt="${facility.name}"
+                     onerror="this.src='../images/facilities/default.jpg'">
+            </div>
             <div class="card-body p-4">
 
                 <h4 class="fw-bold mb-2">${facility.name}</h4>
@@ -205,6 +211,8 @@ async function createFacility() {
     const price = parseFloat(document.getElementById("facilityPrice").value);
     const opening = document.getElementById("facilityOpening").value;
     const closing = document.getElementById("facilityClosing").value;
+    const imageInput = document.getElementById("facilityImage");
+    const imageFile = imageInput.files[0];
 
     const selectedSports = Array.from(document.getElementById("facilitySports").selectedOptions)
         .map(opt => opt.value);
@@ -226,11 +234,21 @@ async function createFacility() {
         sports: selectedSports
     };
 
+    const formData = new FormData();
+    formData.append('facility', new Blob([JSON.stringify(facilityData)], { type: 'application/json' }));
+    if (imageFile) {
+        formData.append('image', imageFile);
+    }
+
     try {
+        // Headers: Auth only. Content-Type is set automatically by browser with boundary.
+        const headers = authHeaders();
+        delete headers['Content-Type']; // Ensure we don't send application/json
+
         const response = await fetch(`/api/owner/${ownerId}/facilities`, {
             method: "POST",
-            headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()),
-            body: JSON.stringify(facilityData)
+            headers: headers,
+            body: formData
         });
 
         if (!response.ok) {

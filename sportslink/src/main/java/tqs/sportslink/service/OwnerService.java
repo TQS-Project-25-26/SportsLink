@@ -26,20 +26,23 @@ public class OwnerService {
     private final FacilityRepository facilityRepository;
     private final EquipmentRepository equipmentRepository;
     private final UserRepository userRepository;
+    private final StorageService storageService;
 
     public OwnerService(FacilityRepository facilityRepository,
                         EquipmentRepository equipmentRepository,
-                        UserRepository userRepository) {
+                        UserRepository userRepository,
+                        StorageService storageService) {
         this.facilityRepository = facilityRepository;
         this.equipmentRepository = equipmentRepository;
         this.userRepository = userRepository;
+        this.storageService = storageService;
     }
 
     // ============================
     // FACILITY MANAGEMENT
     // ============================
 
-    public FacilityResponseDTO createFacility(Long ownerId, FacilityRequestDTO dto) {
+    public FacilityResponseDTO createFacility(Long ownerId, FacilityRequestDTO dto, org.springframework.web.multipart.MultipartFile imageFile) {
 
         User owner = userRepository.findById(ownerId)
                 .orElseThrow(() -> new NoSuchElementException("Owner not found"));
@@ -55,6 +58,11 @@ public class OwnerService {
         facility.setClosingTime(LocalTime.parse(dto.getClosingTime()));
         facility.setOwner(owner);
 
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String imageUrl = storageService.uploadFile(imageFile);
+            facility.setImageUrl(imageUrl);
+        }
+
         Facility saved = facilityRepository.save(facility);
 
         String openingTimeStr = saved.getOpeningTime() != null ? saved.getOpeningTime().toString() : null;
@@ -63,6 +71,7 @@ public class OwnerService {
         return new FacilityResponseDTO(
                 saved.getId(),
                 saved.getName(),
+                saved.getImageUrl(),
                 saved.getSports(),
                 saved.getCity(),
                 saved.getAddress(),
@@ -89,6 +98,7 @@ public class OwnerService {
                     return new FacilityResponseDTO(
                             f.getId(),
                             f.getName(),
+                            f.getImageUrl(),
                             f.getSports(),
                             f.getCity(),
                             f.getAddress(),
@@ -128,6 +138,7 @@ public class OwnerService {
         return new FacilityResponseDTO(
                 saved.getId(),
                 saved.getName(),
+                saved.getImageUrl(),
                 saved.getSports(),
                 saved.getCity(),
                 saved.getAddress(),

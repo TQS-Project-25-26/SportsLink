@@ -72,6 +72,7 @@
                                     <!-- Hidden Inputs for Form Logic -->
                                     <input type="hidden" id="booking-date" required>
                                     <input type="hidden" id="start-time" required>
+                                    <input type="hidden" id="duration" value="1">
                                     <input type="time" class="form-control d-none" id="end-time" readonly>
                                     <!-- Keep for logic compatibility -->
                                 </div>
@@ -131,7 +132,14 @@
                         <!-- Campo Info -->
                         <div class="mb-3 pb-3 border-bottom">
                             <div class="d-flex align-items-center mb-2">
-                                <i class="material-icons text-accent me-2" id="summary-icon">sports_soccer</i>
+                                <div class="me-2" style="width: 40px; height: 40px; min-width: 40px;">
+                                    <img id="summary-image" src="" class="w-100 h-100 object-fit-cover rounded-circle"
+                                        style="display:none;" alt="Field">
+                                    <div id="summary-icon-container"
+                                        class="w-100 h-100 d-flex align-items-center justify-content-center bg-light rounded-circle text-accent">
+                                        <i class="material-icons" id="summary-icon">sports_soccer</i>
+                                    </div>
+                                </div>
                                 <strong id="summary-field-name">Loading...</strong>
                             </div>
                             <p class="text-muted small mb-0" id="summary-location">-</p>

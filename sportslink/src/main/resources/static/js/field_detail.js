@@ -41,7 +41,26 @@
             document.getElementById('field-price').textContent = `€${facilityData.pricePerHour}/hora`;
 
             const icon = sportIcons[facilityData.sportType] || 'sports';
-            document.getElementById('field-icon').textContent = icon;
+            const iconElem = document.getElementById('field-icon');
+            const iconContainer = document.getElementById('field-icon-container');
+            const imgElem = document.getElementById('field-image');
+
+            if (facilityData.imageUrl) {
+                imgElem.src = facilityData.imageUrl;
+                imgElem.style.display = 'block';
+                iconContainer.style.display = 'none'; // Use container instead of icon directly
+
+                // Fallback if image fails
+                imgElem.onerror = () => {
+                    imgElem.style.display = 'none';
+                    iconContainer.style.display = 'flex';
+                    iconElem.textContent = icon;
+                };
+            } else {
+                imgElem.style.display = 'none';
+                iconContainer.style.display = 'flex';
+                iconElem.textContent = icon;
+            }
 
             loadEquipmentPreview();
         } catch (err) {

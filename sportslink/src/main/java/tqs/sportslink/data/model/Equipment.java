@@ -35,6 +35,12 @@ public class Equipment {
     @JoinColumn(name = "facility_id", nullable = false)
     private Facility facility;
     
+    @ElementCollection(targetClass = Sport.class, fetch = FetchType.EAGER)
+    @CollectionTable(name = "equipment_sports", joinColumns = @JoinColumn(name = "equipment_id"))
+    @Column(name = "sport")
+    @Enumerated(EnumType.STRING)
+    private List<Sport> sports = new ArrayList<>();
+    
     @Column(nullable = false)
     private Integer quantity; // Total units available
     

@@ -38,6 +38,12 @@ public class Facility {
     @Column(nullable = false, length = 100)
     private String city;
     
+    @Column
+    private Double latitude; // Facility geographic latitude
+    
+    @Column
+    private Double longitude; // Facility geographic longitude
+    
     @Column(length = 1000)
     private String description;
     

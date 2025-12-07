@@ -31,8 +31,7 @@ public class RestExceptionHandler {
                 TIMESTAMP, OffsetDateTime.now(),
                 STATUS, status.value(),
                 ERROR, error,
-                MESSAGE, message
-        ));
+                MESSAGE, message));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -63,6 +62,7 @@ public class RestExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
         logger.error("Internal error", ex);
-        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "Ocorreu um erro inesperado");
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error",
+                "Ocorreu um erro inesperado");
     }
 }

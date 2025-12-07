@@ -10,11 +10,11 @@
     let facilityData = null;
 
     const sportIcons = {
-        'Football': 'sports_soccer',
-        'Padel': 'sports_tennis',
-        'Tennis': 'sports_tennis',
-        'Basketball': 'sports_basketball',
-        'Volleyball': 'sports_volleyball'
+        'FOOTBALL': 'sports_soccer',
+        'PADEL': 'sports_tennis',
+        'TENNIS': 'sports_tennis',
+        'BASKETBALL': 'sports_basketball',
+        'VOLLEYBALL': 'sports_volleyball'
     };
 
     async function loadFacility() {
@@ -36,17 +36,61 @@
             document.getElementById('field-hours').textContent =
                 `${facilityData.openingTime || '08:00'} - ${facilityData.closingTime || '22:00'}`;
             document.getElementById('field-rating').textContent = facilityData.rating || '0.0';
-            document.getElementById('field-sport').textContent = facilityData.sportType;
+            const sportsText = facilityData.sports && facilityData.sports.length > 0 
+                ? facilityData.sports.join(', ') 
+                : (facilityData.sportType || 'N/A');
+            document.getElementById('field-sport').textContent = sportsText;
             document.getElementById('field-address').textContent = facilityData.address;
             document.getElementById('field-price').textContent = `€${facilityData.pricePerHour}/hora`;
 
-            const icon = sportIcons[facilityData.sportType] || 'sports';
+            const primarySport = facilityData.sports && facilityData.sports.length > 0 
+                ? facilityData.sports[0] 
+                : facilityData.sportType;
+            const icon = sportIcons[primarySport] || 'sports';
             document.getElementById('field-icon').textContent = icon;
 
+            loadEquipmentSuggestions();
             loadEquipmentPreview();
         } catch (err) {
             console.error('Error loading facility:', err);
             alert('Erro ao carregar campo');
+        }
+    }
+
+    async function loadEquipmentSuggestions() {
+        if (typeof SuggestionsService === 'undefined' || !facilityData) {
+            console.log('SuggestionsService not available');
+            return;
+        }
+
+        try {
+            const sport = facilityData.sports && facilityData.sports.length > 0 
+                ? facilityData.sports[0] 
+                : facilityData.sportType;
+            const suggestions = await SuggestionsService.getEquipmentSuggestions(facilityId, sport);
+            console.log('Equipment suggestions:', suggestions);
+
+            const container = document.getElementById('equipment-suggestions');
+            const noSuggestions = document.getElementById('no-suggestions');
+            
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            if (suggestions.length === 0) {
+                if (noSuggestions) noSuggestions.style.display = 'block';
+                return;
+            }
+
+            if (noSuggestions) noSuggestions.style.display = 'none';
+
+            // Show all suggestions
+            suggestions.forEach(suggestion => {
+                const card = SuggestionsService.createEquipmentSuggestionCard(suggestion);
+                container.appendChild(card);
+            });
+        } catch (err) {
+            console.error('Error loading equipment suggestions:', err);
         }
     }
 

@@ -74,25 +74,17 @@
         </div>
     </div>
 
-    <!-- Nearby Fields Carousel -->
-    <div class="carousel-container container-fluid px-5 mb-5">
-        <h2 class="section-title h3 fw-bold mb-4">Sugested Facilities</h2>
-        <div id="nearbyCarousel" class="carousel slide" data-bs-ride="false">
-            <div class="carousel-inner">
-                <div class="carousel-item active">
-                    <div class="d-flex gap-3 flex-nowrap">
-                        <!-- cards rendered here by /static/js/app.js -->
-                    </div>
-                </div>
-            </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#nearbyCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#nearbyCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-            </button>
+    <!-- Personalized Suggestions Section -->
+    <div class="container-fluid px-5 mb-5" id="suggestions-section" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title h3 fw-bold mb-0">Recommended for You</h2>
+            <span class="badge bg-primary">
+                <i class="material-icons" style="font-size: 14px;">auto_awesome</i>
+                Personalized
+            </span>
+        </div>
+        <div id="suggestions-container" class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4">
+            <!-- Suggestion cards will be rendered here -->
         </div>
     </div>
     
@@ -115,6 +107,10 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
         crossorigin="anonymous"></script>
+
+    <!-- Location and Suggestions Services -->
+    <script src="../js/location-service.js"></script>
+    <script src="../js/suggestions-service.js"></script>
 
     <!-- App JS -->
     <script src="../js/app.js"></script>

@@ -83,15 +83,16 @@
     const card = document.createElement("div");
     card.className = "field-card card border-0 shadow-sm h-100";
     
-    // Map sportType to icon
+    // Map sports to icon (handle both sports array and sportType for compatibility)
     const sportIcons = {
-      'Football': 'sports_soccer',
-      'Padel': 'sports_tennis',
-      'Tennis': 'sports_tennis',
-      'Basketball': 'sports_basketball',
-      'Volleyball': 'sports_volleyball'
+      'FOOTBALL': 'sports_soccer',
+      'PADEL': 'sports_tennis',
+      'TENNIS': 'sports_tennis',
+      'BASKETBALL': 'sports_basketball',
+      'VOLLEYBALL': 'sports_volleyball'
     };
-    const icon = sportIcons[field.sportType] || 'sports';
+    const primarySport = field.sports && field.sports.length > 0 ? field.sports[0] : field.sportType;
+    const icon = sportIcons[primarySport] || 'sports';
     
     card.innerHTML = `
       <div class="field-image card-img-top d-flex align-items-center justify-content-center bg-gradient-orange">
@@ -102,7 +103,7 @@
       </button>
       <div class="card-body">
         <div class="field-sport text-uppercase fw-bold text-accent small">${
-          field.sportType || ""
+          field.sports && field.sports.length > 0 ? field.sports.join(', ') : (field.sportType || "")
         }</div>
         <h5 class="field-name card-title fw-bold text-accent-dark">${
           field.name || "Unnamed"
@@ -427,11 +428,67 @@
     }
   }
 
+  // Load personalized suggestions
+  async function loadSuggestions() {
+    console.log('Loading personalized suggestions...');
+    
+    if (typeof SuggestionsService === 'undefined') {
+      console.log('SuggestionsService not available');
+      return;
+    }
+    
+    try {
+      // Try to get user location for better suggestions
+      let userLocation = null;
+      if (typeof LocationService !== 'undefined' && LocationService.isGeolocationSupported()) {
+        try {
+          userLocation = await LocationService.getCachedLocation();
+        } catch (err) {
+          console.log('Location not available, using suggestions without location');
+        }
+      }
+      
+      // Get personalized suggestions (default user ID = 1)
+      const suggestions = await SuggestionsService.getFacilitySuggestions(1, userLocation);
+      console.log('Personalized suggestions:', suggestions);
+      
+      if (suggestions && suggestions.length > 0) {
+        renderSuggestions(suggestions);
+      }
+    } catch (err) {
+      console.error('Error loading suggestions:', err);
+    }
+  }
+
+  // Render personalized suggestions
+  function renderSuggestions(suggestions = []) {
+    const section = document.getElementById('suggestions-section');
+    const container = document.getElementById('suggestions-container');
+    
+    if (!section || !container) return;
+    
+    container.innerHTML = '';
+    
+    if (suggestions.length === 0) {
+      section.style.display = 'none';
+      return;
+    }
+    
+    section.style.display = 'block';
+    
+    // Show top 4 suggestions
+    suggestions.slice(0, 4).forEach(suggestion => {
+      const card = SuggestionsService.createSuggestionCard(suggestion);
+      container.appendChild(card);
+    });
+  }
+
   // Update DOMContentLoaded
   document.addEventListener("DOMContentLoaded", () => {
     console.log('DOM loaded, initializing app...');
     bindSearch();
     loadFeatured();
     loadNearby();
+    loadSuggestions(); // Add suggestions
   });
 })();

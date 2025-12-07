@@ -34,6 +34,12 @@ public class User {
     @Column(length = 20)
     private String phone;
 
+    @Column
+    private Double latitude; // User's preferred/home location latitude
+
+    @Column
+    private Double longitude; // User's preferred/home location longitude
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Role role;

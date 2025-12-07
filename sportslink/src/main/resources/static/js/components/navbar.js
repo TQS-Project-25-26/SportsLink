@@ -47,6 +47,8 @@ function renderNavbar() {
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileBtn">
                             <li><a class="dropdown-item" href="/pages/profile_page.html" id="profileManage">Profile</a></li>
+                            <li><a class="dropdown-item" href="/pages/settings.html">Settings</a></li>
+                            <li><a class="dropdown-item" href="mailto:support@sportslink.com">Contact Support</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="#" id="logoutBtnNav">Logout</a></li>
                         </ul>

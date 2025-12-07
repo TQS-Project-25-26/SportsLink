@@ -218,4 +218,21 @@ class UnitAuthControllerTest {
 
         verify(authService, never()).logout(anyString());
     }
+    @Test
+    void whenGetProfileWithValidToken_thenReturn200AndProfile() throws Exception {
+        // Arrange
+        tqs.sportslink.dto.UserProfileDTO profile = new tqs.sportslink.dto.UserProfileDTO(
+                1L, "test@example.com", "Test User", "123456789",
+                null, true, 0, 0, null, "RENTER"
+        );
+
+        when(authService.getProfile("valid-token")).thenReturn(profile);
+
+        // Act & Assert
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/auth/profile")
+                .header("Authorization", "Bearer valid-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("test@example.com"))
+                .andExpect(jsonPath("$.role").value("RENTER"));
+    }
 }

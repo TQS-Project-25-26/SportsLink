@@ -183,6 +183,14 @@
     const paginationControls = document.getElementById('paginationControls');
     if (!paginationControls) return;
 
+    // Ensure styles
+    paginationControls.className = 'pagination';
+    // Wrap in container if not already
+    let wrapper = paginationControls.parentElement;
+    if (!wrapper.classList.contains('pagination-container')) {
+      wrapper.classList.add('pagination-container');
+    }
+
     paginationControls.innerHTML = '';
 
     // Previous button
@@ -236,7 +244,7 @@
     if (!container) return;
 
     // Clear but preserve grid classes
-    container.className = 'row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4';
+    container.className = 'row row-cols-2 row-cols-md-4 g-3 g-md-4';
     container.innerHTML = '';
 
     if (allFacilities.length === 0) {

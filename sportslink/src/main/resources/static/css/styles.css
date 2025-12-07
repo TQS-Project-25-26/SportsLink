@@ -372,7 +372,8 @@ body {
 
 /* Field Card Updates */
 .field-card {
-    min-width: 280px; /* Sane default for carousel */
+    min-width: 280px;
+    /* Sane default for carousel */
     border: none;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
     background: white;
@@ -390,7 +391,8 @@ body {
 .field-image {
     height: 200px;
     width: 100%;
-    background: linear-gradient(135deg, #FF9C40, #FF6F00); /* Fallback/Gradient */
+    background: linear-gradient(135deg, #FF9C40, #FF6F00);
+    /* Fallback/Gradient */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -408,13 +410,16 @@ body {
     background: var(--accent);
     border: none;
 }
+
 .btn-primary:hover {
     background: var(--accent-2);
 }
+
 .btn-outline-dark {
     border-color: #eee;
     color: var(--text);
 }
+
 .btn-outline-dark:hover {
     background: #f8f9fa;
     border-color: #ddd;
@@ -428,14 +433,17 @@ body {
 
 /* Carousel Tweaks */
 .carousel {
-    padding: 20px 4px; /* Space for shadow */
+    padding: 20px 4px;
+    /* Space for shadow */
     scroll-padding: 0 20px;
     gap: 24px;
 }
-.carousel > .field-card {
+
+.carousel>.field-card {
     scroll-snap-align: start;
     flex: 0 0 auto;
-    width: 300px; /* Fixed width in carousel */
+    width: 300px;
+    /* Fixed width in carousel */
 }
 
 /* Favorite button visual */
@@ -541,54 +549,62 @@ body {
     justify-content: center;
     padding: 32px 16px;
     background:
-        radial-gradient(600px 360px at 10% 10%, rgba(255,122,0,0.03), transparent),
+        radial-gradient(600px 360px at 10% 10%, rgba(255, 122, 0, 0.03), transparent),
         linear-gradient(180deg, #ffffff, #fbfbfb);
 }
+
 .login-card {
     width: 100%;
     max-width: 420px;
     border-radius: 16px;
     padding: 28px;
-    box-shadow: 0 12px 40px rgba(2,6,23,0.06);
-    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.96));
+    box-shadow: 0 12px 40px rgba(2, 6, 23, 0.06);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.96));
 }
+
 .brand {
-    display:flex;
-    align-items:center;
-    gap:14px;
-    margin-bottom:8px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 8px;
 }
+
 .logo {
-    width:52px;
-    height:52px;
-    border-radius:12px;
-    background:linear-gradient(135deg,#ff7a00,#c2803d);
-    color:#fff;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:800;
-    font-size:18px;
-    box-shadow: 0 8px 24px rgba(2,6,23,0.06);
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ff7a00, #c2803d);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 18px;
+    box-shadow: 0 8px 24px rgba(2, 6, 23, 0.06);
 }
+
 .subtitle {
-    color:var(--muted);
-    margin-bottom:18px;
+    color: var(--muted);
+    margin-bottom: 18px;
 }
+
 .form-alert {
-    display:none;
-    margin-bottom:12px;
+    display: none;
+    margin-bottom: 12px;
 }
+
 .btn-primary {
-    background: linear-gradient(90deg,#ff7a00,#c2803d);
-    border:none;
-    box-shadow: 0 10px 30px rgba(255,122,0,0.12);
+    background: linear-gradient(90deg, #ff7a00, #c2803d);
+    border: none;
+    box-shadow: 0 10px 30px rgba(255, 122, 0, 0.12);
 }
+
 .btn-primary:disabled {
-    opacity:0.7;
+    opacity: 0.7;
 }
+
 .small-link {
-    font-size:13px;
+    font-size: 13px;
 }
 
 /* --- Namespaced form styles to avoid overriding Bootstrap globals --- */
@@ -597,11 +613,13 @@ body {
     flex-direction: column;
     margin-bottom: 14px;
 }
+
 .sl-input-group label {
     font-size: 13px;
     margin-bottom: 6px;
     color: var(--muted);
 }
+
 .sl-input-group .form-control {
     padding: 10px 12px;
     border-radius: 8px;
@@ -611,6 +629,7 @@ body {
     font-size: 14px;
     outline: none;
 }
+
 .sl-input-group .form-control:focus {
     box-shadow: 0 6px 18px rgba(255, 122, 0, 0.06);
     border-color: rgba(255, 122, 0, 0.12);
@@ -621,15 +640,18 @@ body {
     gap: 8px;
     align-items: center;
 }
+
 /* make sure input expands and button keeps same height */
 .input-with-button .form-control {
     flex: 1 1 auto;
     margin: 0;
 }
+
 /* Reduced Show button size, tighter padding and font-size for better fit */
 .input-with-button .btn {
     padding: 4px 8px;
-    height: calc(1.9rem + 2px); /* smaller than default */
+    height: calc(1.9rem + 2px);
+    /* smaller than default */
     font-size: 0.85rem;
     align-self: stretch;
     display: inline-flex;
@@ -637,6 +659,7 @@ body {
     justify-content: center;
     white-space: nowrap;
 }
+
 /* smaller visual tweak for outline button to match card */
 .input-with-button .btn-outline-secondary {
     border-radius: 8px;
@@ -712,4 +735,106 @@ body {
     .material-icons {
         font-size: 20px;
     }
+
+    /* Mobile Grid Adjustments */
+    .field-card .card-body {
+        padding: 0.75rem;
+        /* Reduced padding */
+    }
+
+    .field-image {
+        height: 140px;
+        /* Reduced height */
+    }
+
+    .field-card h5.card-title {
+        font-size: 0.9rem;
+    }
+
+    .field-card .btn {
+        padding: 6px;
+        font-size: 12px;
+    }
+
+    .field-card .btn-outline-dark,
+    .field-card .btn-primary {
+        border-radius: 6px;
+    }
+
+    /* Adjust badges size */
+    .field-image .rounded-pill {
+        font-size: 0.65rem !important;
+        padding: 0.25rem 0.5rem !important;
+        margin: 0.5rem !important;
+    }
+}
+
+/* Pagination Styling */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.pagination {
+    display: flex;
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    align-items: center;
+    background: white;
+    padding: 6px;
+    border-radius: 50px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.page-item {
+    margin: 0;
+}
+
+.page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    color: var(--text);
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    background: transparent;
+    font-size: 14px;
+}
+
+.page-link:hover {
+    background: #f3f4f6;
+    color: var(--accent);
+}
+
+.page-item.active .page-link {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 4px 12px rgba(255, 122, 0, 0.2);
+}
+
+.page-item.disabled .page-link {
+    color: #ccc;
+    pointer-events: none;
+    background: transparent;
+}
+
+/* Ensure Carousel Cards don't stretch */
+.carousel {
+    justify-content: flex-start;
+    /* Align items to start */
+}
+
+.carousel>.field-card {
+    flex: 0 0 300px;
+    /* Fixed sizing strictly */
+    width: 300px;
+    max-width: 100%;
 }

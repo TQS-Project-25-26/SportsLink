@@ -70,7 +70,8 @@
             const div = document.createElement('div');
             div.className = 'col-md-6 col-lg-4';
 
-            const isAvailable = eq.status === 'AVAILABLE';
+            // Verificar quantidade (> 0) E status AVAILABLE
+            const isAvailable = eq.status === 'AVAILABLE' && eq.quantity > 0;
             const isSelected = selectedEquipments.has(eq.id);
 
             div.innerHTML = `
@@ -83,11 +84,13 @@
                         </div>
                         <p class="text-muted small mb-2">${eq.description || 'Sem descrição'}</p>
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge ${isAvailable ? 'bg-success' : 'bg-secondary'}">${eq.status}</span>
+                            <span class="badge ${isAvailable ? 'bg-success' : 'bg-danger'}">
+                                ${isAvailable ? 'Disponível' : (eq.quantity <= 0 ? 'Sem Stock' : eq.status)}
+                            </span>
                             <span class="text-muted small">Tipo: ${eq.type}</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center">
-                            <span class="small">Quantidade: ${eq.quantity}</span>
+                            <span class="small ${eq.quantity < 5 ? 'text-danger fw-bold' : ''}">Restam: ${eq.quantity}</span>
                             <span class="fw-bold text-accent">€${eq.pricePerHour}/hora</span>
                         </div>
                     </div>

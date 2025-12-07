@@ -11,7 +11,8 @@ import java.util.List;
 public interface RentalRepository extends JpaRepository<Rental, Long> {
     
     // Buscar rentals por facility e período (service fará validação de conflito)
-    List<Rental> findByFacilityIdAndStartTimeLessThanEqualAndEndTimeGreaterThanEqual(
+    // Buscar rentals por facility e período (service fará validação de conflito)
+    List<Rental> findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(
         Long facilityId, LocalDateTime endTime, LocalDateTime startTime
     );
     

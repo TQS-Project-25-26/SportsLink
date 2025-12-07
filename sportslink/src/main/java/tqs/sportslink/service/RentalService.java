@@ -78,7 +78,7 @@ public class RentalService {
         
         // Validar conflitos - LÓGICA NO SERVICE
         List<Rental> conflictingRentals = rentalRepository
-            .findByFacilityIdAndStartTimeLessThanEqualAndEndTimeGreaterThanEqual(
+            .findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(
                 request.getFacilityId(), request.getEndTime(), request.getStartTime()
             );
         
@@ -105,6 +105,17 @@ public class RentalService {
         // Adicionar equipamentos se houver
         if (request.getEquipmentIds() != null && !request.getEquipmentIds().isEmpty()) {
             List<Equipment> equipments = equipmentRepository.findAllById(request.getEquipmentIds());
+            
+            // Verificar disponibilidade e decrementar stock
+            for (Equipment equip : equipments) {
+                if (equip.getQuantity() <= 0) {
+                    throw new IllegalArgumentException("Equipment " + equip.getName() + " is out of stock");
+                }
+                equip.setQuantity(equip.getQuantity() - 1);
+            }
+            // Guardar alterações de stock
+            equipmentRepository.saveAll(equipments);
+            
             rental.setEquipments(equipments);
         }
 
@@ -148,7 +159,7 @@ public class RentalService {
         
         // Validar novos horários - LÓGICA NO SERVICE (excluindo o próprio rental)
         List<Rental> conflictingRentals = rentalRepository
-            .findByFacilityIdAndStartTimeLessThanEqualAndEndTimeGreaterThanEqual(
+            .findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(
                 request.getFacilityId(), request.getEndTime(), request.getStartTime()
             );
         

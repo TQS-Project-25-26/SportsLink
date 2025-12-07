@@ -74,7 +74,7 @@ public class RentalFlowIntegrationTest {
         testUser.setEmail("maria@example.com");
         testUser.setName("Maria Silva");
         testUser.setPassword("encoded-password");
-        testUser.setRole(Role.RENTER);
+        testUser.getRoles().add(Role.RENTER);
         testUser.setActive(true);
         testUser = userRepository.save(testUser);
 

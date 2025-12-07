@@ -61,7 +61,7 @@ class UnitAuthServiceTest {
         mockUser.setEmail("test@example.com");
         mockUser.setPassword(passwordEncoder.encode("password123"));
         mockUser.setName("Test User");
-        mockUser.setRole(Role.RENTER);
+        mockUser.getRoles().add(Role.RENTER);
         mockUser.setActive(true);
 
         // Login request
@@ -81,7 +81,7 @@ class UnitAuthServiceTest {
     void whenLoginWithValidCredentials_thenReturnToken() {
         // Arrange
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(mockUser));
-        when(jwtUtil.generateToken("test@example.com", "RENTER")).thenReturn("mock-jwt-token");
+        when(jwtUtil.generateToken(anyString(), any(java.util.Collection.class))).thenReturn("mock-jwt-token");
 
         // Act
         AuthResponseDTO response = authService.login(loginRequest);
@@ -89,9 +89,9 @@ class UnitAuthServiceTest {
         // Assert
         assertNotNull(response);
         assertEquals("mock-jwt-token", response.getToken());
-        assertEquals("RENTER", response.getRole());
+        assertTrue(response.getRoles().contains("RENTER"));
         verify(userRepository, times(1)).findByEmail("test@example.com");
-        verify(jwtUtil, times(1)).generateToken("test@example.com", "RENTER");
+        verify(jwtUtil, times(1)).generateToken(anyString(), any(java.util.Collection.class));
     }
 
     @Test
@@ -107,7 +107,7 @@ class UnitAuthServiceTest {
 
         assertEquals("Invalid email or password", exception.getMessage());
         verify(userRepository, times(1)).findByEmail("invalid@example.com");
-        verify(jwtUtil, never()).generateToken(anyString(), anyString());
+        verify(jwtUtil, never()).generateToken(anyString(), any(java.util.Collection.class));
     }
 
     @Test
@@ -123,7 +123,7 @@ class UnitAuthServiceTest {
 
         assertEquals("Invalid email or password", exception.getMessage());
         verify(userRepository, times(1)).findByEmail("test@example.com");
-        verify(jwtUtil, never()).generateToken(anyString(), anyString());
+        verify(jwtUtil, never()).generateToken(anyString(), any(java.util.Collection.class));
     }
 
     @Test
@@ -139,7 +139,7 @@ class UnitAuthServiceTest {
 
         assertEquals("User account is inactive", exception.getMessage());
         verify(userRepository, times(1)).findByEmail("test@example.com");
-        verify(jwtUtil, never()).generateToken(anyString(), anyString());
+        verify(jwtUtil, never()).generateToken(anyString(), any(java.util.Collection.class));
     }
 
     @Test
@@ -151,7 +151,7 @@ class UnitAuthServiceTest {
             user.setId(2L);
             return user;
         });
-        when(jwtUtil.generateToken("newuser@example.com", "RENTER")).thenReturn("new-jwt-token");
+        when(jwtUtil.generateToken(anyString(), any(java.util.Collection.class))).thenReturn("new-jwt-token");
 
         // Act
         AuthResponseDTO response = authService.register(registerRequest);
@@ -159,10 +159,10 @@ class UnitAuthServiceTest {
         // Assert
         assertNotNull(response);
         assertEquals("new-jwt-token", response.getToken());
-        assertEquals("RENTER", response.getRole());
+        assertTrue(response.getRoles().contains("RENTER"));
         verify(userRepository, times(1)).existsByEmail("newuser@example.com");
         verify(userRepository, times(1)).save(any(User.class));
-        verify(jwtUtil, times(1)).generateToken("newuser@example.com", "RENTER");
+        verify(jwtUtil, times(1)).generateToken(anyString(), any(java.util.Collection.class));
     }
 
     @Test
@@ -178,7 +178,7 @@ class UnitAuthServiceTest {
         assertEquals("Email already registered", exception.getMessage());
         verify(userRepository, times(1)).existsByEmail("newuser@example.com");
         verify(userRepository, never()).save(any(User.class));
-        verify(jwtUtil, never()).generateToken(anyString(), anyString());
+        verify(jwtUtil, never()).generateToken(anyString(), any(java.util.Collection.class));
     }
 
     @Test
@@ -191,7 +191,7 @@ class UnitAuthServiceTest {
             user.setId(3L);
             return user;
         });
-        when(jwtUtil.generateToken("newuser@example.com", "OWNER")).thenReturn("owner-jwt-token");
+        when(jwtUtil.generateToken(anyString(), any(java.util.Collection.class))).thenReturn("owner-jwt-token");
 
         // Act
         AuthResponseDTO response = authService.register(registerRequest);
@@ -199,9 +199,10 @@ class UnitAuthServiceTest {
         // Assert
         assertNotNull(response);
         assertEquals("owner-jwt-token", response.getToken());
-        assertEquals("OWNER", response.getRole());
+        assertTrue(response.getRoles().contains("OWNER"));
+        assertTrue(response.getRoles().contains("RENTER"));
         verify(userRepository, times(1)).save(argThat(user -> 
-            user.getRole() == Role.OWNER
+            user.getRoles().contains(Role.OWNER) && user.getRoles().contains(Role.RENTER)
         ));
     }
 
@@ -215,16 +216,16 @@ class UnitAuthServiceTest {
             user.setId(4L);
             return user;
         });
-        when(jwtUtil.generateToken("newuser@example.com", "RENTER")).thenReturn("default-jwt-token");
+        when(jwtUtil.generateToken(anyString(), any(java.util.Collection.class))).thenReturn("default-jwt-token");
 
         // Act
         AuthResponseDTO response = authService.register(registerRequest);
 
         // Assert
         assertNotNull(response);
-        assertEquals("RENTER", response.getRole());
+        assertTrue(response.getRoles().contains("RENTER"));
         verify(userRepository, times(1)).save(argThat(user -> 
-            user.getRole() == Role.RENTER
+            user.getRoles().contains(Role.RENTER)
         ));
     }
 
@@ -238,7 +239,7 @@ class UnitAuthServiceTest {
             user.setId(5L);
             return user;
         });
-        when(jwtUtil.generateToken("newuser@example.com", "RENTER")).thenReturn("jwt-token");
+        when(jwtUtil.generateToken(anyString(), any(java.util.Collection.class))).thenReturn("jwt-token");
 
         // Act
         AuthResponseDTO response = authService.register(registerRequest);
@@ -285,5 +286,22 @@ class UnitAuthServiceTest {
         // Assert
         assertTrue(authService.isTokenBlacklisted("blacklisted-token"));
         assertFalse(authService.isTokenBlacklisted("valid-token"));
+    }
+    @Test
+    void whenGetProfile_thenReturnUserProfileWithRole() {
+        // Arrange
+        String token = "valid-token";
+        String email = "test@example.com";
+        when(jwtUtil.extractEmail(token)).thenReturn(email);
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(mockUser));
+        when(jwtUtil.validateToken(token, email)).thenReturn(true);
+
+        // Act
+        tqs.sportslink.dto.UserProfileDTO profile = authService.getProfile(token);
+
+        // Assert
+        assertNotNull(profile);
+        assertEquals("RENTER", profile.role());
+        assertEquals(email, profile.email());
     }
 }

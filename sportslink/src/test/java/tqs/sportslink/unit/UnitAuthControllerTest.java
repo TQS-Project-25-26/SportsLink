@@ -59,7 +59,7 @@ class UnitAuthControllerTest {
         registerRequest.setRole("RENTER");
 
         // Auth response
-        authResponse = new AuthResponseDTO("jwt-token-123", "RENTER");
+        authResponse = new AuthResponseDTO("jwt-token-123", java.util.Set.of("RENTER"), "RENTER");
     }
 
     @Test
@@ -73,7 +73,7 @@ class UnitAuthControllerTest {
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").value("jwt-token-123"))
-                .andExpect(jsonPath("$.role").value("RENTER"));
+                .andExpect(jsonPath("$.roles[0]").value("RENTER"));
 
         verify(authService, times(1)).login(any(UserRequestDTO.class));
     }
@@ -146,7 +146,7 @@ class UnitAuthControllerTest {
                 .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").value("jwt-token-123"))
-                .andExpect(jsonPath("$.role").value("RENTER"));
+                .andExpect(jsonPath("$.roles[0]").value("RENTER"));
 
         verify(authService, times(1)).register(any(UserRequestDTO.class));
     }

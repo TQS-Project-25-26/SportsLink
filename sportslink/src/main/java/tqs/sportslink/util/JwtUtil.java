@@ -48,9 +48,9 @@ public class JwtUtil {
         return extractExpiration(token).before(new Date());
     }
 
-    public String generateToken(String email, String role) {
+    public String generateToken(String email, java.util.Collection<String> roles) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("role", role);
+        claims.put("roles", roles);
         return createToken(claims, email);
     }
 
@@ -69,8 +69,9 @@ public class JwtUtil {
         return (tokenEmail.equals(email) && !isTokenExpired(token));
     }
 
-    public String extractRole(String token) {
+    public java.util.List<String> extractRoles(String token) {
         final Claims claims = extractAllClaims(token);
-        return claims.get("role", String.class);
+        // Claims stores lists as ArrayList by default
+        return claims.get("roles", java.util.List.class);
     }
 }

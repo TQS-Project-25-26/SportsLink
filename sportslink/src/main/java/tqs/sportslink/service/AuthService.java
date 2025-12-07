@@ -54,10 +54,15 @@ public class AuthService {
         }
 
         // Gerar token JWT
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
+        Set<String> roleNames = new HashSet<>();
+        user.getRoles().forEach(r -> roleNames.add(r.name()));
+        
+        String token = jwtUtil.generateToken(user.getEmail(), roleNames);
+        
+        String primaryRole = roleNames.contains("OWNER") ? "OWNER" : (roleNames.contains("ADMIN") ? "ADMIN" : "RENTER");
 
         logger.info("User {} logged in successfully", user.getEmail());
-        return new AuthResponseDTO(token, user.getRole().name());
+        return new AuthResponseDTO(token, roleNames, primaryRole);
     }
 
     /**
@@ -79,25 +84,46 @@ public class AuthService {
         newUser.setPhone(request.getPhone());
         newUser.setActive(true);
 
-        // Definir role (default: RENTER)
+        // Definir roles
+        // Definir roles com base na lógica solicitada:
+        // ADMIN -> Apenas ADMIN
+        // OWNER -> OWNER e RENTER
+        // Default/RENTER -> Apenas RENTER
+        
         if (request.getRole() != null) {
             try {
-                newUser.setRole(Role.valueOf(request.getRole().toUpperCase()));
+                Role requestedRole = Role.valueOf(request.getRole().toUpperCase());
+                
+                if (requestedRole == Role.ADMIN) {
+                    newUser.getRoles().add(Role.ADMIN);
+                } else if (requestedRole == Role.OWNER) {
+                    newUser.getRoles().add(Role.OWNER);
+                    newUser.getRoles().add(Role.RENTER);
+                } else {
+                    newUser.getRoles().add(Role.RENTER);
+                }
             } catch (IllegalArgumentException e) {
-                newUser.setRole(Role.RENTER);
+                logger.warn("Invalid role requested: {}. Defaulting to RENTER.", request.getRole());
+                newUser.getRoles().add(Role.RENTER);
             }
         } else {
-            newUser.setRole(Role.RENTER);
+            // Default role
+            newUser.getRoles().add(Role.RENTER);
         }
 
         // Salvar usuário
         User savedUser = userRepository.save(newUser);
 
         // Gerar token JWT
-        String token = jwtUtil.generateToken(savedUser.getEmail(), savedUser.getRole().name());
+        Set<String> roleNames = new HashSet<>();
+        savedUser.getRoles().forEach(r -> roleNames.add(r.name()));
 
-        logger.info("User {} registered successfully with role {}", savedUser.getEmail(), savedUser.getRole());
-        return new AuthResponseDTO(token, savedUser.getRole().name());
+        String token = jwtUtil.generateToken(savedUser.getEmail(), roleNames);
+        
+        String primaryRole = roleNames.contains("OWNER") ? "OWNER" : (roleNames.contains("ADMIN") ? "ADMIN" : "RENTER");
+
+        logger.info("User {} registered successfully with roles {}", savedUser.getEmail(), savedUser.getRoles());
+        return new AuthResponseDTO(token, roleNames, primaryRole);
     }
 
     /**
@@ -155,17 +181,29 @@ public class AuthService {
             throw new IllegalArgumentException("Invalid or expired token");
         }
 
+        // Determine primary role for backward compatibility
+        String primaryRole = "RENTER"; // Default
+        Set<String> roleNames = new HashSet<>();
+        user.getRoles().forEach(r -> roleNames.add(r.name()));
+        
+        if (roleNames.contains("ADMIN")) {
+            primaryRole = "ADMIN";
+        } else if (roleNames.contains("OWNER")) {
+            primaryRole = "OWNER";
+        }
+
         // Preenche o DTO com os campos de perfil + contagem de rentals/facilities
         return new UserProfileDTO(
                 user.getId(),
                 user.getEmail(),
                 user.getName(),
                 user.getPhone(),
-                user.getRole(),
+                user.getRoles(),
                 user.getActive(),
                 user.getRentals().size(),
                 user.getFacilities().size(),
-                user.getCreatedAt()
+                user.getCreatedAt(),
+                primaryRole
         );
     }
 }

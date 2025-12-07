@@ -56,7 +56,8 @@ public class DataInitializer {
             ownerUser.setPassword("password123"); // Plain text password for testing
             ownerUser.setName("Owner User");
             ownerUser.setPhone("911111111");
-            ownerUser.setRole(Role.OWNER);
+            ownerUser.getRoles().add(Role.OWNER);
+            ownerUser.getRoles().add(Role.RENTER);
             ownerUser.setActive(true);
             userRepository.save(ownerUser);
             logger.info("Owner user created: owner@sportslink.com / password123 (id={})", ownerUser.getId());
@@ -67,7 +68,7 @@ public class DataInitializer {
             testUser.setPassword("password123"); // Plain text password for testing
             testUser.setName("Test User");
             testUser.setPhone("912345678");
-            testUser.setRole(Role.RENTER);
+            testUser.getRoles().add(Role.RENTER);
             testUser.setActive(true);
             userRepository.save(testUser);
             logger.info("Test user created: test@sportslink.com / password123 (id={})", testUser.getId());

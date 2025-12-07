@@ -9,9 +9,10 @@ public record UserProfileDTO(
     String email,
     String name,
     String phone,
-    Role role,
+    java.util.Set<Role> roles,
     Boolean active,
     int rentalsCount,
     int facilitiesCount,
-    LocalDateTime createdAt
+    LocalDateTime createdAt,
+    String role
 ) {}

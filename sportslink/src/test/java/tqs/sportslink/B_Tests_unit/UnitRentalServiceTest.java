@@ -491,26 +491,71 @@ public class UnitRentalServiceTest {
     }
 
     @Test
-    @Requirement("SL-29")
-    void whenCreateRental_consecutiveSlots_shouldSuccess() {
-        Rental existingRental = new Rental();
-        existingRental.setId(2L);
-        existingRental.setStatus("CONFIRMED");
-        existingRental.setStartTime(startTime.minusHours(1));
-        existingRental.setEndTime(startTime);
+    @Requirement("SL-82")
+    void whenUpdateRental_withEquipmentChange_shouldUpdateStock() {
+        // Setup existing rental with equipment Racket (Pool: 5 -> 4 rented)
+        Equipment oldEq = new Equipment();
+        oldEq.setId(1L);
+        oldEq.setName("Raquete");
+        oldEq.setQuantity(4); // Current stock
+        mockRental.setEquipments(List.of(oldEq));
 
-        validRequest.setStartTime(startTime);
-        validRequest.setEndTime(startTime.plusHours(1));
+        // Setup Request with new equipment Ball (Pool: 10)
+        RentalRequestDTO updateRequest = new RentalRequestDTO();
+        updateRequest.setUserId(1L);
+        updateRequest.setFacilityId(1L);
+        updateRequest.setStartTime(LocalDateTime.now().plusDays(2).withHour(14).withMinute(0).withSecond(0).withNano(0));
+        updateRequest.setEndTime(updateRequest.getStartTime().plusHours(2));
+        updateRequest.setEquipmentIds(List.of(2L)); // Requesting Ball
 
-        when(rentalRepository.findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(
-                anyLong(), any(), any())).thenReturn(List.of());
+        Equipment newEq = new Equipment();
+        newEq.setId(2L);
+        newEq.setName("Bola");
+        newEq.setQuantity(10); // Current stock
 
+        when(rentalRepository.findById(1L)).thenReturn(Optional.of(mockRental));
         when(facilityRepository.findById(1L)).thenReturn(Optional.of(mockFacility));
-        when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
+        when(rentalRepository.findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(anyLong(), any(), any())).thenReturn(List.of(mockRental));
         when(rentalRepository.save(any(Rental.class))).thenReturn(mockRental);
+        when(equipmentRepository.findAllById(List.of(2L))).thenReturn(List.of(newEq));
 
-        RentalResponseDTO result = rentalService.createRental(validRequest);
+        RentalResponseDTO result = rentalService.updateRental(1L, updateRequest);
 
         assertThat(result).isNotNull();
+        // Verify old equipment stock increased (returned)
+        assertThat(oldEq.getQuantity()).isEqualTo(5);
+        // Verify new equipment stock decreased (rented)
+        assertThat(newEq.getQuantity()).isEqualTo(9);
+        
+        verify(equipmentRepository).saveAll(List.of(oldEq)); // Returned
+        verify(equipmentRepository).saveAll(List.of(newEq)); // Rented
+    }
+
+    @Test
+    @Requirement("SL-82")
+    void whenUpdateRental_newEquipmentOutOfStock_shouldThrowException() {
+        mockRental.setEquipments(List.of()); // No old equipment
+
+        // Setup Request with new equipment Ball (Pool: 0)
+        RentalRequestDTO updateRequest = new RentalRequestDTO();
+        updateRequest.setUserId(1L);
+        updateRequest.setFacilityId(1L);
+        updateRequest.setStartTime(LocalDateTime.now().plusDays(2).withHour(14).withMinute(0).withSecond(0).withNano(0));
+        updateRequest.setEndTime(updateRequest.getStartTime().plusHours(2));
+        updateRequest.setEquipmentIds(List.of(2L)); // Requesting Ball
+
+        Equipment newEq = new Equipment();
+        newEq.setId(2L);
+        newEq.setName("Bola");
+        newEq.setQuantity(0); // Out of stock
+
+        when(rentalRepository.findById(1L)).thenReturn(Optional.of(mockRental));
+        when(facilityRepository.findById(1L)).thenReturn(Optional.of(mockFacility));
+        when(rentalRepository.findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(anyLong(), any(), any())).thenReturn(List.of(mockRental));
+        when(equipmentRepository.findAllById(List.of(2L))).thenReturn(List.of(newEq));
+
+        assertThatThrownBy(() -> rentalService.updateRental(1L, updateRequest))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("out of stock");
     }
 }

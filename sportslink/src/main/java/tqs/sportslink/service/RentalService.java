@@ -12,7 +12,9 @@ import tqs.sportslink.data.model.Facility;
 import tqs.sportslink.data.model.Equipment;
 import tqs.sportslink.data.model.User;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class RentalService {
@@ -184,11 +186,39 @@ public class RentalService {
             .anyMatch(r -> !STATUS_CANCELLED.equals(r.getStatus()));
         
         if (hasConflict) {
-            throw new IllegalArgumentException("New time slot conflicts with existing booking");
+        throw new IllegalArgumentException("New time slot conflicts with existing booking");
+    }
+
+    // Atualizar Equipamentos (Gerir Stock)
+    if (request.getEquipmentIds() != null) {
+        // 1. Devolver equipamentos antigos ao stock
+        if (rental.getEquipments() != null) {
+            for (Equipment eq : rental.getEquipments()) {
+                eq.setQuantity(eq.getQuantity() + 1);
+            }
+            equipmentRepository.saveAll(rental.getEquipments());
         }
 
-        rental.setStartTime(request.getStartTime());
-        rental.setEndTime(request.getEndTime());
+        // 2. Atribuir novos equipamentos e decrementar stock
+        List<Equipment> newEquipments = new ArrayList<>();
+        if (!request.getEquipmentIds().isEmpty()) {
+             List<Equipment> requestedEquipments = equipmentRepository.findAllById(request.getEquipmentIds());
+             for (Equipment eq : requestedEquipments) {
+                 if (eq.getQuantity() <= 0) {
+                     // Reverter devolução anterior se falhar? 
+                     // Idealmente sim, mas como é RuntimeException, o Transactional deve fazer rollback de tudo.
+                     throw new IllegalArgumentException("Equipment " + eq.getName() + " is out of stock");
+                 }
+                 eq.setQuantity(eq.getQuantity() - 1);
+                 newEquipments.add(eq);
+             }
+             equipmentRepository.saveAll(newEquipments);
+        }
+        rental.setEquipments(newEquipments);
+    }
+
+    rental.setStartTime(request.getStartTime());
+    rental.setEndTime(request.getEndTime());
         Rental updated = rentalRepository.save(rental);
         return mapToResponseDTO(updated);
     }

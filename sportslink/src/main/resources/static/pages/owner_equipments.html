@@ -1,76 +1,32 @@
 <!doctype html>
 <html lang="en">
 
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <title>Gestão de Equipamentos - SportsLink</title>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Gestão de Equipamentos - SportsLink</title>
 
-        <!-- Bootstrap -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-        <!-- Google Icons & Fonts -->
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-            rel="stylesheet">
+    <!-- Google Icons & Fonts -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-        <!-- Shared CSS + equipment styles -->
-        <link href="../css/styles.css" rel="stylesheet">
-        <link href="../css/equipments.css" rel="stylesheet">
-    </head>
+    <!-- Shared CSS + equipment styles -->
+    <link href="../css/styles.css" rel="stylesheet">
+    <link href="../css/equipments.css" rel="stylesheet">
+</head>
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
-        <div class="container-fluid">
-            <a class="navbar-brand d-flex align-items-center" href="#">
-                <i class="material-icons me-2 text-accent">sports_soccer</i>
-                <span class="text-gradient fw-bold fs-4">SportsLink</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active fw-medium" href="#">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-medium" href="#reservas">My Bookings</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-medium" href="#explorar" id="facilitiesNavLink">Explore Fields</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-medium" href="#favoritos">Favorites</a>
-                    </li>
-                </ul>
-                <div class="d-flex align-items-center">
-                    <div class="dropdown">
-                        <button id="profileBtn"
-                            class="profile-icon d-flex align-items-center justify-content-center text-white fw-bold dropdown-toggle"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            U
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileBtn">
-                            <li><a class="dropdown-item" href="profile_page.html" id="profileManage">Profile</a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li><a class="dropdown-item text-danger" href="#" id="logoutBtn">Logout</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
+<!-- Navbar -->
+<!-- Navbar -->
+<div id="navbar-placeholder"></div>
 
 <div class="container-fluid px-lg-5 py-5">
     <!-- Back Button -->
     <div class="mb-4">
         <a href="../pages/owner_dashboard.html"
-           class="btn btn-outline-secondary d-inline-flex align-items-center px-4 py-2"
-           style="border-radius: 50px;">
+            class="btn btn-outline-secondary d-inline-flex align-items-center px-4 py-2" style="border-radius: 50px;">
             <i class="material-icons me-2">arrow_back</i>
             Voltar ao Dashboard
         </a>
@@ -86,9 +42,8 @@
             </p>
         </div>
 
-        <button class="btn bg-accent text-white fw-bold px-4 py-2"
-                id="btn-open-add-equipment"
-                style="border-radius: 50px;">
+        <button class="btn bg-accent text-white fw-bold px-4 py-2" id="btn-open-add-equipment"
+            style="border-radius: 50px;">
             <i class="material-icons me-2">add_circle</i>
             Adicionar Equipamento
         </button>
@@ -116,8 +71,7 @@
 <!-- ===================================== -->
 <!-- MODAL: ADICIONAR EQUIPAMENTO -->
 <!-- ===================================== -->
-<div class="modal fade" id="addEquipmentModal" tabindex="-1"
-     aria-labelledby="addEquipmentLabel" aria-hidden="true">
+<div class="modal fade" id="addEquipmentModal" tabindex="-1" aria-labelledby="addEquipmentLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content" style="border-radius: 20px;">
 
@@ -179,9 +133,8 @@
 
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button class="btn bg-accent text-white fw-bold"
-                        id="btnConfirmAddEquipment"
-                        style="border-radius: 50px;">
+                <button class="btn bg-accent text-white fw-bold" id="btnConfirmAddEquipment"
+                    style="border-radius: 50px;">
                     Guardar Equipamento
                 </button>
             </div>
@@ -193,8 +146,7 @@
 <!-- ===================================== -->
 <!-- MODAL: EDITAR EQUIPAMENTO -->
 <!-- ===================================== -->
-<div class="modal fade" id="editEquipmentModal" tabindex="-1"
-     aria-labelledby="editEquipmentLabel" aria-hidden="true">
+<div class="modal fade" id="editEquipmentModal" tabindex="-1" aria-labelledby="editEquipmentLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content" style="border-radius: 20px;">
 
@@ -257,9 +209,8 @@
 
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button class="btn bg-accent text-white fw-bold"
-                        id="btnConfirmEditEquipment"
-                        style="border-radius: 50px;">
+                <button class="btn bg-accent text-white fw-bold" id="btnConfirmEditEquipment"
+                    style="border-radius: 50px;">
                     Guardar Alterações
                 </button>
             </div>
@@ -276,5 +227,8 @@
 
 <script src="../js/owner_equipments.js"></script>
 
+<script src="../js/components/navbar.js"></script>
+
 </body>
+
 </html>

@@ -14,10 +14,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="../css/styles.css" rel="stylesheet">
-    
+
     <script>
         // Verificar autenticação ANTES de carregar a página
-        (function() {
+        (function () {
             const token = localStorage.getItem('token');
             if (!token) {
                 window.location.href = '/index.html';
@@ -28,50 +28,8 @@
 
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
-        <div class="container-fluid">
-            <a class="navbar-brand d-flex align-items-center" href="main_page_user.html">
-                <i class="material-icons me-2 text-accent">sports_soccer</i>
-                <span class="text-gradient fw-bold fs-4">SportsLink</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link fw-medium" href="main_page_user.html">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-medium" href="#reservas">My Bookings</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-medium" href="#explorar">Explore Fields</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-medium" href="#favoritos">Favorites</a>
-                    </li>
-                </ul>
-                <div class="d-flex align-items-center">
-                    <div class="dropdown">
-                        <button id="profileBtn"
-                            class="profile-icon d-flex align-items-center justify-content-center text-white fw-bold dropdown-toggle"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            U
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileBtn">
-                            <li><a class="dropdown-item" href="#" id="profileManage">Profile</a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li><a class="dropdown-item text-danger" href="#" id="logoutBtn">Logout</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <!-- Navbar -->
+    <div id="navbar-placeholder"></div>
 
     <!-- Profile Section -->
     <div class="container my-5">
@@ -139,6 +97,7 @@
         crossorigin="anonymous"></script>
     <!-- Custom JS -->
     <script src="../js/auth.js"></script>
+    <script src="../js/components/navbar.js"></script>
     <script>
         // Profile page script
         document.addEventListener('DOMContentLoaded', async () => {
@@ -149,14 +108,11 @@
                 // Poderíamos decodificar JWT aqui, mas neste momento não é necessário
             }
 
-            // Bind logout (função vem de auth.js)
+            /*
+            // Logout logic is now handled in navbar.js
             const logoutBtn = document.getElementById('logoutBtn');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    logout();
-                });
-            }
+            if (logoutBtn) { ... }
+            */
 
             // Load profile data
             await loadProfile();

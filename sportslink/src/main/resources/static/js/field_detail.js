@@ -19,7 +19,7 @@
 
     async function loadFacility() {
         try {
-            const res = await fetch('/api/rentals/search');
+            const res = await fetch('/api/rentals/search', { headers: authHeaders() });
             const facilities = await res.json();
             facilityData = facilities.find(f => f.id == facilityId);
 
@@ -36,15 +36,15 @@
             document.getElementById('field-hours').textContent =
                 `${facilityData.openingTime || '08:00'} - ${facilityData.closingTime || '22:00'}`;
             document.getElementById('field-rating').textContent = facilityData.rating || '0.0';
-            const sportsText = facilityData.sports && facilityData.sports.length > 0 
-                ? facilityData.sports.join(', ') 
+            const sportsText = facilityData.sports && facilityData.sports.length > 0
+                ? facilityData.sports.join(', ')
                 : (facilityData.sportType || 'N/A');
             document.getElementById('field-sport').textContent = sportsText;
             document.getElementById('field-address').textContent = facilityData.address;
             document.getElementById('field-price').textContent = `€${facilityData.pricePerHour}/hora`;
 
-            const primarySport = facilityData.sports && facilityData.sports.length > 0 
-                ? facilityData.sports[0] 
+            const primarySport = facilityData.sports && facilityData.sports.length > 0
+                ? facilityData.sports[0]
                 : facilityData.sportType;
             const icon = sportIcons[primarySport] || 'sports';
             document.getElementById('field-icon').textContent = icon;
@@ -64,15 +64,15 @@
         }
 
         try {
-            const sport = facilityData.sports && facilityData.sports.length > 0 
-                ? facilityData.sports[0] 
+            const sport = facilityData.sports && facilityData.sports.length > 0
+                ? facilityData.sports[0]
                 : facilityData.sportType;
             const suggestions = await SuggestionsService.getEquipmentSuggestions(facilityId, sport);
             console.log('Equipment suggestions:', suggestions);
 
             const container = document.getElementById('equipment-suggestions');
             const noSuggestions = document.getElementById('no-suggestions');
-            
+
             if (!container) return;
 
             container.innerHTML = '';
@@ -96,7 +96,7 @@
 
     async function loadEquipmentPreview() {
         try {
-            const res = await fetch(`/api/rentals/facility/${facilityId}/equipments`);
+            const res = await fetch(`/api/rentals/facility/${facilityId}/equipments`, { headers: authHeaders() });
             const equipments = await res.json();
 
             const container = document.getElementById('equipment-preview');

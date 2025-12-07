@@ -36,7 +36,6 @@
 
     let currentDate = new Date(); // Controls the visible month
     let selectedDate = null;      // Controls the selected booking date
-    let selectedSlot = null;      // Controls the selected time slot
 
     const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
@@ -76,9 +75,35 @@
 
             updateUI();
             renderCalendar(); // Initial Calendar Render
+            loadUserInfo(); // Fetch and pre-fill user details
         } catch (err) {
             console.error('Error loading data:', err);
             alert('Erro ao carregar dados');
+        }
+    }
+
+    async function loadUserInfo() {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            const res = await fetch('/api/auth/profile', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (res.ok) {
+                const user = await res.json();
+                const nameInput = document.getElementById('user-name');
+                const emailInput = document.getElementById('user-email');
+                const phoneInput = document.getElementById('user-phone');
+
+                if (nameInput && user.name) nameInput.value = user.name;
+                if (emailInput && user.email) emailInput.value = user.email;
+                if (phoneInput && user.phone) phoneInput.value = user.phone;
+            }
+        } catch (err) {
+            console.warn('Failed to load user info for pre-fill:', err);
+            // Non-critical, just leave fields empty
         }
     }
 
@@ -112,7 +137,8 @@
             if (iconElem) iconElem.textContent = icon;
         }
 
-        renderEquipments();
+        renderAllEquipment();
+        renderSportsCheckboxes(); // Ensure sports are rendered
         updateSummary();
     }
 
@@ -159,13 +185,35 @@
             dayEl.className = 'calendar-day';
             dayEl.textContent = i;
 
-        // Render sports checkboxes
-        renderSportsCheckboxes();
+            // Check if past date
+            // Use a new date object for comparison to avoid mutating variables
+            const checkDate = new Date(year, month, i);
+            // Reset hours for accurate date comparison
+            const todayReset = new Date();
+            todayReset.setHours(0, 0, 0, 0);
 
-        // Render equipment suggestions and all equipment
-        renderEquipmentSuggestions();
-        renderAllEquipment();
-        updateSummary();
+            if (checkDate < todayReset) {
+                dayEl.classList.add('disabled');
+            } else {
+                // Fix closure issue by using let/const in loop or passing explicit date
+                dayEl.addEventListener('click', () => selectDate(new Date(year, month, i)));
+            }
+
+            // Check if today
+            if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                dayEl.classList.add('today');
+            }
+
+            // Check if selected
+            if (selectedDate &&
+                i === selectedDate.getDate() &&
+                month === selectedDate.getMonth() &&
+                year === selectedDate.getFullYear()) {
+                dayEl.classList.add('selected');
+            }
+
+            calendarGrid.appendChild(dayEl);
+        }
     }
 
     function renderSportsCheckboxes() {
@@ -315,32 +363,6 @@
         }).join('');
     }
 
-    function renderAllEquipment() {
-        const container = document.getElementById('all-equipment-list');
-        if (!container) return;
-            const thisDate = new Date(year, month, i);
-
-            // Check if past date
-            if (thisDate < today) {
-                dayEl.classList.add('disabled');
-            } else {
-                dayEl.addEventListener('click', () => selectDate(thisDate));
-            }
-
-            // Check if today
-            if (thisDate.getTime() === today.getTime()) {
-                dayEl.classList.add('today');
-            }
-
-            // Check if selected
-            if (selectedDate && thisDate.getTime() === selectedDate.getTime()) {
-                dayEl.classList.add('selected');
-            }
-
-            calendarGrid.appendChild(dayEl);
-        }
-    }
-
     function selectDate(date) {
         selectedDate = date;
         selectedSlot = null; // Reset slot
@@ -354,90 +376,13 @@
 
         // Re-render calendar to show Selection state
         renderCalendar();
-
-        // Render slots
-        renderSlots(date);
         updateSummary();
-    }
-
-    // Mock Availability Logic
-    function getMockSlots(date) {
-        const slots = [];
-
-        let startHour = 9;
-        let endHour = 22;
-
-        if (facilityData && facilityData.openingTime && facilityData.closingTime) {
-            startHour = parseInt(facilityData.openingTime.split(':')[0]);
-            endHour = parseInt(facilityData.closingTime.split(':')[0]);
-        }
-
-        // Use date string as seed for deterministic "randomness" so it doesn't change on click
-        const seed = date.getDate() + date.getMonth();
-
-        for (let h = startHour; h < endHour; h++) {
-            // Mock some booked slots
-            // Simple hash logic
-            // Make fewer slots booked for testing purposes (e.g. only every 10th slot)
-            const isBooked = (seed + h) % 10 === 0;
-
-            const timeString = `${String(h).padStart(2, '0')}:00`;
-            slots.push({
-                time: timeString,
-                available: !isBooked
-            });
-        }
-        return slots;
-    }
-
-    function renderSlots(date) {
-        const container = document.getElementById('slots-container');
-        const grid = document.getElementById('slots-grid');
-        const msg = document.getElementById('no-slots-msg');
-
-        container.style.display = 'block';
-        grid.innerHTML = '';
-        msg.style.display = 'none';
-
-        const slots = getMockSlots(date);
-        const availableSlots = slots.filter(s => s.available);
-
-        if (availableSlots.length === 0) {
-            msg.style.display = 'block';
-            return;
-        }
-
-        slots.forEach(slot => {
-            const btn = document.createElement('div');
-            btn.className = `time-slot ${slot.available ? '' : 'disabled'}`;
-            btn.textContent = slot.time;
-
-            if (slot.available) {
-                if (selectedSlot === slot.time) {
-                    btn.classList.add('selected');
-                }
-                btn.addEventListener('click', () => selectSlot(slot.time));
-            }
-
-            grid.appendChild(btn);
-        });
-    }
-
-    function selectSlot(time) {
-        selectedSlot = time;
-        document.getElementById('start-time').value = time;
-
-        // Update hidden inputs for End Time manually since we removed the listener
-        updateEndTime(); // Will calculate end time based on duration
-
-        // Re-render to show selection
-        renderSlots(selectedDate);
     }
 
     // --- CALENDAR LOGIC END ---
 
-    function renderEquipments() {
-        const container = document.getElementById('selected-equipment-list');
+    function renderAllEquipment() {
+        const container = document.getElementById('all-equipment-list');
 
         if (allEquipments.length === 0) {
             container.innerHTML = '<p class="text-muted text-center py-3">Nenhum equipamento disponível</p>';
@@ -506,12 +451,21 @@
 
     function updateEndTime() {
         const startTime = document.getElementById('start-time').value;
-        const duration = parseInt(document.getElementById('duration').value);
+        const duration = parseFloat(document.getElementById('duration').value);
 
         if (startTime) {
-            const [hours, minutes] = startTime.split(':').map(Number);
-            const endHours = (hours + duration) % 24;
-            const endTime = `${String(endHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+            const [hoursStr, minutesStr] = startTime.split(':');
+            const hours = parseInt(hoursStr);
+            const minutes = parseInt(minutesStr);
+
+            // Convert to minutes, add duration (in hours * 60), convert back
+            const totalStartMinutes = hours * 60 + minutes;
+            const totalEndMinutes = totalStartMinutes + (duration * 60);
+
+            const endHours = Math.floor(totalEndMinutes / 60) % 24;
+            const endMinutes = totalEndMinutes % 60;
+
+            const endTime = `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
             document.getElementById('end-time').value = endTime;
             updateSummary();
         }
@@ -521,7 +475,7 @@
         const date = document.getElementById('booking-date').value;
         const startTime = document.getElementById('start-time').value;
         const endTime = document.getElementById('end-time').value;
-        const duration = parseInt(document.getElementById('duration').value);
+        const duration = parseFloat(document.getElementById('duration').value);
 
         if (date) {
             const dateObj = new Date(date + 'T00:00:00');
@@ -568,7 +522,11 @@
 
     // Event Listeners
     document.getElementById('duration').addEventListener('change', () => {
-        updateEndTime(); // Recalculate end time and summary
+        updateEndTime();
+    });
+
+    document.getElementById('start-time').addEventListener('input', () => {
+        updateEndTime();
     });
 
     // Calendar Navigation

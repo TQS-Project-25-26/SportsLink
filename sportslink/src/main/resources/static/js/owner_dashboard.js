@@ -74,12 +74,25 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
 // ==================================
+// PAGINATION STATE
+// ==================================
+let allFacilities = [];
+let currentPage = 1;
+const itemsPerPage = 6; // 6 items per page (3x2 grid)
+
+// ==================================
 // FETCH FACILITIES FROM BACKEND
 // ==================================
 async function loadFacilities() {
     if (!facilitiesGrid) return;
 
+    // Clear current state
+    allFacilities = [];
+    currentPage = 1;
     facilitiesGrid.innerHTML = "";
+
+    // Hide empty state
+    if (noFacilitiesDiv) noFacilitiesDiv.style.display = "none";
 
     try {
         const response = await fetch(`/api/owner/${ownerId}/facilities`, {
@@ -102,17 +115,89 @@ async function loadFacilities() {
             return;
         }
 
+        // Store all facilities
+        allFacilities = facilities;
+
+        // Initial render
+        renderPage();
+        renderPagination();
+
         if (noFacilitiesDiv) noFacilitiesDiv.style.display = "none";
         facilitiesGrid.style.display = "flex";
-
-        facilities.forEach(facility => {
-            facilitiesGrid.appendChild(createFacilityCard(facility));
-        });
 
     } catch (error) {
         console.error(error);
         notify("Não foi possível carregar os seus campos.", 'danger');
     }
+}
+
+function renderPage() {
+    if (!facilitiesGrid) return;
+    facilitiesGrid.innerHTML = "";
+
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const pageItems = allFacilities.slice(startIndex, endIndex);
+
+    pageItems.forEach(facility => {
+        facilitiesGrid.appendChild(createFacilityCard(facility));
+    });
+}
+
+function renderPagination() {
+    const totalPages = Math.ceil(allFacilities.length / itemsPerPage);
+    const paginationControls = document.getElementById('paginationControls');
+    if (!paginationControls) return;
+
+    paginationControls.innerHTML = '';
+
+    // If only 1 page, maybe hide? But user asked for pagination. We keep it if > 1 page usually.
+    if (totalPages <= 1) return;
+
+    // Previous button
+    const prevLi = document.createElement('li');
+    prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+    prevLi.innerHTML = `<a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>`;
+    prevLi.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (currentPage > 1) {
+            currentPage--;
+            renderPage();
+            renderPagination();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    });
+    paginationControls.appendChild(prevLi);
+
+    // Page numbers
+    for (let i = 1; i <= totalPages; i++) {
+        const li = document.createElement('li');
+        li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+        li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+        li.addEventListener('click', (e) => {
+            e.preventDefault();
+            currentPage = i;
+            renderPage();
+            renderPagination();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        paginationControls.appendChild(li);
+    }
+
+    // Next button
+    const nextLi = document.createElement('li');
+    nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+    nextLi.innerHTML = `<a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>`;
+    nextLi.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderPage();
+            renderPagination();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    });
+    paginationControls.appendChild(nextLi);
 }
 
 
@@ -124,15 +209,38 @@ function createFacilityCard(facility) {
     const col = document.createElement("div");
     col.className = "col-md-6 col-lg-4";
 
+    const sportIcons = {
+        'FOOTBALL': 'sports_soccer',
+        'PADEL': 'sports_tennis',
+        'TENNIS': 'sports_tennis',
+        'BASKETBALL': 'sports_basketball',
+        'VOLLEYBALL': 'sports_volleyball',
+        'SWIMMING': 'pool'
+    };
+
+    // Determine main sport for icon
+    let mainSport = 'SPORTS';
+    if (Array.isArray(facility.sports) && facility.sports.length > 0) {
+        mainSport = facility.sports[0];
+    }
+    const icon = sportIcons[mainSport] || 'sports';
+
+    // Updated card content to support images with icon fallback
+    let imageContent;
+    if (facility.imageUrl) {
+        imageContent = `<img src="${facility.imageUrl}" class="w-100 h-100 object-fit-cover" alt="${facility.name}" onerror="this.parentElement.innerHTML='<div class=\\'w-100 h-100 d-flex align-items-center justify-content-center bg-light\\'><i class=\\'material-icons text-muted opacity-50 icon-xlarge\\' style=\\'font-size: 64px;\\'>${icon}</i></div>'">`;
+    } else {
+        imageContent = `<div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
+                          <i class="material-icons text-muted opacity-50 icon-xlarge" style="font-size: 64px;">${icon}</i>
+                        </div>`;
+    }
+
     const sportsList = Array.isArray(facility.sports) ? facility.sports.join(", ") : "";
 
     col.innerHTML = `
-        <div class="card shadow-sm p-0 border-0" style="border-radius: 16px; overflow: hidden;">
+        <div class="card shadow-sm p-0 border-0 h-100" style="border-radius: 16px; overflow: hidden;">
             <div style="height: 180px; overflow: hidden; background-color: #f0f0f0;">
-                <img src="${facility.imageUrl || '../images/facilities/default.jpg'}" 
-                     class="w-100 h-100 object-fit-cover" 
-                     alt="${facility.name}"
-                     onerror="this.src='../images/facilities/default.jpg'">
+                ${imageContent}
             </div>
             <div class="card-body p-4">
 
@@ -214,8 +322,8 @@ async function createFacility() {
     const imageInput = document.getElementById("facilityImage");
     const imageFile = imageInput.files[0];
 
-    const selectedSports = Array.from(document.getElementById("facilitySports").selectedOptions)
-        .map(opt => opt.value);
+    const selectedSports = Array.from(document.querySelectorAll(".facility-sport-check:checked"))
+        .map(cb => cb.value);
 
     // Simple validation
     if (!name || !city || !address || !price || !opening || !closing || selectedSports.length === 0) {

@@ -30,8 +30,8 @@ public class DataInitializer {
 
     @Bean
     CommandLineRunner initDatabase(FacilityRepository facilityRepository,
-                                   EquipmentRepository equipmentRepository,
-                                   UserRepository userRepository) {
+            EquipmentRepository equipmentRepository,
+            UserRepository userRepository) {
         return args -> {
             // Check if data already exists
             long count = facilityRepository.count();
@@ -40,20 +40,22 @@ public class DataInitializer {
             if (count > 0) {
                 logger.info("Database already has {} facilities", count);
                 // List facilities for debugging
-                facilityRepository.findAll().forEach(f ->
-                        logger.info("  - {} ({} in {})", f.getName(), f.getSports(), f.getCity())
-                );
+                facilityRepository.findAll()
+                        .forEach(f -> logger.info("  - {} ({} in {})", f.getName(), f.getSports(), f.getCity()));
                 return; // Data already initialized
             }
 
             logger.info("Initializing sample data...");
+
+            // Encode passwords
+            org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder passwordEncoder = new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
 
             // =============================================================
             // OWNER USER (criado primeiro → tipicamente ID = 1)
             // =============================================================
             User ownerUser = new User();
             ownerUser.setEmail("owner@sportslink.com");
-            ownerUser.setPassword("password123"); // Plain text password for testing
+            ownerUser.setPassword(passwordEncoder.encode("password123")); // Encoded password
             ownerUser.setName("Owner User");
             ownerUser.setPhone("911111111");
             ownerUser.getRoles().add(Role.OWNER);
@@ -65,7 +67,7 @@ public class DataInitializer {
             // Create test user for functional tests (como tinhas)
             User testUser = new User();
             testUser.setEmail("test@sportslink.com");
-            testUser.setPassword("password123");
+            testUser.setPassword(passwordEncoder.encode("password123")); // Encoded password
             testUser.setName("Test User");
             testUser.setPhone("912345678");
             testUser.getRoles().add(Role.RENTER);
@@ -165,7 +167,7 @@ public class DataInitializer {
             facility6.setLatitude(40.6380);
             facility6.setLongitude(-8.6420);
             facility6.setRating(4.6);
-            facility6.setOwner(owner1);
+            facility6.setOwner(ownerUser);
             facilityRepository.save(facility6);
 
             Facility facility7 = new Facility();
@@ -226,7 +228,7 @@ public class DataInitializer {
             facility10.setLatitude(41.5454);
             facility10.setLongitude(-8.4265);
             facility10.setRating(4.7);
-            facility10.setOwner(owner1);
+            facility10.setOwner(ownerUser);
             facilityRepository.save(facility10);
 
             Facility facility11 = new Facility();
@@ -261,116 +263,18 @@ public class DataInitializer {
 
             logger.info("Created 12 facilities total");
 
-            // Create sample equipment for facility1 (Football)
-            Equipment equipment1 = new Equipment();
-            equipment1.setName("Bola de Futebol");
-            equipment1.setType("Ball");
-            equipment1.setDescription("Bola oficial de futebol tamanho 5");
-            equipment1.setFacility(facility1);
-            equipment1.setSports(List.of(Sport.FOOTBALL));
-            equipment1.setQuantity(10);
-            equipment1.setPricePerHour(2.0);
-            equipment1.setStatus(STATUS_AVAILABLE);
-            equipmentRepository.save(equipment1);
+            logger.info("Created 12 facilities total");
 
-            Equipment equipment2 = new Equipment();
-            equipment2.setName("Coletes de Treino");
-            equipment2.setType("Vest");
-            equipment2.setDescription("Coletes coloridos para distinguir equipas");
-            equipment2.setFacility(facility1);
-            equipment2.setSports(List.of(Sport.FOOTBALL, Sport.BASKETBALL));
-            equipment2.setQuantity(20);
-            equipment2.setPricePerHour(1.0);
-            equipment2.setStatus(STATUS_AVAILABLE);
-            equipmentRepository.save(equipment2);
+            // =============================================================
+            // POPULATE EQUIPMENT FOR ALL FACILITIES
+            // =============================================================
+            List<Facility> facilities = List.of(facility1, facility2, facility3, facility4, facility5,
+                    facility6, facility7, facility8, facility9, facility10,
+                    facility11, facility12);
 
-            // Create sample equipment for facility2 (Padel)
-            Equipment equipment3 = new Equipment();
-            equipment3.setName("Raquete de Padel");
-            equipment3.setType("Racket");
-            equipment3.setDescription("Raquete profissional de padel");
-            equipment3.setFacility(facility2);
-            equipment3.setSports(List.of(Sport.PADEL));
-            equipment3.setQuantity(8);
-            equipment3.setPricePerHour(5.0);
-            equipment3.setStatus(STATUS_AVAILABLE);
-            equipmentRepository.save(equipment3);
-
-            Equipment equipment4 = new Equipment();
-            equipment4.setName("Bolas de Padel");
-            equipment4.setType("Ball");
-            equipment4.setDescription("Pack de 3 bolas de padel");
-            equipment4.setFacility(facility2);
-            equipment4.setSports(List.of(Sport.PADEL));
-            equipment4.setQuantity(15);
-            equipment4.setPricePerHour(3.0);
-            equipment4.setStatus(STATUS_AVAILABLE);
-            equipmentRepository.save(equipment4);
-
-            // Create sample equipment for facility3 (Tennis)
-            Equipment equipment6 = new Equipment();
-            equipment6.setName("Bola de Ténis");
-            equipment6.setType("Ball");
-            equipment6.setDescription("Bola oficial de ténis Wilson");
-            equipment6.setFacility(facility3);
-            equipment6.setSports(List.of(Sport.TENNIS));
-            equipment6.setQuantity(20);
-            equipment6.setPricePerHour(2.0);
-            equipment6.setStatus(STATUS_AVAILABLE);
-            equipmentRepository.save(equipment6);
-
-            Equipment equipment7 = new Equipment();
-            equipment7.setName("Raquete de Ténis");
-            equipment7.setType("Racket");
-            equipment7.setDescription("Raquete profissional HEAD");
-            equipment7.setFacility(facility3);
-            equipment7.setSports(List.of(Sport.TENNIS));
-            equipment7.setQuantity(5);
-            equipment7.setPricePerHour(6.0);
-            equipment7.setStatus(STATUS_AVAILABLE);
-            equipmentRepository.save(equipment7);
-
-            // Create sample equipment for facility4 (Basketball)
-            Equipment equipment8 = new Equipment();
-            equipment8.setName("Bola de Basquete");
-            equipment8.setType("Ball");
-            equipment8.setDescription("Bola oficial Spalding NBA");
-            equipment8.setFacility(facility4);
-            equipment8.setQuantity(12);
-            equipment8.setPricePerHour(3.0);
-            equipment8.setStatus(STATUS_AVAILABLE);
-            equipmentRepository.save(equipment8);
-
-            Equipment equipment9 = new Equipment();
-            equipment9.setName("Colete de Treino");
-            equipment9.setType("Vest");
-            equipment9.setDescription("Coletes reversíveis para treino");
-            equipment9.setFacility(facility4);
-            equipment9.setQuantity(24);
-            equipment9.setPricePerHour(1.5);
-            equipment9.setStatus(STATUS_AVAILABLE);
-            equipmentRepository.save(equipment9);
-
-            // Create more equipment for variety
-            Equipment equipment5 = new Equipment();
-            equipment5.setName("Rede de Vólei");
-            equipment5.setType("Net");
-            equipment5.setDescription("Rede profissional de vólei");
-            equipment5.setFacility(facility5);
-            equipment5.setQuantity(2);
-            equipment5.setPricePerHour(8.0);
-            equipment5.setStatus(STATUS_AVAILABLE);
-            equipmentRepository.save(equipment5);
-
-            Equipment equipment10 = new Equipment();
-            equipment10.setName("Protetor de Joelho");
-            equipment10.setType("Protection");
-            equipment10.setDescription("Protetor de joelho para vólei");
-            equipment10.setFacility(facility5);
-            equipment10.setQuantity(0);
-            equipment10.setPricePerHour(3.0);
-            equipment10.setStatus(STATUS_UNAVAILABLE);
-            equipmentRepository.save(equipment10);
+            for (Facility f : facilities) {
+                createEquipmentForFacility(f, equipmentRepository);
+            }
 
             // =============================================================
             // ASSOCIAR TODAS AS FACILITIES AO OWNER
@@ -380,21 +284,141 @@ public class DataInitializer {
             facility3.setOwner(ownerUser);
             facility4.setOwner(ownerUser);
             facility5.setOwner(ownerUser);
+            facility10.setOwner(ownerUser); // facility6 already set above
+            facility6.setOwner(ownerUser); // ensure consistency
+            // Note: others might be null or set later, but requirement was just to ensure
+            // they exist
 
-            facilityRepository.save(facility1);
-            facilityRepository.save(facility2);
-            facilityRepository.save(facility3);
-            facilityRepository.save(facility4);
-            facilityRepository.save(facility5);
+            // Save updates (owners)
+            facilityRepository.saveAll(facilities);
 
-            logger.info("All sample facilities associated with owner user (id={})", ownerUser.getId());
+            logger.info("All sample facilities associated with data");
 
             // Logs finais
             logger.info("Database initialized with sample data!");
             logger.info("   - 1 owner user created");
             logger.info("   - 1 renter test user created");
-            logger.info("   - 5 facilities created");
-            logger.info("   - 10 equipments created");
+            logger.info("   - {} facilities created", facilities.size());
+            logger.info("   - Equipment population complete");
         };
+    }
+
+    private void createEquipmentForFacility(Facility f, EquipmentRepository repo) {
+        if (f.getSports() == null)
+            return;
+
+        for (Sport sport : f.getSports()) {
+            // Create 2 items per sport
+            createItem(f, sport, 1, repo);
+            createItem(f, sport, 2, repo);
+        }
+    }
+
+    private void createItem(Facility f, Sport s, int variant, EquipmentRepository repo) {
+        Equipment e = new Equipment();
+        e.setFacility(f);
+        e.setSports(List.of(s));
+        e.setStatus(STATUS_AVAILABLE);
+
+        switch (s) {
+            case FOOTBALL:
+                if (variant == 1) {
+                    e.setName("Bola de Futebol Oficial");
+                    e.setType("Ball");
+                    e.setDescription("Bola de futebol tamanho 5 homologada.");
+                    e.setQuantity(20);
+                    e.setPricePerHour(3.0);
+                } else {
+                    e.setName("Coletes de Treino");
+                    e.setType("Vest");
+                    e.setDescription("Conjunto de 10 coletes para equipas.");
+                    e.setQuantity(10);
+                    e.setPricePerHour(2.0);
+                }
+                break;
+            case PADEL:
+                if (variant == 1) {
+                    e.setName("Raquete de Padel Pro");
+                    e.setType("Racket");
+                    e.setDescription("Raquete de carbono para nível intermédio/avançado.");
+                    e.setQuantity(12);
+                    e.setPricePerHour(5.0);
+                } else {
+                    e.setName("Pack Bolas Padel");
+                    e.setType("Ball");
+                    e.setDescription("Tubo com 3 bolas de padel novas.");
+                    e.setQuantity(30);
+                    e.setPricePerHour(4.0);
+                }
+                break;
+            case TENNIS:
+                if (variant == 1) {
+                    e.setName("Raquete Wilson Tennis");
+                    e.setType("Racket");
+                    e.setDescription("Raquete de ténis leve e resistente.");
+                    e.setQuantity(10);
+                    e.setPricePerHour(6.0);
+                } else {
+                    e.setName("Cesto de Bolas");
+                    e.setType("Ball");
+                    e.setDescription("Cesto com 50 bolas para treino.");
+                    e.setQuantity(5);
+                    e.setPricePerHour(8.0);
+                }
+                break;
+            case BASKETBALL:
+                if (variant == 1) {
+                    e.setName("Bola de Basquete NBA");
+                    e.setType("Ball");
+                    e.setDescription("Bola de basquete oficial indoor/outdoor.");
+                    e.setQuantity(15);
+                    e.setPricePerHour(3.5);
+                } else {
+                    e.setName("Cone de Treino");
+                    e.setType("Accessory");
+                    e.setDescription("Conjunto de cones para exercícios de drible.");
+                    e.setQuantity(8);
+                    e.setPricePerHour(1.5);
+                }
+                break;
+            case VOLLEYBALL:
+                if (variant == 1) {
+                    e.setName("Bola de Vólei Pro");
+                    e.setType("Ball");
+                    e.setDescription("Bola de vólei soft touch.");
+                    e.setQuantity(12);
+                    e.setPricePerHour(3.0);
+                } else {
+                    e.setName("Joelheiras de Proteção");
+                    e.setType("Protection");
+                    e.setDescription("Par de joelheiras profissionais.");
+                    e.setQuantity(20);
+                    e.setPricePerHour(2.5);
+                }
+                break;
+            case SWIMMING:
+                if (variant == 1) {
+                    e.setName("Prancha de Natação");
+                    e.setType("Accessory");
+                    e.setDescription("Prancha ergonómica para treino de pernas.");
+                    e.setQuantity(25);
+                    e.setPricePerHour(1.0);
+                } else {
+                    e.setName("Óculos de Natação");
+                    e.setType("Accessory");
+                    e.setDescription("Óculos anti-embaciamento ajustáveis.");
+                    e.setQuantity(15);
+                    e.setPricePerHour(2.0);
+                }
+                break;
+            default:
+                e.setName("Equipamento Genérico " + variant);
+                e.setType("Other");
+                e.setDescription("Equipamento desportivo diverso.");
+                e.setQuantity(5);
+                e.setPricePerHour(1.0);
+        }
+
+        repo.save(e);
     }
 }

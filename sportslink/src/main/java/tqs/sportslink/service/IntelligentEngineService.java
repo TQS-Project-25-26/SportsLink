@@ -141,7 +141,7 @@ public class IntelligentEngineService {
         User owner = userRepository.findById(ownerId)
                 .orElseThrow(() -> new IllegalArgumentException("Owner not found"));
 
-        if (!Role.OWNER.equals(owner.getRole())) {
+        if (!owner.getRoles().contains(Role.OWNER)) {
             throw new IllegalArgumentException("User is not an owner");
         }
 

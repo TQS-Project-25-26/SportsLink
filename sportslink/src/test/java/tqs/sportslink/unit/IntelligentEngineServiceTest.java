@@ -46,7 +46,7 @@ class IntelligentEngineServiceTest {
     void setUp() {
         user = new User();
         user.setId(1L);
-        user.setRole(Role.RENTER);
+        user.getRoles().add(Role.RENTER);
         user.setLatitude(40.0);
         user.setLongitude(-8.0);
 
@@ -143,7 +143,7 @@ class IntelligentEngineServiceTest {
         // Arrange
         User owner = new User();
         owner.setId(2L);
-        owner.setRole(Role.OWNER);
+        owner.getRoles().add(Role.OWNER);
         owner.setFacilities(Collections.singletonList(facility));
 
         when(userRepository.findById(2L)).thenReturn(Optional.of(owner));

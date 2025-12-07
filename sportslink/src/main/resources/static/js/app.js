@@ -100,7 +100,7 @@
 
     const card = document.createElement("div");
     card.className = "field-card card border-0 shadow-sm h-100";
-    
+
     // Map sports to icon (handle both sports array and sportType for compatibility)
     const sportIcons = {
       'FOOTBALL': 'sports_soccer',
@@ -135,21 +135,10 @@
       <button class="favorite-btn btn position-absolute top-0 end-0 m-2 rounded-circle shadow-sm" aria-label="Favoritar" style="z-index: 5;">
         <i class="material-icons">favorite_border</i>
       </button>
-      <div class="card-body">
-        <div class="field-sport text-uppercase fw-bold text-accent small">${
-          field.sports && field.sports.length > 0 ? field.sports.join(', ') : (field.sportType || "")
-        }</div>
-        <h5 class="field-name card-title fw-bold text-accent-dark">${
-          field.name || "Unnamed"
-        }</h5>
-        <div class="field-location d-flex align-items-center gap-1 text-muted small">
-          <i class="material-icons icon-small">location_on</i> ${
-            field.city || field.address || ""
-          }
-
       <div class="card-body d-flex flex-column gap-2">
-        <h5 class="field-name card-title fw-bold text-dark mb-1 text-truncate">${field.name || "Unnamed Facility"
-      }</h5>
+        <div class="field-sport text-uppercase fw-bold text-accent small">${field.sports && field.sports.length > 0 ? field.sports.join(', ') : (field.sportType || "")
+      }</div>
+        <h5 class="field-name card-title fw-bold text-dark mb-1 text-truncate">${field.name || "Unnamed Facility"}</h5>
         
         <div class="field-location d-flex align-items-center gap-1 text-muted small mb-3">
           <i class="material-icons icon-small text-accent">location_on</i> 
@@ -157,7 +146,7 @@
         </div>
 
         <div class="mt-auto d-flex gap-2">
-          <button class="btn btn-sm btn-outline-dark btn-equip flex-fill">Equipamentos</button>
+          <button class="btn btn-sm btn-primary text-white btn-equip flex-fill">Equipamentos</button>
           <button class="btn btn-sm btn-primary btn-rent flex-fill text-white">Reservar</button>
         </div>
       </div>
@@ -476,12 +465,12 @@
   // Load personalized suggestions
   async function loadSuggestions() {
     console.log('Loading personalized suggestions...');
-    
+
     if (typeof SuggestionsService === 'undefined') {
       console.log('SuggestionsService not available');
       return;
     }
-    
+
     try {
       // Try to get user location for better suggestions
       let userLocation = null;
@@ -492,11 +481,11 @@
           console.log('Location not available, using suggestions without location');
         }
       }
-      
+
       // Get personalized suggestions (default user ID = 1)
       const suggestions = await SuggestionsService.getFacilitySuggestions(1, userLocation);
       console.log('Personalized suggestions:', suggestions);
-      
+
       if (suggestions && suggestions.length > 0) {
         renderSuggestions(suggestions);
       }
@@ -509,18 +498,18 @@
   function renderSuggestions(suggestions = []) {
     const section = document.getElementById('suggestions-section');
     const container = document.getElementById('suggestions-container');
-    
+
     if (!section || !container) return;
-    
+
     container.innerHTML = '';
-    
+
     if (suggestions.length === 0) {
       section.style.display = 'none';
       return;
     }
-    
+
     section.style.display = 'block';
-    
+
     // Show top 4 suggestions
     suggestions.slice(0, 4).forEach(suggestion => {
       const card = SuggestionsService.createSuggestionCard(suggestion);

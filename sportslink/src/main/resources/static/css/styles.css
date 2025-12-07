@@ -112,6 +112,12 @@ body {
     transition: transform .12s ease, filter .12s ease;
 }
 
+.btn-sm {
+    padding: 8px 12px;
+    font-size: 13px;
+    margin-top: 4px;
+}
+
 .btn:hover {
     filter: brightness(0.98);
     transform: translateY(-1px);

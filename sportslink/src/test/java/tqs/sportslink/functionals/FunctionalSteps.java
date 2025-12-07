@@ -39,23 +39,22 @@ public class FunctionalSteps {
     }
 
     // Cards de campos: qualquer .card dentro das zonas de resultados
-    private static final By FACILITY_CARD =
-            By.cssSelector("#featured .card, #nearbyCarousel .card");
+    private static final By FACILITY_CARD = By.cssSelector("#featured .card, #nearbyCarousel .card");
 
     // ------------------ SETUP ------------------
 
     private String generateTestToken() {
         // Fetch the test user created by DataInitializer
         var user = userRepository.findByEmail("test@sportslink.com")
-            .orElseThrow(() -> new RuntimeException("Test user not found"));
-        
+                .orElseThrow(() -> new RuntimeException("Test user not found"));
+
         java.util.Set<String> roles = new java.util.HashSet<>();
         if (user.getRoles() != null) {
             user.getRoles().forEach(r -> roles.add(r.name()));
         } else {
             roles.add("RENTER");
         }
-        
+
         return jwtUtil.generateToken(user.getEmail(), roles);
     }
 
@@ -64,7 +63,6 @@ public class FunctionalSteps {
             return;
         }
 
-        
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless"); // Run in headless mode for CI
         options.addArguments("--no-sandbox");
@@ -92,7 +90,7 @@ public class FunctionalSteps {
         driver.get(getBaseUrl() + "/index.html");
         String token = generateTestToken();
         ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', arguments[0]);", token);
-        
+
         driver.get(getBaseUrl() + "/pages/main_page_user.html");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("searchBtn")));
     }
@@ -100,8 +98,7 @@ public class FunctionalSteps {
     @When("I select the sport {string} from the dropdown")
     public void i_select_sport_dropdown(String sport) {
         WebElement dropdown = wait.until(
-                ExpectedConditions.visibilityOfElementLocated(By.id("sportFilter"))
-        );
+                ExpectedConditions.visibilityOfElementLocated(By.id("sportFilter")));
         // Com <select> é mais claro assim
         new Select(dropdown).selectByVisibleText(sport);
     }
@@ -110,8 +107,7 @@ public class FunctionalSteps {
     public void enter_location(String location) {
         // No teu HTML o campo é searchInput (sport OR location)
         WebElement input = wait.until(
-                ExpectedConditions.visibilityOfElementLocated(By.id("searchInput"))
-        );
+                ExpectedConditions.visibilityOfElementLocated(By.id("searchInput")));
         input.clear();
         input.sendKeys(location);
     }
@@ -120,8 +116,8 @@ public class FunctionalSteps {
     public void press_search_button() {
         driver.findElement(By.id("searchBtn")).click();
         // Wait for the page to process the search and load results
-        wait.until(webDriver -> !webDriver.findElements(FACILITY_CARD).isEmpty() || 
-                        webDriver.findElements(By.cssSelector(".no-results")).size() > 0);
+        wait.until(webDriver -> !webDriver.findElements(FACILITY_CARD).isEmpty() ||
+                webDriver.findElements(By.cssSelector(".no-results")).size() > 0);
     }
 
     @Then("I should see facilities related to {string}")
@@ -129,7 +125,7 @@ public class FunctionalSteps {
         // Ajuste para diferença de idioma entre o feature e o texto real
         String expected = sport.toLowerCase();
         if (expected.equals("football")) {
-            expected = "futebol";   // é o que aparece no card
+            expected = "futebol"; // é o que aparece no card
         }
 
         final String expectedText = expected;
@@ -152,7 +148,7 @@ public class FunctionalSteps {
                 }
             });
         });
-        
+
         // Final verification
         boolean match = driver.findElements(FACILITY_CARD)
                 .stream()
@@ -219,9 +215,10 @@ public class FunctionalSteps {
             return cards.isEmpty() ? null : cards.get(0);
         });
 
-        // Se os cards tiverem um botão próprio (ex: .viewBtn), podes ajustar aqui.
-        // Por agora, clicamos no próprio card.
-        firstCard.click();
+        // Use JS click to avoid ElementClickInterceptedException
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", firstCard);
+        wait.until(ExpectedConditions.elementToBeClickable(firstCard));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", firstCard);
     }
 
     @Then("I should be on the facility details page")
@@ -241,7 +238,7 @@ public class FunctionalSteps {
         driver.get(getBaseUrl() + "/index.html");
         String token = generateTestToken();
         ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', arguments[0]);", token);
-        
+
         driver.get(getBaseUrl() + "/pages/field_detail.html?id=" + id);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("field-name")));
     }
@@ -249,11 +246,11 @@ public class FunctionalSteps {
     @When("I click the button to view all equipment")
     public void click_view_equipment() {
         WebElement button = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("btn-view-equipments")));
-        
+
         // Scroll to element and use JavaScript click to avoid interception
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", button);
         wait.until(ExpectedConditions.elementToBeClickable(button));
-        
+
         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", button);
         wait.until(ExpectedConditions.urlContains("equipments.html"));
     }
@@ -265,16 +262,14 @@ public class FunctionalSteps {
             WebElement loading = webDriver.findElement(By.id("loading"));
             return loading != null && "none".equals(loading.getCssValue("display"));
         });
-        
+
         // Wait for either equipment cards OR no-results message
-        wait.until(webDriver -> 
-            !webDriver.findElements(By.cssSelector(".equipment-card")).isEmpty() ||
-            webDriver.findElement(By.id("no-results")).isDisplayed()
-        );
-        
+        wait.until(webDriver -> !webDriver.findElements(By.cssSelector(".equipment-card")).isEmpty() ||
+                webDriver.findElement(By.id("no-results")).isDisplayed());
+
         // Assert that we have equipment cards (not the no-results message)
         assertFalse(driver.findElements(By.cssSelector(".equipment-card")).isEmpty(),
-            "Expected to find equipment cards, but none were found. Check if the facility has equipment.");
+                "Expected to find equipment cards, but none were found. Check if the facility has equipment.");
     }
 
     // ------------------------------
@@ -288,7 +283,7 @@ public class FunctionalSteps {
         driver.get(getBaseUrl() + "/index.html");
         String token = generateTestToken();
         ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', arguments[0]);", token);
-        
+
         driver.get(getBaseUrl() + "/pages/equipments.html?facilityId=" + id);
         wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector(".equipment-card")));
     }
@@ -302,7 +297,7 @@ public class FunctionalSteps {
                 ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", card);
                 // Optional: small wait or just click via JS
                 ((JavascriptExecutor) driver).executeScript("arguments[0].click();", card);
-                
+
                 selected = true;
                 break;
             }
@@ -332,7 +327,7 @@ public class FunctionalSteps {
         driver.get(getBaseUrl() + "/index.html");
         String token = generateTestToken();
         ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', arguments[0]);", token);
-        
+
         driver.get(getBaseUrl() + "/pages/booking.html?facilityId=" + id);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("btn-confirm-booking")));
     }
@@ -342,34 +337,31 @@ public class FunctionalSteps {
         // Select Date (pick the first non-disabled day, preferrably tomorrow)
         // Wait for calendar container
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("calendar-days")));
-        
+
         // Wait for at least one enabled day to be present
         wait.until(d -> !d.findElements(By.cssSelector(".calendar-day:not(.disabled)")).isEmpty());
-        
+
         // Find available days
         java.util.List<WebElement> days = driver.findElements(By.cssSelector(".calendar-day:not(.disabled)"));
-        
+
         if (days.isEmpty()) {
             driver.findElement(By.id("next-month")).click();
             wait.until(d -> !d.findElements(By.cssSelector(".calendar-day:not(.disabled)")).isEmpty());
             days = driver.findElements(By.cssSelector(".calendar-day:not(.disabled)"));
         }
-        
+
         // Click the last available day using JS to avoid intersection issues
         WebElement day = days.get(days.size() - 1);
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", day);
         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", day);
-        
-        // Wait for slots container
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("slots-container")));
-        
-        // Wait for slots to populate
-        wait.until(d -> !d.findElements(By.className("time-slot")).isEmpty());
-        
-        // Select first available slot using JS
-        WebElement slot = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".time-slot:not(.disabled)")));
-        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", slot);
-        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", slot);
+
+        // Set Start Time
+        WebElement startTime = driver.findElement(By.id("start-time"));
+        startTime.sendKeys("14:00");
+
+        // Select Duration
+        WebElement duration = driver.findElement(By.id("duration"));
+        new Select(duration).selectByValue("2"); // Select 2 hours
 
         driver.findElement(By.id("user-name")).clear();
         driver.findElement(By.id("user-name")).sendKeys("Test User");
@@ -384,19 +376,18 @@ public class FunctionalSteps {
     @When("I confirm the booking")
     public void confirm_booking() {
         WebElement button = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("btn-confirm-booking")));
-        
+
         // Scroll to element and use JavaScript click to avoid interception
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", button);
         wait.until(ExpectedConditions.elementToBeClickable(button));
-        
+
         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", button);
     }
 
     @Then("a booking confirmation modal should appear with an ID")
     public void booking_modal() {
         WebElement modal = wait.until(
-                ExpectedConditions.visibilityOfElementLocated(By.id("successModal"))
-        );
+                ExpectedConditions.visibilityOfElementLocated(By.id("successModal")));
         String id = modal.findElement(By.id("booking-id")).getText().trim();
         assertFalse(id.isBlank());
     }
@@ -416,8 +407,7 @@ public class FunctionalSteps {
     @When("I click the {string} button")
     public void i_click_the_button(String buttonText) {
         WebElement button = wait.until(ExpectedConditions.elementToBeClickable(
-                By.xpath("//button[contains(text(), '" + buttonText + "')]")
-        ));
+                By.xpath("//button[contains(text(), '" + buttonText + "')]")));
         button.click();
     }
 
@@ -429,7 +419,8 @@ public class FunctionalSteps {
 
     @Then("I should see a suggestion to try different search criteria")
     public void i_should_see_a_suggestion_to_try_different_search_criteria() {
-        WebElement suggestion = wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("search-suggestion")));
+        WebElement suggestion = wait
+                .until(ExpectedConditions.visibilityOfElementLocated(By.className("search-suggestion")));
         assertTrue(suggestion.isDisplayed());
     }
 }

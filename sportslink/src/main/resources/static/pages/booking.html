@@ -46,17 +46,33 @@
 
                             <!-- Data e Hora -->
                             <div class="row mb-3">
-                                <div class="col-md-6">
+                                <div class="col-md-3">
                                     <label class="form-label fw-bold">Data</label>
                                     <input type="date" class="form-control" id="booking-date" required>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-3">
                                     <label class="form-label fw-bold">Hora de Início</label>
                                     <input type="time" class="form-control" id="start-time" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold">Duração</label>
+                                    <select class="form-select" id="duration">
+                                        <option value="1">1 Hora</option>
+                                        <option value="1.5">1.5 Horas</option>
+                                        <option value="2">2 Horas</option>
+                                        <option value="2.5">2.5 Horas</option>
+                                        <option value="3">3 Horas</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold">Hora de Fim</label>
+                                    <input type="time" class="form-control bg-light" id="end-time" readonly>
+                                </div>
+                            </div>
                             <!-- Custom Calendar Section -->
                             <div class="row mb-4">
                                 <div class="col-12">
-                                    <label class="form-label fw-bold mb-3">Selecione Data e Horário</label>
+                                    <label class="form-label fw-bold mb-3">Consultar Calendário (Opcional)</label>
 
                                     <div class="calendar-wrapper border rounded p-3">
                                         <!-- Calendar Header -->
@@ -74,24 +90,9 @@
                                         <div class="calendar-grid mb-3" id="calendar-days">
                                             <!-- Rendered by JS -->
                                         </div>
-
-                                        <!-- Slots Section (Hidden until date selected) -->
-                                        <div id="slots-container" class="slots-container" style="display: none;">
-                                            <p class="small text-muted mb-2">Horários Disponíveis:</p>
-                                            <div class="slots-grid" id="slots-grid">
-                                                <!-- Rendered by JS -->
-                                            </div>
-                                            <p id="no-slots-msg" class="text-danger small mt-2" style="display: none;">
-                                                Sem horários disponíveis para esta data.</p>
-                                        </div>
                                     </div>
-
-                                    <!-- Hidden Inputs for Form Logic -->
-                                    <input type="hidden" id="booking-date" required>
-                                    <input type="hidden" id="start-time" required>
-                                    <input type="hidden" id="duration" value="1">
-                                    <input type="time" class="form-control d-none" id="end-time" readonly>
-                                    <!-- Keep for logic compatibility -->
+                                    <small class="text-muted">Selecione um dia no calendário para preencher a
+                                        data.</small>
                                 </div>
                             </div>
 
@@ -129,7 +130,8 @@
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="fw-bold mb-0">Equipamentos Sugeridos</h5>
                             <div>
-                                <span class="badge bg-info text-dark me-2" id="sports-selected-badge">Selecione um desporto</span>
+                                <span class="badge bg-info text-dark me-2" id="sports-selected-badge">Selecione um
+                                    desporto</span>
                             </div>
                         </div>
                         <div id="suggested-equipment-list">

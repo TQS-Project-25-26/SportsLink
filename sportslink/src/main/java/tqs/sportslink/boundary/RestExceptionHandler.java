@@ -65,7 +65,7 @@ public class RestExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleNoResourceFound(NoResourceFoundException ex) {
         // Não loga como erro - é normal o navegador pedir favicon.ico
         // logger.debug("Static resource not found: {}", ex.getResourcePath());
-        return buildErrorResponse(HttpStatus.NOT_FOUND, "Not Found", "Recurso não encontrado");
+        return buildErrorResponse(HttpStatus.NOT_FOUND, "Not Found", "Resource not found");
     }
 
     @ExceptionHandler(org.springframework.web.bind.MissingRequestHeaderException.class)
@@ -89,6 +89,6 @@ public class RestExceptionHandler {
         
         logger.error("Internal error", ex);
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error",
-                "Ocorreu um erro inesperado");
+                "An unexpected error occurred");
     }
 }

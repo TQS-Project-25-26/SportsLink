@@ -61,14 +61,14 @@
         <div id="owner-dashboard-content" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
                 <div>
-                    <h1 class="fw-bold">Os Meus Campos</h1>
-                    <p class="text-muted">Gestão completa dos seus campos e equipamentos</p>
+                    <h1 class="fw-bold">My Facilities</h1>
+                    <p class="text-muted">Manage your facilities and equipments</p>
                 </div>
 
                 <button class="btn bg-accent text-white fw-bold px-4 py-2" id="btn-open-add-facility"
                     style="border-radius: 50px;">
                     <i class="material-icons me-2">add_circle</i>
-                    Adicionar Campo
+                    Add Facility
                 </button>
             </div>
 
@@ -78,7 +78,7 @@
             <!-- EMPTY STATE -->
             <div id="no-facilities" class="text-center text-muted py-5" style="display: none;">
                 <i class="material-icons opacity-50" style="font-size: 4rem;">villa</i>
-                <p class="mt-3 fs-5">Ainda não registou nenhum campo</p>
+                <p class="mt-3 fs-5">You have not registered any fields yet</p>
             </div>
 
             <!-- Pagination -->
@@ -99,7 +99,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold" id="addFacilityLabel">
                         <i class="material-icons me-2 text-accent">add_circle</i>
-                        Adicionar Novo Campo
+                        Add New Facility
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
@@ -109,49 +109,49 @@
                     <form id="addFacilityForm" class="row g-3">
 
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Nome do Campo</label>
+                            <label class="form-label fw-semibold">Facility Name</label>
                             <input type="text" class="form-control" id="facilityName" required>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Cidade</label>
+                            <label class="form-label fw-semibold">City</label>
                             <input type="text" class="form-control" id="facilityCity" required>
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label fw-semibold">Endereço</label>
+                            <label class="form-label fw-semibold">Address</label>
                             <input type="text" class="form-control" id="facilityAddress" required>
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label fw-semibold">Descrição</label>
+                            <label class="form-label fw-semibold">Description</label>
                             <textarea class="form-control" id="facilityDescription" rows="2"></textarea>
                         </div>
 
                         <hr class="my-3">
 
                         <div class="col-md-4">
-                            <label class="form-label fw-semibold">Preço por Hora (€)</label>
+                            <label class="form-label fw-semibold">Price per Hour (€)</label>
                             <input type="number" step="0.01" class="form-control" id="facilityPrice" required>
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label fw-semibold">Hora de Abertura</label>
+                            <label class="form-label fw-semibold">Opening Time</label>
                             <input type="time" class="form-control" id="facilityOpening" required>
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label fw-semibold">Hora de Fecho</label>
+                            <label class="form-label fw-semibold">Closing Time</label>
                             <input type="time" class="form-control" id="facilityClosing" required>
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label fw-semibold">Imagem do Campo</label>
+                            <label class="form-label fw-semibold">Facility Image</label>
                             <input type="file" class="form-control" id="facilityImage" accept="image/*">
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label fw-semibold">Desportos Disponíveis</label>
+                            <label class="form-label fw-semibold">Available Sports</label>
                             <input type="hidden" id="facilitySports">
                             <!-- Dummy for validation if needed, or handle in JS -->
                             <div class="row g-3" id="sports-checkbox-container">
@@ -161,7 +161,7 @@
                                             value="FOOTBALL" id="sport-FOOTBALL">
                                         <label class="form-check-label d-flex align-items-center gap-2"
                                             for="sport-FOOTBALL">
-                                            <i class="material-icons text-accent">sports_soccer</i> Futebol
+                                            <i class="material-icons text-accent">sports_soccer</i> Football
                                         </label>
                                     </div>
                                 </div>
@@ -171,7 +171,7 @@
                                             value="BASKETBALL" id="sport-BASKETBALL">
                                         <label class="form-check-label d-flex align-items-center gap-2"
                                             for="sport-BASKETBALL">
-                                            <i class="material-icons text-accent">sports_basketball</i> Basquetebol
+                                            <i class="material-icons text-accent">sports_basketball</i> Basketball
                                         </label>
                                     </div>
                                 </div>
@@ -181,7 +181,7 @@
                                             value="TENNIS" id="sport-TENNIS">
                                         <label class="form-check-label d-flex align-items-center gap-2"
                                             for="sport-TENNIS">
-                                            <i class="material-icons text-accent">sports_tennis</i> Ténis
+                                            <i class="material-icons text-accent">sports_tennis</i> Tennis
                                         </label>
                                     </div>
                                 </div>
@@ -201,7 +201,7 @@
                                             value="VOLLEYBALL" id="sport-VOLLEYBALL">
                                         <label class="form-check-label d-flex align-items-center gap-2"
                                             for="sport-VOLLEYBALL">
-                                            <i class="material-icons text-accent">sports_volleyball</i> Voleibol
+                                            <i class="material-icons text-accent">sports_volleyball</i> Volleyball
                                         </label>
                                     </div>
                                 </div>
@@ -211,12 +211,12 @@
                                             value="SWIMMING" id="sport-SWIMMING">
                                         <label class="form-check-label d-flex align-items-center gap-2"
                                             for="sport-SWIMMING">
-                                            <i class="material-icons text-accent">pool</i> Natação
+                                            <i class="material-icons text-accent">pool</i> Swimming
                                         </label>
                                     </div>
                                 </div>
                             </div>
-                            <small class="text-muted">Selecione pelo menos um</small>
+                            <small class="text-muted">Select at least one</small>
                         </div>
 
                     </form>
@@ -224,11 +224,11 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
 
                     <button class="btn bg-accent text-white fw-bold" id="btnConfirmAddFacility"
                         style="border-radius: 50px;">
-                        Guardar Campo
+                        Save Facility
                     </button>
                 </div>
 

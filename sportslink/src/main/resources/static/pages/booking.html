@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Reservar - SportsLink</title>
+    <title>Booking - SportsLink</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -22,23 +22,23 @@
             <a href="#" id="back-btn" class="btn btn-outline-secondary d-inline-flex align-items-center px-4 py-2"
                 style="border-radius: 50px;">
                 <i class="material-icons me-2">arrow_back</i>
-                Voltar ao Campo
+                Back to Facility
             </a>
         </div>
 
-        <h2 class="fw-bold mb-4">Finalizar Reserva</h2>
+        <h2 class="fw-bold mb-4">Finalize Booking</h2>
 
         <div class="row">
             <!-- Formulário de Reserva -->
             <div class="col-md-8">
                 <div class="card shadow-sm mb-4">
                     <div class="card-body p-4">
-                        <h5 class="fw-bold mb-3">Detalhes da Reserva</h5>
+                        <h5 class="fw-bold mb-3">Booking Details</h5>
 
                         <form id="booking-form">
                             <!-- Sport Selection -->
                             <div class="mb-4">
-                                <label class="form-label fw-bold">Selecione o(s) Desporto(s)</label>
+                                <label class="form-label fw-bold">Select Sport(s)</label>
                                 <div id="sports-checkboxes" class="border rounded p-3 bg-light">
                                     <!-- Sports will be rendered here -->
                                 </div>
@@ -47,32 +47,32 @@
                             <!-- Data e Hora -->
                             <div class="row mb-3">
                                 <div class="col-md-3">
-                                    <label class="form-label fw-bold">Data</label>
+                                    <label class="form-label fw-bold">Date</label>
                                     <input type="date" class="form-control" id="booking-date" required>
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label fw-bold">Hora de Início</label>
+                                    <label class="form-label fw-bold">Start Time</label>
                                     <input type="time" class="form-control" id="start-time" required>
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label fw-bold">Duração</label>
+                                    <label class="form-label fw-bold">Duration</label>
                                     <select class="form-select" id="duration">
-                                        <option value="1">1 Hora</option>
-                                        <option value="1.5">1.5 Horas</option>
-                                        <option value="2">2 Horas</option>
-                                        <option value="2.5">2.5 Horas</option>
-                                        <option value="3">3 Horas</option>
+                                        <option value="1">1 Hour</option>
+                                        <option value="1.5">1.5 Hours</option>
+                                        <option value="2">2 Hours</option>
+                                        <option value="2.5">2.5 Hours</option>
+                                        <option value="3">3 Hours</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label fw-bold">Hora de Fim</label>
+                                    <label class="form-label fw-bold">End Time</label>
                                     <input type="time" class="form-control bg-light" id="end-time" readonly>
                                 </div>
                             </div>
                             <!-- Custom Calendar Section -->
                             <div class="row mb-4">
                                 <div class="col-12">
-                                    <label class="form-label fw-bold mb-3">Consultar Calendário (Opcional)</label>
+                                    <label class="form-label fw-bold mb-3">View Calendar (Optional)</label>
 
                                     <div class="calendar-wrapper border rounded p-3">
                                         <!-- Calendar Header -->
@@ -91,34 +91,32 @@
                                             <!-- Rendered by JS -->
                                         </div>
                                     </div>
-                                    <small class="text-muted">Selecione um dia no calendário para preencher a
-                                        data.</small>
+                                    <small class="text-muted">Select a day on the calendar to fill the date.</small>
                                 </div>
                             </div>
 
                             <!-- User Info -->
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Seu Nome</label>
-                                <input type="text" class="form-control" id="user-name" placeholder="Nome completo"
-                                    required>
+                                <label class="form-label fw-bold">Your Name</label>
+                                <input type="text" class="form-control" id="user-name" placeholder="Full Name" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Email</label>
-                                <input type="email" class="form-control" id="user-email" placeholder="email@exemplo.com"
+                                <input type="email" class="form-control" id="user-email" placeholder="email@example.com"
                                     required>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Telefone</label>
+                                <label class="form-label fw-bold">Phone</label>
                                 <input type="tel" class="form-control" id="user-phone" placeholder="+351 123 456 789"
                                     required>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Notas Adicionais (opcional)</label>
+                                <label class="form-label fw-bold">Additional Notes (optional)</label>
                                 <textarea class="form-control" id="notes" rows="3"
-                                    placeholder="Alguma informação adicional?"></textarea>
+                                    placeholder="Any additional information?"></textarea>
                             </div>
                         </form>
                     </div>
@@ -128,10 +126,10 @@
                 <div class="card shadow-sm mb-4" id="equipment-section">
                     <div class="card-body p-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="fw-bold mb-0">Equipamentos Sugeridos</h5>
+                            <h5 class="fw-bold mb-0">Suggested Equipment</h5>
                             <div>
-                                <span class="badge bg-info text-dark me-2" id="sports-selected-badge">Selecione um
-                                    desporto</span>
+                                <span class="badge bg-info text-dark me-2" id="sports-selected-badge">Select a
+                                    sport</span>
                             </div>
                         </div>
                         <div id="suggested-equipment-list">
@@ -143,7 +141,7 @@
                 <!-- Todos os Equipamentos (NOVO) -->
                 <div class="card shadow-sm mb-4" id="all-equipment-section">
                     <div class="card-body p-4">
-                        <h5 class="fw-bold mb-3">Todos os Equipamentos Disponíveis</h5>
+                        <h5 class="fw-bold mb-3">All Available Equipment</h5>
                         <div id="all-equipment-list">
                             <!-- All equipment will be rendered here -->
                         </div>
@@ -155,7 +153,7 @@
             <div class="col-md-4">
                 <div class="card shadow-sm sticky-top" style="top: 80px;">
                     <div class="card-body p-4">
-                        <h5 class="fw-bold mb-3">Resumo</h5>
+                        <h5 class="fw-bold mb-3">Summary</h5>
 
                         <!-- Campo Info -->
                         <div class="mb-3 pb-3 border-bottom">
@@ -176,15 +174,15 @@
                         <!-- Timing -->
                         <div class="mb-3 pb-3 border-bottom">
                             <div class="d-flex justify-content-between mb-2">
-                                <span class="text-muted">Data:</span>
+                                <span class="text-muted">Date:</span>
                                 <strong id="summary-date">-</strong>
                             </div>
                             <div class="d-flex justify-content-between mb-2">
-                                <span class="text-muted">Horário:</span>
+                                <span class="text-muted">Time:</span>
                                 <strong id="summary-time">-</strong>
                             </div>
                             <div class="d-flex justify-content-between">
-                                <span class="text-muted">Duração:</span>
+                                <span class="text-muted">Duration:</span>
                                 <strong id="summary-duration">-</strong>
                             </div>
                         </div>
@@ -192,7 +190,7 @@
                         <!-- Pricing -->
                         <div class="mb-3 pb-3 border-bottom">
                             <div class="d-flex justify-content-between mb-2">
-                                <span>Campo:</span>
+                                <span>Facility:</span>
                                 <span id="field-cost">€0</span>
                             </div>
                             <div id="equipment-costs">
@@ -207,12 +205,12 @@
                         </div>
 
                         <button class="btn bg-accent text-white fw-bold w-100 py-3" id="btn-confirm-booking">
-                            Confirmar Reserva
+                            Confirm Booking
                             <i class="material-icons align-middle">check_circle</i>
                         </button>
 
                         <p class="text-muted small text-center mt-3 mb-0">
-                            Ao confirmar, você aceita nossos termos e condições
+                            By confirming, you accept our terms and conditions
                         </p>
                     </div>
                 </div>
@@ -226,14 +224,14 @@
             <div class="modal-content">
                 <div class="modal-body text-center p-5">
                     <i class="material-icons text-success" style="font-size: 80px;">check_circle</i>
-                    <h3 class="fw-bold mt-3 mb-3">Reserva Confirmada!</h3>
+                    <h3 class="fw-bold mt-3 mb-3">Booking Confirmed!</h3>
                     <p class="text-muted mb-4">
-                        Sua reserva foi criada com sucesso.<br>
-                        ID da Reserva: <strong id="booking-id">-</strong>
+                        Your booking has been successfully created.<br>
+                        Booking ID: <strong id="booking-id">-</strong>
                     </p>
                     <button class="btn bg-accent text-white fw-bold"
                         onclick="window.location.href='../pages/main_page_user.html'">
-                        Voltar para Home
+                        Back to Home
                     </button>
                 </div>
             </div>

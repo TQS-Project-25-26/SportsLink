@@ -55,7 +55,7 @@ class RestExceptionHandlerTest {
         mockMvc.perform(get("/test/internal-error"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.error").value("Internal Server Error"))
-                .andExpect(jsonPath("$.message").value("Ocorreu um erro inesperado"));
+                .andExpect(jsonPath("$.message").value("An unexpected error occurred"));
     }
 }
 

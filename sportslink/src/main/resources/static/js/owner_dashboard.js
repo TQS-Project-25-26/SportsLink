@@ -46,11 +46,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         const user = await res.json();
+        const ownerDashboardContent = document.getElementById('owner-dashboard-content');
+        const becomeOwnerSection = document.getElementById('become-owner-section');
+
         if (user.role !== 'OWNER') {
-            // Se não for OWNER, mandar de volta para a página principal de utilizador
-            window.location.href = '/pages/main_page_user.html';
+            // Se não for OWNER, mostrar secção de "Tornar-se Owner"
+            if (becomeOwnerSection) becomeOwnerSection.style.display = 'block';
+            if (ownerDashboardContent) ownerDashboardContent.style.display = 'none';
             return;
         }
+
+        // Se for OWNER, mostrar dashboard
+        if (becomeOwnerSection) becomeOwnerSection.style.display = 'none';
+        if (ownerDashboardContent) ownerDashboardContent.style.display = 'block';
 
         ownerId = user.id;
 

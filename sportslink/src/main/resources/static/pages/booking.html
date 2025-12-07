@@ -9,10 +9,10 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="../css/styles.css" rel="stylesheet">
+    <link href="../css/calendar.css" rel="stylesheet">
 </head>
 
 <body>
-    <!-- Navbar -->
     <!-- Navbar -->
     <div id="navbar-placeholder"></div>
 
@@ -36,31 +36,45 @@
                         <h5 class="fw-bold mb-3">Detalhes da Reserva</h5>
 
                         <form id="booking-form">
-                            <!-- Data e Hora -->
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold">Data</label>
-                                    <input type="date" class="form-control" id="booking-date" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold">Hora de Início</label>
-                                    <input type="time" class="form-control" id="start-time" required>
-                                </div>
-                            </div>
+                            <!-- Custom Calendar Section -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <label class="form-label fw-bold mb-3">Selecione Data e Horário</label>
 
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Duração (horas)</label>
-                                <select class="form-select" id="duration" required>
-                                    <option value="1">1 hora</option>
-                                    <option value="2">2 horas</option>
-                                    <option value="3">3 horas</option>
-                                    <option value="4">4 horas</option>
-                                </select>
-                            </div>
+                                    <div class="calendar-wrapper border rounded p-3">
+                                        <!-- Calendar Header -->
+                                        <div class="calendar-header mb-3">
+                                            <button type="button" class="btn-calendar-nav" id="prev-month">
+                                                <i class="material-icons icon-small">chevron_left</i>
+                                            </button>
+                                            <h5 id="current-month-year">Month Year</h5>
+                                            <button type="button" class="btn-calendar-nav" id="next-month">
+                                                <i class="material-icons icon-small">chevron_right</i>
+                                            </button>
+                                        </div>
 
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Hora de Fim</label>
-                                <input type="time" class="form-control" id="end-time" readonly>
+                                        <!-- Days Grid -->
+                                        <div class="calendar-grid mb-3" id="calendar-days">
+                                            <!-- Rendered by JS -->
+                                        </div>
+
+                                        <!-- Slots Section (Hidden until date selected) -->
+                                        <div id="slots-container" class="slots-container" style="display: none;">
+                                            <p class="small text-muted mb-2">Horários Disponíveis:</p>
+                                            <div class="slots-grid" id="slots-grid">
+                                                <!-- Rendered by JS -->
+                                            </div>
+                                            <p id="no-slots-msg" class="text-danger small mt-2" style="display: none;">
+                                                Sem horários disponíveis para esta data.</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Hidden Inputs for Form Logic -->
+                                    <input type="hidden" id="booking-date" required>
+                                    <input type="hidden" id="start-time" required>
+                                    <input type="time" class="form-control d-none" id="end-time" readonly>
+                                    <!-- Keep for logic compatibility -->
+                                </div>
                             </div>
 
                             <!-- User Info -->

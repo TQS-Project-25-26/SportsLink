@@ -67,6 +67,10 @@ public class FunctionalSteps {
     @Given("I am on the main search page")
     public void i_am_on_main_page() {
         initDriverIfNeeded();
+        // Bypass client-side auth check
+        driver.get(getBaseUrl() + "/index.html");
+        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', 'mock_token_for_test');");
+        
         driver.get(getBaseUrl() + "/pages/main_page_user.html");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("searchBtn")));
     }
@@ -211,6 +215,10 @@ public class FunctionalSteps {
     @Given("I am on the facility details page for facility {int}")
     public void on_facility_details_page(int id) {
         initDriverIfNeeded();
+        // Bypass client-side auth check
+        driver.get(getBaseUrl() + "/index.html");
+        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', 'mock_token_functional_test');");
+        
         driver.get(getBaseUrl() + "/pages/field_detail.html?id=" + id);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("field-name")));
     }
@@ -253,6 +261,10 @@ public class FunctionalSteps {
     @Given("I am viewing equipment for facility {int}")
     public void viewing_equipment(int id) {
         initDriverIfNeeded();
+        // Bypass client-side auth check
+        driver.get(getBaseUrl() + "/index.html");
+        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', 'mock_token_functional_test');");
+        
         driver.get(getBaseUrl() + "/pages/equipments.html?facilityId=" + id);
         wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector(".equipment-card")));
     }
@@ -292,6 +304,10 @@ public class FunctionalSteps {
     @Given("I am on the booking page for facility {int}")
     public void on_booking_page(int id) {
         initDriverIfNeeded();
+        // Bypass client-side auth check
+        driver.get(getBaseUrl() + "/index.html");
+        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', 'mock_token_functional_test');");
+        
         driver.get(getBaseUrl() + "/pages/booking.html?facilityId=" + id);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("btn-confirm-booking")));
     }

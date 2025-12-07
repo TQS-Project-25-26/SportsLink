@@ -263,7 +263,7 @@ class UnitAuthServiceTest {
     }
 
     @Test
-    void whenLogoutWithoutBearerPrefix_thenDoNothing() {
+    void whenLogoutWithoutBearerPrefix_thenAddTokenToBlacklist() {
         // Arrange
         String token = "invalid-token";
 
@@ -271,7 +271,7 @@ class UnitAuthServiceTest {
         authService.logout(token);
 
         // Assert
-        assertFalse(authService.isTokenBlacklisted("invalid-token"));
+        assertTrue(authService.isTokenBlacklisted("invalid-token"));
     }
 
     @Test

@@ -67,6 +67,12 @@ public class RestExceptionHandler {
         return buildErrorResponse(HttpStatus.NOT_FOUND, "Not Found", "Recurso não encontrado");
     }
 
+    @ExceptionHandler(org.springframework.web.bind.MissingRequestHeaderException.class)
+    public ResponseEntity<Map<String, Object>> handleMissingHeader(org.springframework.web.bind.MissingRequestHeaderException ex) {
+        logger.warn("Missing header: {}", ex.getHeaderName());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Bad Request", "Missing header: " + ex.getHeaderName());
+    }
+
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Map<String, Object>> handleConflict(IllegalStateException ex) {
         logger.warn("Conflict: {}", ex.getMessage());

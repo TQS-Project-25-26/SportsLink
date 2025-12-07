@@ -209,12 +209,12 @@ class UnitAuthControllerTest {
     }
 
     @Test
-    void whenLogoutWithoutToken_thenReturn500() throws Exception {
+    void whenLogoutWithoutToken_thenReturn400() throws Exception {
         // O Spring MVC lança MissingRequestHeaderException quando header obrigatório falta
         // Act & Assert
         mockMvc.perform(post("/api/auth/logout")
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isBadRequest());
 
         verify(authService, never()).logout(anyString());
     }

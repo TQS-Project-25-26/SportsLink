@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Owner Dashboard - SportsLink</title>
+
+    <!-- Bootstrap + Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Shared CSS -->
+    <link href="../css/styles.css" rel="stylesheet">
+
+    <script>
+        // Verificar autenticação ANTES de carregar a página
+        (function () {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/index.html';
+            }
+        })();
+    </script>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <div id="navbar-placeholder"></div>
+
+    <!-- MAIN CONTENT -->
+    <div class="container-fluid px-lg-5 py-5">
+
+        <!-- BECOME AN OWNER SECTION (Visible for Non-Owners) -->
+        <div id="become-owner-section" style="display: none;" class="text-center py-5">
+            <h1 class="fw-bold mb-4">Become a Facility Owner</h1>
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm border-0 p-5" style="border-radius: 20px;">
+                        <i class="material-icons text-accent mb-4" style="font-size: 5rem;">domain</i>
+                        <h3 class="mb-3">Manage Your Sports Facilities with SportsLink</h3>
+                        <p class="text-muted lead mb-4">
+                            Join our platform to reach more athletes, manage bookings efficiently, and grow your
+                            business.
+                            Register your fields, courts, and pools today!
+                        </p>
+                        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                            <button class="btn bg-accent text-white fw-bold px-5 py-3 rounded-pill"
+                                onclick="window.location.href='mailto:partners@sportslink.com?subject=Become an Owner Request'">
+                                Contact Us to Join
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- OWNER DASHBOARD CONTENT (Visible for Owners) -->
+        <div id="owner-dashboard-content" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                <div>
+                    <h1 class="fw-bold">Os Meus Campos</h1>
+                    <p class="text-muted">Gestão completa dos seus campos e equipamentos</p>
+                </div>
+
+                <button class="btn bg-accent text-white fw-bold px-4 py-2" id="btn-open-add-facility"
+                    style="border-radius: 50px;">
+                    <i class="material-icons me-2">add_circle</i>
+                    Adicionar Campo
+                </button>
+            </div>
+
+            <!-- GRID -->
+            <div id="facilities-grid" class="row g-4"></div>
+
+            <!-- EMPTY STATE -->
+            <div id="no-facilities" class="text-center text-muted py-5" style="display: none;">
+                <i class="material-icons opacity-50" style="font-size: 4rem;">villa</i>
+                <p class="mt-3 fs-5">Ainda não registou nenhum campo</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL: ADICIONAR CAMPO -->
+    <div class="modal fade" id="addFacilityModal" tabindex="-1" aria-labelledby="addFacilityLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 20px;">
+
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="addFacilityLabel">
+                        <i class="material-icons me-2 text-accent">add_circle</i>
+                        Adicionar Novo Campo
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <form id="addFacilityForm" class="row g-3">
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Nome do Campo</label>
+                            <input type="text" class="form-control" id="facilityName" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Cidade</label>
+                            <input type="text" class="form-control" id="facilityCity" required>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Endereço</label>
+                            <input type="text" class="form-control" id="facilityAddress" required>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Descrição</label>
+                            <textarea class="form-control" id="facilityDescription" rows="2"></textarea>
+                        </div>
+
+                        <hr class="my-3">
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Preço por Hora (€)</label>
+                            <input type="number" step="0.01" class="form-control" id="facilityPrice" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Hora de Abertura</label>
+                            <input type="time" class="form-control" id="facilityOpening" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Hora de Fecho</label>
+                            <input type="time" class="form-control" id="facilityClosing" required>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Imagem do Campo</label>
+                            <input type="file" class="form-control" id="facilityImage" accept="image/*">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Desportos Disponíveis</label>
+                            <select id="facilitySports" class="form-select" multiple required>
+                                <option value="FOOTBALL">Futebol</option>
+                                <option value="BASKETBALL">Basquetebol</option>
+                                <option value="TENNIS">Ténis</option>
+                                <option value="SWIMMING">Natação</option>
+                                <option value="VOLLEYBALL">Voleibol</option>
+                                <option value="PADEL">Padel</option>
+                            </select>
+                            <small class="text-muted">Pode selecionar vários</small>
+                        </div>
+
+                    </form>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+
+                    <button class="btn bg-accent text-white fw-bold" id="btnConfirmAddFacility"
+                        style="border-radius: 50px;">
+                        Guardar Campo
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Auth helpers (JWT, logout, toasts) -->
+    <script src="../js/auth.js"></script>
+
+    <!-- Owner Dashboard Script -->
+    <script src="../js/owner_dashboard.js"></script>
+
+    <!-- Navbar Component -->
+    <script src="../js/components/navbar.js"></script>
+    <script>
+        // Remove logout handler since it is now in navbar.js
+        // document.addEventListener('DOMContentLoaded', () => { ... });
+    </script>
+
+</body>
+
+</html>

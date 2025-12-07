@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -75,7 +74,7 @@ public class RentalFlowIntegrationTest {
         testUser.setEmail("maria@example.com");
         testUser.setName("Maria Silva");
         testUser.setPassword("encoded-password");
-        testUser.setRole(Role.RENTER);
+        testUser.getRoles().add(Role.RENTER);
         testUser.setActive(true);
         testUser = userRepository.save(testUser);
 

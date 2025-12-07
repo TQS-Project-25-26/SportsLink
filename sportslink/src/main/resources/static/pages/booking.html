@@ -9,18 +9,12 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="../css/styles.css" rel="stylesheet">
+    <link href="../css/calendar.css" rel="stylesheet">
 </head>
 
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
-        <div class="container-fluid">
-            <a class="navbar-brand d-flex align-items-center" href="../pages/main_page_user.html">
-                <i class="material-icons me-2 text-accent">sports_soccer</i>
-                <span class="text-gradient fw-bold fs-4">SportsLink</span>
-            </a>
-        </div>
-    </nav>
+    <div id="navbar-placeholder"></div>
 
     <div class="container-fluid px-lg-5 py-5">
         <!-- Back Button -->
@@ -59,22 +53,46 @@
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold">Hora de Início</label>
                                     <input type="time" class="form-control" id="start-time" required>
+                            <!-- Custom Calendar Section -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <label class="form-label fw-bold mb-3">Selecione Data e Horário</label>
+
+                                    <div class="calendar-wrapper border rounded p-3">
+                                        <!-- Calendar Header -->
+                                        <div class="calendar-header mb-3">
+                                            <button type="button" class="btn-calendar-nav" id="prev-month">
+                                                <i class="material-icons icon-small">chevron_left</i>
+                                            </button>
+                                            <h5 id="current-month-year">Month Year</h5>
+                                            <button type="button" class="btn-calendar-nav" id="next-month">
+                                                <i class="material-icons icon-small">chevron_right</i>
+                                            </button>
+                                        </div>
+
+                                        <!-- Days Grid -->
+                                        <div class="calendar-grid mb-3" id="calendar-days">
+                                            <!-- Rendered by JS -->
+                                        </div>
+
+                                        <!-- Slots Section (Hidden until date selected) -->
+                                        <div id="slots-container" class="slots-container" style="display: none;">
+                                            <p class="small text-muted mb-2">Horários Disponíveis:</p>
+                                            <div class="slots-grid" id="slots-grid">
+                                                <!-- Rendered by JS -->
+                                            </div>
+                                            <p id="no-slots-msg" class="text-danger small mt-2" style="display: none;">
+                                                Sem horários disponíveis para esta data.</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Hidden Inputs for Form Logic -->
+                                    <input type="hidden" id="booking-date" required>
+                                    <input type="hidden" id="start-time" required>
+                                    <input type="hidden" id="duration" value="1">
+                                    <input type="time" class="form-control d-none" id="end-time" readonly>
+                                    <!-- Keep for logic compatibility -->
                                 </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Duração (horas)</label>
-                                <select class="form-select" id="duration" required>
-                                    <option value="1">1 hora</option>
-                                    <option value="2">2 horas</option>
-                                    <option value="3">3 horas</option>
-                                    <option value="4">4 horas</option>
-                                </select>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Hora de Fim</label>
-                                <input type="time" class="form-control" id="end-time" readonly>
                             </div>
 
                             <!-- User Info -->
@@ -140,7 +158,14 @@
                         <!-- Campo Info -->
                         <div class="mb-3 pb-3 border-bottom">
                             <div class="d-flex align-items-center mb-2">
-                                <i class="material-icons text-accent me-2" id="summary-icon">sports_soccer</i>
+                                <div class="me-2" style="width: 40px; height: 40px; min-width: 40px;">
+                                    <img id="summary-image" src="" class="w-100 h-100 object-fit-cover rounded-circle"
+                                        style="display:none;" alt="Field">
+                                    <div id="summary-icon-container"
+                                        class="w-100 h-100 d-flex align-items-center justify-content-center bg-light rounded-circle text-accent">
+                                        <i class="material-icons" id="summary-icon">sports_soccer</i>
+                                    </div>
+                                </div>
                                 <strong id="summary-field-name">Loading...</strong>
                             </div>
                             <p class="text-muted small mb-0" id="summary-location">-</p>
@@ -214,7 +239,9 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/auth.js"></script>
     <script src="../js/booking.js"></script>
+    <script src="../js/components/navbar.js"></script>
 </body>
 
 </html>

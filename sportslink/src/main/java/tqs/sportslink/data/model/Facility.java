@@ -26,6 +26,9 @@ public class Facility {
     @Column(nullable = false, length = 200)
     private String name;
     
+    @Column(length = 500)
+    private String imageUrl;
+    
     @ElementCollection(targetClass = Sport.class)
     @CollectionTable(name = "facility_sports", joinColumns = @JoinColumn(name = "facility_id"))
     @Column(name = "sport")

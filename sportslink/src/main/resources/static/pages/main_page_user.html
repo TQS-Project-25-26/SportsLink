@@ -14,43 +14,24 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="../css/styles.css" rel="stylesheet">
+
+    <script>
+        // Verificar autenticação ANTES de carregar a página
+        (function () {
+            // Tentar obter token do localStorage
+            const token = localStorage.getItem('token');
+
+            // Se não houver token, redirecionar para login
+            if (!token) {
+                window.location.href = '/index.html';
+            }
+        })();
+    </script>
 </head>
 
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
-        <div class="container-fluid">
-            <a class="navbar-brand d-flex align-items-center" href="#">
-                <i class="material-icons me-2 text-accent">sports_soccer</i>
-                <span class="text-gradient fw-bold fs-4">SportsLink</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active fw-medium" href="#">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-medium" href="#reservas">My Bookings</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-medium" href="#explorar">Explore Fields</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-medium" href="#favoritos">Favorites</a>
-                    </li>
-                </ul>
-                <div class="d-flex">
-                    <div class="profile-icon d-flex align-items-center justify-content-center text-white fw-bold"
-                        title="Profile">U
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <div id="navbar-placeholder"></div>
 
     <!-- Hero Section -->
     <div class="hero text-center">
@@ -87,15 +68,15 @@
             <!-- Suggestion cards will be rendered here -->
         </div>
     </div>
-    
+
     <!-- All Facilities with Pagination -->
     <div class="container-fluid px-5 mb-5">
         <h2 class="section-title h3 fw-bold mb-4">All Facilities</h2>
-    
+
         <div id="featured" class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4">
             <!-- cards rendered here by /static/js/app.js -->
         </div>
-        
+
         <!-- Pagination -->
         <nav aria-label="Facilities pagination" class="mt-5">
             <ul class="pagination justify-content-center" id="paginationControls">
@@ -111,6 +92,8 @@
     <!-- Location and Suggestions Services -->
     <script src="../js/location-service.js"></script>
     <script src="../js/suggestions-service.js"></script>
+    <!-- Auth helpers (JWT, logout, toasts) -->
+    <script src="../js/auth.js"></script>
 
     <!-- App JS -->
     <script src="../js/app.js"></script>
@@ -162,8 +145,13 @@
                     });
                 })
                 .catch(error => console.error('Error fetching sports:', error));
+
+            // Navbar logic removed: handled by navbar.js
         });
     </script>
+
+    <!-- Navbar Component -->
+    <script src="../js/components/navbar.js"></script>
 </body>
 
 </html>

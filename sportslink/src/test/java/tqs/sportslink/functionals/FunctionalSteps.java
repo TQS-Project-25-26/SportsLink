@@ -1,18 +1,24 @@
 package tqs.sportslink.functionals;
 
-import io.cucumber.java.After;
-import io.cucumber.java.en.*;
-
-import org.openqa.selenium.*;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.support.ui.*;
-import org.springframework.boot.test.web.server.LocalServerPort;
-
-
 import java.time.Duration;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.springframework.boot.test.web.server.LocalServerPort;
+
+import io.cucumber.java.After;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 
 public class FunctionalSteps {
 
@@ -21,6 +27,12 @@ public class FunctionalSteps {
 
     private ChromeDriver driver;
     private WebDriverWait wait;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private tqs.sportslink.util.JwtUtil jwtUtil;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private tqs.sportslink.data.UserRepository userRepository;
 
     private String getBaseUrl() {
         return "http://localhost:" + port;
@@ -31,6 +43,21 @@ public class FunctionalSteps {
             By.cssSelector("#featured .card, #nearbyCarousel .card");
 
     // ------------------ SETUP ------------------
+
+    private String generateTestToken() {
+        // Fetch the test user created by DataInitializer
+        var user = userRepository.findByEmail("test@sportslink.com")
+            .orElseThrow(() -> new RuntimeException("Test user not found"));
+        
+        java.util.Set<String> roles = new java.util.HashSet<>();
+        if (user.getRoles() != null) {
+            user.getRoles().forEach(r -> roles.add(r.name()));
+        } else {
+            roles.add("RENTER");
+        }
+        
+        return jwtUtil.generateToken(user.getEmail(), roles);
+    }
 
     private void initDriverIfNeeded() {
         if (driver != null) {
@@ -61,6 +88,11 @@ public class FunctionalSteps {
     @Given("I am on the main search page")
     public void i_am_on_main_page() {
         initDriverIfNeeded();
+        // Bypass client-side auth check
+        driver.get(getBaseUrl() + "/index.html");
+        String token = generateTestToken();
+        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', arguments[0]);", token);
+        
         driver.get(getBaseUrl() + "/pages/main_page_user.html");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("searchBtn")));
     }
@@ -205,6 +237,11 @@ public class FunctionalSteps {
     @Given("I am on the facility details page for facility {int}")
     public void on_facility_details_page(int id) {
         initDriverIfNeeded();
+        // Bypass client-side auth check
+        driver.get(getBaseUrl() + "/index.html");
+        String token = generateTestToken();
+        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', arguments[0]);", token);
+        
         driver.get(getBaseUrl() + "/pages/field_detail.html?id=" + id);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("field-name")));
     }
@@ -223,8 +260,21 @@ public class FunctionalSteps {
 
     @Then("I should see at least one equipment card")
     public void see_equipment_cards() {
-        wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector(".equipment-card")));
-        assertFalse(driver.findElements(By.cssSelector(".equipment-card")).isEmpty());
+        // Wait for loading to disappear (API call completed)
+        wait.until(webDriver -> {
+            WebElement loading = webDriver.findElement(By.id("loading"));
+            return loading != null && "none".equals(loading.getCssValue("display"));
+        });
+        
+        // Wait for either equipment cards OR no-results message
+        wait.until(webDriver -> 
+            !webDriver.findElements(By.cssSelector(".equipment-card")).isEmpty() ||
+            webDriver.findElement(By.id("no-results")).isDisplayed()
+        );
+        
+        // Assert that we have equipment cards (not the no-results message)
+        assertFalse(driver.findElements(By.cssSelector(".equipment-card")).isEmpty(),
+            "Expected to find equipment cards, but none were found. Check if the facility has equipment.");
     }
 
     // ------------------------------
@@ -234,6 +284,11 @@ public class FunctionalSteps {
     @Given("I am viewing equipment for facility {int}")
     public void viewing_equipment(int id) {
         initDriverIfNeeded();
+        // Bypass client-side auth check
+        driver.get(getBaseUrl() + "/index.html");
+        String token = generateTestToken();
+        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', arguments[0]);", token);
+        
         driver.get(getBaseUrl() + "/pages/equipments.html?facilityId=" + id);
         wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector(".equipment-card")));
     }
@@ -273,12 +328,49 @@ public class FunctionalSteps {
     @Given("I am on the booking page for facility {int}")
     public void on_booking_page(int id) {
         initDriverIfNeeded();
+        // Bypass client-side auth check
+        driver.get(getBaseUrl() + "/index.html");
+        String token = generateTestToken();
+        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', arguments[0]);", token);
+        
         driver.get(getBaseUrl() + "/pages/booking.html?facilityId=" + id);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("btn-confirm-booking")));
     }
 
     @When("I fill the booking form with valid data")
     public void fill_booking_form() {
+        // Select Date (pick the first non-disabled day, preferrably tomorrow)
+        // Wait for calendar container
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("calendar-days")));
+        
+        // Wait for at least one enabled day to be present
+        wait.until(d -> !d.findElements(By.cssSelector(".calendar-day:not(.disabled)")).isEmpty());
+        
+        // Find available days
+        java.util.List<WebElement> days = driver.findElements(By.cssSelector(".calendar-day:not(.disabled)"));
+        
+        if (days.isEmpty()) {
+            driver.findElement(By.id("next-month")).click();
+            wait.until(d -> !d.findElements(By.cssSelector(".calendar-day:not(.disabled)")).isEmpty());
+            days = driver.findElements(By.cssSelector(".calendar-day:not(.disabled)"));
+        }
+        
+        // Click the last available day using JS to avoid intersection issues
+        WebElement day = days.get(days.size() - 1);
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", day);
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", day);
+        
+        // Wait for slots container
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("slots-container")));
+        
+        // Wait for slots to populate
+        wait.until(d -> !d.findElements(By.className("time-slot")).isEmpty());
+        
+        // Select first available slot using JS
+        WebElement slot = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".time-slot:not(.disabled)")));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", slot);
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", slot);
+
         driver.findElement(By.id("user-name")).clear();
         driver.findElement(By.id("user-name")).sendKeys("Test User");
 

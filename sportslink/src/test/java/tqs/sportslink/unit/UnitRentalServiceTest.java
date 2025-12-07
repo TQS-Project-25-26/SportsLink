@@ -97,7 +97,7 @@ public class UnitRentalServiceTest {
     @Requirement("SL-26")
     void whenCreateRental_withValidRequest_thenSuccess() {
         // Given
-        when(rentalRepository.findByFacilityIdAndStartTimeLessThanEqualAndEndTimeGreaterThanEqual(
+        when(rentalRepository.findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(
                 anyLong(), any(), any())).thenReturn(List.of()); // Sem conflitos
         when(facilityRepository.findById(1L)).thenReturn(Optional.of(mockFacility));
         when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
@@ -120,11 +120,13 @@ public class UnitRentalServiceTest {
         Equipment eq1 = new Equipment();
         eq1.setId(1L);
         eq1.setName("Raquete");
+        eq1.setQuantity(10);
         Equipment eq2 = new Equipment();
         eq2.setId(2L);
         eq2.setName("Bola");
+        eq2.setQuantity(10);
         
-        when(rentalRepository.findByFacilityIdAndStartTimeLessThanEqualAndEndTimeGreaterThanEqual(
+        when(rentalRepository.findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(
                 anyLong(), any(), any())).thenReturn(List.of());
         when(facilityRepository.findById(1L)).thenReturn(Optional.of(mockFacility));
         when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
@@ -149,7 +151,7 @@ public class UnitRentalServiceTest {
         Rental conflicting = new Rental();
         conflicting.setStatus("CONFIRMED");
         when(facilityRepository.findById(1L)).thenReturn(Optional.of(mockFacility));
-        when(rentalRepository.findByFacilityIdAndStartTimeLessThanEqualAndEndTimeGreaterThanEqual(
+        when(rentalRepository.findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(
                 anyLong(), any(), any())).thenReturn(List.of(conflicting));
         
         // When/Then
@@ -216,7 +218,7 @@ public class UnitRentalServiceTest {
         updateRequest.setEndTime(LocalDateTime.now().plusDays(31).withHour(22).withMinute(0).withSecond(0).withNano(0));
         
         when(rentalRepository.findById(1L)).thenReturn(Optional.of(mockRental));
-        when(rentalRepository.findByFacilityIdAndStartTimeLessThanEqualAndEndTimeGreaterThanEqual(
+        when(rentalRepository.findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(
                 anyLong(), any(), any())).thenReturn(List.of(mockRental)); // Apenas ele mesmo
         when(rentalRepository.save(any(Rental.class))).thenReturn(mockRental);
         
@@ -424,7 +426,7 @@ public class UnitRentalServiceTest {
         validRequest.setEndTime(endTime);
         
         when(facilityRepository.findById(1L)).thenReturn(Optional.of(mockFacility));
-        when(rentalRepository.findByFacilityIdAndStartTimeLessThanEqualAndEndTimeGreaterThanEqual(
+        when(rentalRepository.findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(
                 anyLong(), any(), any())).thenReturn(List.of(existingRental));
         
         // When/Then
@@ -444,12 +446,86 @@ public class UnitRentalServiceTest {
         existingRental.setEndTime(endTime);
         
         when(facilityRepository.findById(1L)).thenReturn(Optional.of(mockFacility));
-        when(rentalRepository.findByFacilityIdAndStartTimeLessThanEqualAndEndTimeGreaterThanEqual(
+        when(rentalRepository.findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(
                 anyLong(), any(), any())).thenReturn(List.of(existingRental));
         
         // When/Then
         assertThatThrownBy(() -> rentalService.createRental(validRequest))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("already booked");
+    }
+    @Test
+    @Requirement("SL-26")
+    void whenCreateRental_withEquipment_shouldReduceStock() {
+        // Given
+        validRequest.setEquipmentIds(List.of(1L));
+        Equipment eq1 = new Equipment();
+        eq1.setId(1L);
+        eq1.setName("Raquete");
+        eq1.setQuantity(5); // Stock inicial
+
+        when(rentalRepository.findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(
+                anyLong(), any(), any())).thenReturn(List.of());
+        when(facilityRepository.findById(1L)).thenReturn(Optional.of(mockFacility));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
+        when(equipmentRepository.findAllById(anyList())).thenReturn(List.of(eq1));
+        when(rentalRepository.save(any(Rental.class))).thenReturn(mockRental);
+
+        // When
+        RentalResponseDTO result = rentalService.createRental(validRequest);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(eq1.getQuantity()).isEqualTo(4); // Stock reduzido
+        verify(equipmentRepository).saveAll(anyList());
+    }
+
+    @Test
+    @Requirement("SL-26")
+    void whenCreateRental_equipmentOutOfStock_shouldThrowException() {
+        // Given
+        validRequest.setEquipmentIds(List.of(1L));
+        Equipment eq1 = new Equipment();
+        eq1.setId(1L);
+        eq1.setName("Raquete");
+        eq1.setQuantity(0); // Sem stock
+
+        when(rentalRepository.findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(
+                anyLong(), any(), any())).thenReturn(List.of());
+        when(facilityRepository.findById(1L)).thenReturn(Optional.of(mockFacility));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
+        when(equipmentRepository.findAllById(anyList())).thenReturn(List.of(eq1));
+        // When/Then
+        assertThatThrownBy(() -> rentalService.createRental(validRequest))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("out of stock");
+    }
+
+    @Test
+    @Requirement("SL-29")
+    void whenCreateRental_consecutiveSlots_shouldSuccess() {
+        // Given - Existing: 18-19, Request: 19-20. Should NOT conflict.
+        Rental existingRental = new Rental();
+        existingRental.setId(2L);
+        existingRental.setStatus("CONFIRMED");
+        existingRental.setStartTime(startTime.minusHours(1)); // 18:00
+        existingRental.setEndTime(startTime);                 // 19:00
+
+        validRequest.setStartTime(startTime);                  // 19:00
+        validRequest.setEndTime(startTime.plusHours(1));       // 20:00
+
+        // With the fix (Strict inequality), the repository should NOT return the consecutive rental.
+        when(rentalRepository.findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(
+                anyLong(), any(), any())).thenReturn(List.of());
+        
+        when(facilityRepository.findById(1L)).thenReturn(Optional.of(mockFacility));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
+        when(rentalRepository.save(any(Rental.class))).thenReturn(mockRental);
+
+        // When
+        RentalResponseDTO result = rentalService.createRental(validRequest);
+
+        // Then
+        assertThat(result).isNotNull();
     }
 }

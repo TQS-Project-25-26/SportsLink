@@ -2,20 +2,21 @@ package tqs.sportslink.config;
 
 import java.time.LocalTime;
 import java.util.List;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import tqs.sportslink.data.FacilityRepository;
-import tqs.sportslink.data.EquipmentRepository;
-import tqs.sportslink.data.UserRepository;
-import tqs.sportslink.data.model.Facility;
-import tqs.sportslink.data.model.Equipment;
-import tqs.sportslink.data.model.Sport;
-import tqs.sportslink.data.model.User;
-import tqs.sportslink.data.model.Role;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import tqs.sportslink.data.EquipmentRepository;
+import tqs.sportslink.data.FacilityRepository;
+import tqs.sportslink.data.UserRepository;
+import tqs.sportslink.data.model.Equipment;
+import tqs.sportslink.data.model.Facility;
+import tqs.sportslink.data.model.Role;
+import tqs.sportslink.data.model.Sport;
+import tqs.sportslink.data.model.User;
 
 @Configuration
 public class DataInitializer {
@@ -28,69 +29,51 @@ public class DataInitializer {
     private static final String CITY_AVEIRO = "Aveiro";
 
     @Bean
-    CommandLineRunner initDatabase(FacilityRepository facilityRepository, EquipmentRepository equipmentRepository, UserRepository userRepository) {
+    CommandLineRunner initDatabase(FacilityRepository facilityRepository,
+                                   EquipmentRepository equipmentRepository,
+                                   UserRepository userRepository) {
         return args -> {
             // Check if data already exists
             long count = facilityRepository.count();
             logger.info("Current facility count: {}", count);
-            
+
             if (count > 0) {
                 logger.info("Database already has {} facilities", count);
                 // List facilities for debugging
-                facilityRepository.findAll().forEach(f -> 
-                    logger.info("  - {} ({} in {})", f.getName(), f.getSports(), f.getCity())
+                facilityRepository.findAll().forEach(f ->
+                        logger.info("  - {} ({} in {})", f.getName(), f.getSports(), f.getCity())
                 );
                 return; // Data already initialized
             }
-            
+
             logger.info("Initializing sample data...");
 
-            // Create test users
+            // =============================================================
+            // OWNER USER (criado primeiro → tipicamente ID = 1)
+            // =============================================================
+            User ownerUser = new User();
+            ownerUser.setEmail("owner@sportslink.com");
+            ownerUser.setPassword("password123"); // Plain text password for testing
+            ownerUser.setName("Owner User");
+            ownerUser.setPhone("911111111");
+            ownerUser.getRoles().add(Role.OWNER);
+            ownerUser.getRoles().add(Role.RENTER);
+            ownerUser.setActive(true);
+            userRepository.save(ownerUser);
+            logger.info("Owner user created: owner@sportslink.com / password123 (id={})", ownerUser.getId());
+
+            // Create test user for functional tests (como tinhas)
             User testUser = new User();
             testUser.setEmail("test@sportslink.com");
             testUser.setPassword("password123");
             testUser.setName("Test User");
             testUser.setPhone("912345678");
-            testUser.setRole(Role.RENTER);
+            testUser.getRoles().add(Role.RENTER);
             testUser.setActive(true);
             testUser.setLatitude(40.6443);
             testUser.setLongitude(-8.6455);
             userRepository.save(testUser);
-
-            User owner1 = new User();
-            owner1.setEmail("owner@sportslink.com");
-            owner1.setPassword("owner123");
-            owner1.setName("João Silva");
-            owner1.setPhone("913456789");
-            owner1.setRole(Role.OWNER);
-            owner1.setActive(true);
-            owner1.setLatitude(40.6443);
-            owner1.setLongitude(-8.6455);
-            userRepository.save(owner1);
-
-            User renter1 = new User();
-            renter1.setEmail("maria@example.com");
-            renter1.setPassword("maria123");
-            renter1.setName("Maria Santos");
-            renter1.setPhone("914567890");
-            renter1.setRole(Role.RENTER);
-            renter1.setActive(true);
-            renter1.setLatitude(40.6400);
-            renter1.setLongitude(-8.6500);
-            userRepository.save(renter1);
-
-            User renter2 = new User();
-            renter2.setEmail("pedro@example.com");
-            renter2.setPassword("pedro123");
-            renter2.setName("Pedro Costa");
-            renter2.setPhone("915678901");
-            renter2.setRole(Role.RENTER);
-            renter2.setActive(true);
-            renter2.setLatitude(38.7223);
-            renter2.setLongitude(-9.1393);
-            userRepository.save(renter2);
-
-            logger.info("Test users created");
+            logger.info("Test user created: test@sportslink.com / password123 (id={})", testUser.getId());
 
             // Create sample facilities
             Facility facility1 = new Facility();
@@ -324,18 +307,7 @@ public class DataInitializer {
             equipment4.setStatus(STATUS_AVAILABLE);
             equipmentRepository.save(equipment4);
 
-            // Create more equipment for variety
-            Equipment equipment5 = new Equipment();
-            equipment5.setName("Rede de Vólei");
-            equipment5.setType("Net");
-            equipment5.setDescription("Rede profissional de vólei");
-            equipment5.setFacility(facility5);
-            equipment5.setSports(List.of(Sport.VOLLEYBALL));
-            equipment5.setQuantity(2);
-            equipment5.setPricePerHour(8.0);
-            equipment5.setStatus(STATUS_AVAILABLE);
-            equipmentRepository.save(equipment5);
-
+            // Create sample equipment for facility3 (Tennis)
             Equipment equipment6 = new Equipment();
             equipment6.setName("Bola de Ténis");
             equipment6.setType("Ball");
@@ -358,170 +330,71 @@ public class DataInitializer {
             equipment7.setStatus(STATUS_AVAILABLE);
             equipmentRepository.save(equipment7);
 
+            // Create sample equipment for facility4 (Basketball)
             Equipment equipment8 = new Equipment();
-            equipment8.setName("Protetor de Joelho");
-            equipment8.setType("Protection");
-            equipment8.setDescription("Protetor de joelho para vólei");
-            equipment8.setFacility(facility5);
-            equipment8.setSports(List.of(Sport.VOLLEYBALL));
-            equipment8.setQuantity(0);
+            equipment8.setName("Bola de Basquete");
+            equipment8.setType("Ball");
+            equipment8.setDescription("Bola oficial Spalding NBA");
+            equipment8.setFacility(facility4);
+            equipment8.setQuantity(12);
             equipment8.setPricePerHour(3.0);
-            equipment8.setStatus(STATUS_UNAVAILABLE);
+            equipment8.setStatus(STATUS_AVAILABLE);
             equipmentRepository.save(equipment8);
 
-            // More equipment for facility6 (Football + Basketball)
             Equipment equipment9 = new Equipment();
-            equipment9.setName("Bola de Basquete");
-            equipment9.setType("Ball");
-            equipment9.setDescription("Bola oficial NBA Spalding");
-            equipment9.setFacility(facility6);
-            equipment9.setSports(List.of(Sport.BASKETBALL));
-            equipment9.setQuantity(8);
-            equipment9.setPricePerHour(2.5);
+            equipment9.setName("Colete de Treino");
+            equipment9.setType("Vest");
+            equipment9.setDescription("Coletes reversíveis para treino");
+            equipment9.setFacility(facility4);
+            equipment9.setQuantity(24);
+            equipment9.setPricePerHour(1.5);
             equipment9.setStatus(STATUS_AVAILABLE);
             equipmentRepository.save(equipment9);
 
+            // Create more equipment for variety
+            Equipment equipment5 = new Equipment();
+            equipment5.setName("Rede de Vólei");
+            equipment5.setType("Net");
+            equipment5.setDescription("Rede profissional de vólei");
+            equipment5.setFacility(facility5);
+            equipment5.setQuantity(2);
+            equipment5.setPricePerHour(8.0);
+            equipment5.setStatus(STATUS_AVAILABLE);
+            equipmentRepository.save(equipment5);
+
             Equipment equipment10 = new Equipment();
-            equipment10.setName("Tabela de Basquete");
-            equipment10.setType("Hoop");
-            equipment10.setDescription("Tabela ajustável de basquete");
-            equipment10.setFacility(facility6);
-            equipment10.setSports(List.of(Sport.BASKETBALL));
-            equipment10.setQuantity(2);
-            equipment10.setPricePerHour(10.0);
-            equipment10.setStatus(STATUS_AVAILABLE);
+            equipment10.setName("Protetor de Joelho");
+            equipment10.setType("Protection");
+            equipment10.setDescription("Protetor de joelho para vólei");
+            equipment10.setFacility(facility5);
+            equipment10.setQuantity(0);
+            equipment10.setPricePerHour(3.0);
+            equipment10.setStatus(STATUS_UNAVAILABLE);
             equipmentRepository.save(equipment10);
 
-            // Equipment for facility7 (Premium Padel)
-            Equipment equipment11 = new Equipment();
-            equipment11.setName("Raquete Padel Premium");
-            equipment11.setType("Racket");
-            equipment11.setDescription("Raquete profissional Bullpadel");
-            equipment11.setFacility(facility7);
-            equipment11.setSports(List.of(Sport.PADEL));
-            equipment11.setQuantity(12);
-            equipment11.setPricePerHour(7.0);
-            equipment11.setStatus(STATUS_AVAILABLE);
-            equipmentRepository.save(equipment11);
+            // =============================================================
+            // ASSOCIAR TODAS AS FACILITIES AO OWNER
+            // =============================================================
+            facility1.setOwner(ownerUser);
+            facility2.setOwner(ownerUser);
+            facility3.setOwner(ownerUser);
+            facility4.setOwner(ownerUser);
+            facility5.setOwner(ownerUser);
 
-            Equipment equipment12 = new Equipment();
-            equipment12.setName("Bolas Padel Premium");
-            equipment12.setType("Ball");
-            equipment12.setDescription("Pack de 3 bolas Head Padel Pro");
-            equipment12.setFacility(facility7);
-            equipment12.setSports(List.of(Sport.PADEL));
-            equipment12.setQuantity(20);
-            equipment12.setPricePerHour(4.0);
-            equipment12.setStatus(STATUS_AVAILABLE);
-            equipmentRepository.save(equipment12);
+            facilityRepository.save(facility1);
+            facilityRepository.save(facility2);
+            facilityRepository.save(facility3);
+            facilityRepository.save(facility4);
+            facilityRepository.save(facility5);
 
-            // Equipment for facility8 (Tennis Porto)
-            Equipment equipment13 = new Equipment();
-            equipment13.setName("Raquete Ténis Wilson");
-            equipment13.setType("Racket");
-            equipment13.setDescription("Raquete profissional Wilson Pro Staff");
-            equipment13.setFacility(facility8);
-            equipment13.setSports(List.of(Sport.TENNIS));
-            equipment13.setQuantity(10);
-            equipment13.setPricePerHour(6.5);
-            equipment13.setStatus(STATUS_AVAILABLE);
-            equipmentRepository.save(equipment13);
+            logger.info("All sample facilities associated with owner user (id={})", ownerUser.getId());
 
-            // Equipment for facility10 (Football Braga)
-            Equipment equipment14 = new Equipment();
-            equipment14.setName("Bola Nike Strike");
-            equipment14.setType("Ball");
-            equipment14.setDescription("Bola de futebol Nike Strike Team");
-            equipment14.setFacility(facility10);
-            equipment14.setSports(List.of(Sport.FOOTBALL));
-            equipment14.setQuantity(15);
-            equipment14.setPricePerHour(2.5);
-            equipment14.setStatus(STATUS_AVAILABLE);
-            equipmentRepository.save(equipment14);
-
-            Equipment equipment15 = new Equipment();
-            equipment15.setName("Coletes Bicolores");
-            equipment15.setType("Vest");
-            equipment15.setDescription("Set de coletes reversíveis");
-            equipment15.setFacility(facility10);
-            equipment15.setSports(List.of(Sport.FOOTBALL, Sport.BASKETBALL));
-            equipment15.setQuantity(30);
-            equipment15.setPricePerHour(1.5);
-            equipment15.setStatus(STATUS_AVAILABLE);
-            equipmentRepository.save(equipment15);
-
-            Equipment equipment16 = new Equipment();
-            equipment16.setName("Baliza Portátil");
-            equipment16.setType("Goal");
-            equipment16.setDescription("Baliza desmontável de futebol");
-            equipment16.setFacility(facility10);
-            equipment16.setSports(List.of(Sport.FOOTBALL));
-            equipment16.setQuantity(4);
-            equipment16.setPricePerHour(8.0);
-            equipment16.setStatus(STATUS_AVAILABLE);
-            equipmentRepository.save(equipment16);
-
-            // Equipment for facility12 (Padel & Tennis)
-            Equipment equipment17 = new Equipment();
-            equipment17.setName("Raquete Ténis Babolat");
-            equipment17.setType("Racket");
-            equipment17.setDescription("Raquete Babolat Pure Drive");
-            equipment17.setFacility(facility12);
-            equipment17.setSports(List.of(Sport.TENNIS));
-            equipment17.setQuantity(6);
-            equipment17.setPricePerHour(5.5);
-            equipment17.setStatus(STATUS_AVAILABLE);
-            equipmentRepository.save(equipment17);
-
-            Equipment equipment18 = new Equipment();
-            equipment18.setName("Raquete Padel Nox");
-            equipment18.setType("Racket");
-            equipment18.setDescription("Raquete Nox ML10 Pro Cup");
-            equipment18.setFacility(facility12);
-            equipment18.setSports(List.of(Sport.PADEL));
-            equipment18.setQuantity(8);
-            equipment18.setPricePerHour(6.0);
-            equipment18.setStatus(STATUS_AVAILABLE);
-            equipmentRepository.save(equipment18);
-
-            Equipment equipment19 = new Equipment();
-            equipment19.setName("Bolas Multiplas");
-            equipment19.setType("Ball");
-            equipment19.setDescription("Pack misto ténis e padel");
-            equipment19.setFacility(facility12);
-            equipment19.setSports(List.of(Sport.TENNIS, Sport.PADEL));
-            equipment19.setQuantity(25);
-            equipment19.setPricePerHour(2.0);
-            equipment19.setStatus(STATUS_AVAILABLE);
-            equipmentRepository.save(equipment19);
-
-            // Equipment for volleyball facilities
-            Equipment equipment20 = new Equipment();
-            equipment20.setName("Bola Mikasa Volleyball");
-            equipment20.setType("Ball");
-            equipment20.setDescription("Bola oficial de vólei Mikasa");
-            equipment20.setFacility(facility9);
-            equipment20.setSports(List.of(Sport.VOLLEYBALL));
-            equipment20.setQuantity(12);
-            equipment20.setPricePerHour(2.5);
-            equipment20.setStatus(STATUS_AVAILABLE);
-            equipmentRepository.save(equipment20);
-
-            Equipment equipment21 = new Equipment();
-            equipment21.setName("Joelheiras Vólei");
-            equipment21.setType("Knee pads");
-            equipment21.setDescription("Proteção para joelhos Mizuno");
-            equipment21.setFacility(facility9);
-            equipment21.setSports(List.of(Sport.VOLLEYBALL));
-            equipment21.setQuantity(16);
-            equipment21.setPricePerHour(3.0);
-            equipment21.setStatus(STATUS_AVAILABLE);
-            equipmentRepository.save(equipment21);
-
+            // Logs finais
             logger.info("Database initialized with sample data!");
-            logger.info("   - 4 users created (1 test, 1 owner, 2 renters)");
-            logger.info("   - 12 facilities created");
-            logger.info("   - 21 equipment items created");
+            logger.info("   - 1 owner user created");
+            logger.info("   - 1 renter test user created");
+            logger.info("   - 5 facilities created");
+            logger.info("   - 10 equipments created");
         };
     }
 }

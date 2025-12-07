@@ -1,17 +1,19 @@
 package tqs.sportslink.boundary;
 
+import java.time.OffsetDateTime;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
-
-import java.time.OffsetDateTime;
-import java.util.Map;
-import java.util.NoSuchElementException;
 
 @ControllerAdvice
 @ResponseBody
@@ -40,6 +42,17 @@ public class RestExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, "Bad Request", ex.getMessage());
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidationException(MethodArgumentNotValidException ex) {
+        String errors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+        logger.warn("Validation error: {}", errors);
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Validation Error", errors);
+    }
+
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<Map<String, Object>> handleNotFound(NoSuchElementException ex) {
         logger.warn("Not found: {}", ex.getMessage());
@@ -51,6 +64,12 @@ public class RestExceptionHandler {
         // Não loga como erro - é normal o navegador pedir favicon.ico
         logger.debug("Static resource not found: {}", ex.getResourcePath());
         return buildErrorResponse(HttpStatus.NOT_FOUND, "Not Found", "Recurso não encontrado");
+    }
+
+    @ExceptionHandler(org.springframework.web.bind.MissingRequestHeaderException.class)
+    public ResponseEntity<Map<String, Object>> handleMissingHeader(org.springframework.web.bind.MissingRequestHeaderException ex) {
+        logger.warn("Missing header: {}", ex.getHeaderName());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Bad Request", "Missing header: " + ex.getHeaderName());
     }
 
     @ExceptionHandler(IllegalStateException.class)

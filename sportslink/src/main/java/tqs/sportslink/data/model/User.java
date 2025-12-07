@@ -40,9 +40,11 @@ public class User {
     @Column
     private Double longitude; // User's preferred/home location longitude
 
+    @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private Role role;
+    @Column(name = "role")
+    private java.util.Set<Role> roles = new java.util.HashSet<>();
 
     @Column(nullable = false)
     private Boolean active = true;
@@ -63,8 +65,9 @@ public class User {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
-        if (role == null) {
-            role = Role.RENTER;
+        if (roles == null || roles.isEmpty()) {
+            if (roles == null) roles = new java.util.HashSet<>();
+            roles.add(Role.RENTER);
         }
     }
 

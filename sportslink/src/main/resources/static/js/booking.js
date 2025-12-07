@@ -1,5 +1,6 @@
 (() => {
     const urlParams = new URLSearchParams(window.location.search);
+
     const facilityId = urlParams.get('facilityId');
     const equipmentIdsParam = urlParams.get('equipmentIds');
     const equipmentIds = equipmentIdsParam ? equipmentIdsParam.split(',').map(Number) : [];
@@ -33,12 +34,28 @@
         'SWIMMING': 'Natação'
     };
 
+    let currentDate = new Date(); // Controls the visible month
+    let selectedDate = null;      // Controls the selected booking date
+    let selectedSlot = null;      // Controls the selected time slot
+
+    const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+
     async function loadData() {
         try {
+            const token = localStorage.getItem('token');
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             // Load facility
-            const facilityRes = await fetch('/api/rentals/search');
+            const facilityRes = await fetch('/api/rentals/search', { headers: headers }); // GET with headers
+            window.debugStatus = 'FETCHED';
             const facilities = await facilityRes.json();
+            window.debugStatus = 'PARSED';
             facilityData = facilities.find(f => f.id == facilityId);
+            window.debugStatus = 'FOUND: ' + (facilityData ? 'YES' : 'NO');
+
 
             if (!facilityData) {
                 alert('Campo não encontrado');
@@ -52,10 +69,13 @@
 
             // Pre-select equipments if passed in URL
             if (equipmentIds.length > 0) {
+                const equipmentRes = await fetch(`/api/rentals/facility/${facilityId}/equipments`, { headers: headers });
+                const allEquipments = await equipmentRes.json();
                 selectedEquipments = allEquipments.filter(eq => equipmentIds.includes(eq.id));
             }
 
             updateUI();
+            renderCalendar(); // Initial Calendar Render
         } catch (err) {
             console.error('Error loading data:', err);
             alert('Erro ao carregar dados');
@@ -69,20 +89,75 @@
 
         document.getElementById('summary-field-name').textContent = facilityData.name;
         document.getElementById('summary-location').textContent = `${facilityData.city} - ${facilityData.address}`;
+        document.getElementById('field-cost').textContent = `€${facilityData.pricePerHour}/h`;
 
         const icon = sportIcons[facilityData.sportType] || 'sports';
-        document.getElementById('summary-icon').textContent = icon;
+        const iconElem = document.getElementById('summary-icon');
+        const iconContainer = document.getElementById('summary-icon-container');
+        const imgElem = document.getElementById('summary-image');
 
-        // Set default date (today)
+        if (facilityData.imageUrl) {
+            imgElem.src = facilityData.imageUrl;
+            imgElem.style.display = 'block';
+            if (iconContainer) iconContainer.style.display = 'none';
+
+            imgElem.onerror = () => {
+                imgElem.style.display = 'none';
+                if (iconContainer) iconContainer.style.display = 'flex';
+                if (iconElem) iconElem.textContent = icon;
+            };
+        } else {
+            imgElem.style.display = 'none';
+            if (iconContainer) iconContainer.style.display = 'flex';
+            if (iconElem) iconElem.textContent = icon;
+        }
+
+        renderEquipments();
+        updateSummary();
+    }
+
+    // --- CALENDAR LOGIC START ---
+
+    function renderCalendar() {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+
+        document.getElementById('current-month-year').textContent = `${monthNames[month]} ${year}`;
+
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const daysInMonth = lastDay.getDate();
+
+        // Adjust for Monday start (0=Sun, 1=Mon...). Standard JS getDay() 0 is Sun.
+        // We want 0=Mon, 6=Sun.
+        let startDay = firstDay.getDay() - 1;
+        if (startDay === -1) startDay = 6;
+
+        const calendarGrid = document.getElementById('calendar-days');
+        calendarGrid.innerHTML = '';
+
+        // Header days
+        const weekDays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+        weekDays.forEach(day => {
+            const header = document.createElement('div');
+            header.className = 'calendar-day-header';
+            header.textContent = day;
+            calendarGrid.appendChild(header);
+        });
+
+        // Empty slots for previous month
+        for (let i = 0; i < startDay; i++) {
+            const empty = document.createElement('div');
+            calendarGrid.appendChild(empty);
+        }
+
         const today = new Date();
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        document.getElementById('booking-date').valueAsDate = tomorrow;
-        document.getElementById('booking-date').min = tomorrow.toISOString().split('T')[0];
+        today.setHours(0, 0, 0, 0);
 
-        // Set default time
-        document.getElementById('start-time').value = '10:00';
-        updateEndTime();
+        for (let i = 1; i <= daysInMonth; i++) {
+            const dayEl = document.createElement('div');
+            dayEl.className = 'calendar-day';
+            dayEl.textContent = i;
 
         // Render sports checkboxes
         renderSportsCheckboxes();
@@ -243,6 +318,126 @@
     function renderAllEquipment() {
         const container = document.getElementById('all-equipment-list');
         if (!container) return;
+            const thisDate = new Date(year, month, i);
+
+            // Check if past date
+            if (thisDate < today) {
+                dayEl.classList.add('disabled');
+            } else {
+                dayEl.addEventListener('click', () => selectDate(thisDate));
+            }
+
+            // Check if today
+            if (thisDate.getTime() === today.getTime()) {
+                dayEl.classList.add('today');
+            }
+
+            // Check if selected
+            if (selectedDate && thisDate.getTime() === selectedDate.getTime()) {
+                dayEl.classList.add('selected');
+            }
+
+            calendarGrid.appendChild(dayEl);
+        }
+    }
+
+    function selectDate(date) {
+        selectedDate = date;
+        selectedSlot = null; // Reset slot
+
+        // Update hidden input
+        // Format YYYY-MM-DD
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        document.getElementById('booking-date').value = `${yyyy}-${mm}-${dd}`;
+
+        // Re-render calendar to show Selection state
+        renderCalendar();
+
+        // Render slots
+        renderSlots(date);
+        updateSummary();
+    }
+
+    // Mock Availability Logic
+    function getMockSlots(date) {
+        const slots = [];
+
+        let startHour = 9;
+        let endHour = 22;
+
+        if (facilityData && facilityData.openingTime && facilityData.closingTime) {
+            startHour = parseInt(facilityData.openingTime.split(':')[0]);
+            endHour = parseInt(facilityData.closingTime.split(':')[0]);
+        }
+
+        // Use date string as seed for deterministic "randomness" so it doesn't change on click
+        const seed = date.getDate() + date.getMonth();
+
+        for (let h = startHour; h < endHour; h++) {
+            // Mock some booked slots
+            // Simple hash logic
+            // Make fewer slots booked for testing purposes (e.g. only every 10th slot)
+            const isBooked = (seed + h) % 10 === 0;
+
+            const timeString = `${String(h).padStart(2, '0')}:00`;
+            slots.push({
+                time: timeString,
+                available: !isBooked
+            });
+        }
+        return slots;
+    }
+
+    function renderSlots(date) {
+        const container = document.getElementById('slots-container');
+        const grid = document.getElementById('slots-grid');
+        const msg = document.getElementById('no-slots-msg');
+
+        container.style.display = 'block';
+        grid.innerHTML = '';
+        msg.style.display = 'none';
+
+        const slots = getMockSlots(date);
+        const availableSlots = slots.filter(s => s.available);
+
+        if (availableSlots.length === 0) {
+            msg.style.display = 'block';
+            return;
+        }
+
+        slots.forEach(slot => {
+            const btn = document.createElement('div');
+            btn.className = `time-slot ${slot.available ? '' : 'disabled'}`;
+            btn.textContent = slot.time;
+
+            if (slot.available) {
+                if (selectedSlot === slot.time) {
+                    btn.classList.add('selected');
+                }
+                btn.addEventListener('click', () => selectSlot(slot.time));
+            }
+
+            grid.appendChild(btn);
+        });
+    }
+
+    function selectSlot(time) {
+        selectedSlot = time;
+        document.getElementById('start-time').value = time;
+
+        // Update hidden inputs for End Time manually since we removed the listener
+        updateEndTime(); // Will calculate end time based on duration
+
+        // Re-render to show selection
+        renderSlots(selectedDate);
+    }
+
+    // --- CALENDAR LOGIC END ---
+
+    function renderEquipments() {
+        const container = document.getElementById('selected-equipment-list');
 
         if (allEquipments.length === 0) {
             container.innerHTML = '<p class="text-muted text-center py-3">Nenhum equipamento disponível</p>';
@@ -332,10 +527,14 @@
             const dateObj = new Date(date + 'T00:00:00');
             document.getElementById('summary-date').textContent =
                 dateObj.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' });
+        } else {
+            document.getElementById('summary-date').textContent = '-';
         }
 
         if (startTime && endTime) {
             document.getElementById('summary-time').textContent = `${startTime} - ${endTime}`;
+        } else {
+            document.getElementById('summary-time').textContent = '-';
         }
 
         document.getElementById('summary-duration').textContent = `${duration}h`;
@@ -367,23 +566,40 @@
         document.getElementById('total-cost').textContent = `€${total}`;
     }
 
-    document.getElementById('start-time').addEventListener('change', updateEndTime);
+    // Event Listeners
     document.getElementById('duration').addEventListener('change', () => {
-        updateEndTime();
-        updateSummary();
+        updateEndTime(); // Recalculate end time and summary
     });
-    document.getElementById('booking-date').addEventListener('change', updateSummary);
+
+    // Calendar Navigation
+    document.getElementById('prev-month').addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        renderCalendar();
+    });
+
+    document.getElementById('next-month').addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        renderCalendar();
+    });
+
 
     document.getElementById('btn-confirm-booking').addEventListener('click', async () => {
         const form = document.getElementById('booking-form');
+
+        // Custom validation check
+        const date = document.getElementById('booking-date').value;
+        const startTime = document.getElementById('start-time').value;
+
+        if (!date || !startTime) {
+            alert("Por favor, selecione uma data e um horário.");
+            return;
+        }
 
         if (!form.checkValidity()) {
             form.reportValidity();
             return;
         }
 
-        const date = document.getElementById('booking-date').value;
-        const startTime = document.getElementById('start-time').value;
         const endTime = document.getElementById('end-time').value;
 
         const startDateTime = `${date}T${startTime}:00`;
@@ -398,9 +614,13 @@
         };
 
         try {
+            const headers = { 'Content-Type': 'application/json' };
+            const token = localStorage.getItem('token');
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
             const response = await fetch('/api/rentals/rental', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: headers,
                 body: JSON.stringify(bookingData)
             });
 

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,8 +27,7 @@ import tqs.sportslink.service.RentalService;
 
 @RestController
 @RequestMapping("/api/rentals")
-@CrossOrigin(origins = "*")
-// @PreAuthorize("hasRole('RENTER')") // Comentado para testes
+@PreAuthorize("hasRole('RENTER')") // Comentado para testes
 public class RenterController {
 
     private final RentalService rentalService;

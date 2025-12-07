@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -71,16 +72,14 @@ public class OwnerController {
     public ResponseEntity<FacilityResponseDTO> createFacility(
             @PathVariable Long ownerId,
             @org.springframework.web.bind.annotation.RequestPart("facility") FacilityRequestDTO request,
-            @org.springframework.web.bind.annotation.RequestPart(value = "image", required = false) org.springframework.web.multipart.MultipartFile image
-    ) {
+            @org.springframework.web.bind.annotation.RequestPart(value = "image", required = false) org.springframework.web.multipart.MultipartFile image) {
         validateOwnerId(ownerId);
         return ResponseEntity.ok(ownerService.createFacility(ownerId, request, image));
     }
 
     @GetMapping("/{ownerId}/facilities")
     public ResponseEntity<List<FacilityResponseDTO>> getOwnerFacilities(
-            @PathVariable Long ownerId
-    ) {
+            @PathVariable Long ownerId) {
         validateOwnerId(ownerId);
         return ResponseEntity.ok(ownerService.getFacilities(ownerId));
     }
@@ -89,10 +88,18 @@ public class OwnerController {
     public ResponseEntity<FacilityResponseDTO> updateFacility(
             @PathVariable Long ownerId,
             @PathVariable Long facilityId,
-            @RequestBody FacilityRequestDTO request
-    ) {
+            @RequestBody FacilityRequestDTO request) {
         validateOwnerId(ownerId);
         return ResponseEntity.ok(ownerService.updateFacility(ownerId, facilityId, request));
+    }
+
+    @DeleteMapping("/{ownerId}/facilities/{facilityId}")
+    public ResponseEntity<Void> deleteFacility(
+            @PathVariable Long ownerId,
+            @PathVariable Long facilityId) {
+        validateOwnerId(ownerId);
+        ownerService.deleteFacility(ownerId, facilityId);
+        return ResponseEntity.noContent().build();
     }
 
     // ============================
@@ -103,8 +110,7 @@ public class OwnerController {
     public ResponseEntity<EquipmentResponseDTO> addEquipment(
             @PathVariable Long ownerId,
             @PathVariable Long facilityId,
-            @RequestBody EquipmentRequestDTO request
-    ) {
+            @RequestBody EquipmentRequestDTO request) {
         validateOwnerId(ownerId);
         return ResponseEntity.ok(ownerService.addEquipment(ownerId, facilityId, request));
     }
@@ -112,8 +118,7 @@ public class OwnerController {
     @GetMapping("/{ownerId}/facilities/{facilityId}/equipment")
     public ResponseEntity<List<EquipmentResponseDTO>> listEquipment(
             @PathVariable Long ownerId,
-            @PathVariable Long facilityId
-    ) {
+            @PathVariable Long facilityId) {
         validateOwnerId(ownerId);
         return ResponseEntity.ok(ownerService.getEquipment(ownerId, facilityId));
     }
@@ -122,8 +127,7 @@ public class OwnerController {
     public ResponseEntity<EquipmentResponseDTO> updateEquipment(
             @PathVariable Long ownerId,
             @PathVariable Long equipmentId,
-            @RequestBody EquipmentRequestDTO request
-    ) {
+            @RequestBody EquipmentRequestDTO request) {
         validateOwnerId(ownerId);
         return ResponseEntity.ok(ownerService.updateEquipment(ownerId, equipmentId, request));
     }

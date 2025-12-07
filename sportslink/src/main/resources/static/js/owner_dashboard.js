@@ -4,6 +4,7 @@
 
 // OwnerId passa a vir do JWT (inicialmente null)
 let ownerId = null;
+let editingFacilityId = null; // Track if we are editing or creating
 
 // Elements
 const facilitiesGrid = document.getElementById("facilities-grid");
@@ -125,6 +126,26 @@ async function loadFacilities() {
         if (noFacilitiesDiv) noFacilitiesDiv.style.display = "none";
         facilitiesGrid.style.display = "flex";
 
+        // Check for URL parameters to auto-open modals
+        const urlParams = new URLSearchParams(window.location.search);
+        const action = urlParams.get('action');
+        const facilityIdParam = urlParams.get('facilityId');
+
+        if (action && facilityIdParam) {
+            const fId = parseInt(facilityIdParam);
+            if (action === 'edit') {
+                openEditModal(fId);
+            } else if (action === 'equipment') {
+                openEquipmentPage(fId);
+            }
+
+            // Clean URL
+            const url = new URL(window.location);
+            url.searchParams.delete('action');
+            url.searchParams.delete('facilityId');
+            window.history.replaceState({}, document.title, url);
+        }
+
     } catch (error) {
         console.error(error);
         notify("Não foi possível carregar os seus campos.", 'danger');
@@ -238,7 +259,24 @@ function createFacilityCard(facility) {
     const sportsList = Array.isArray(facility.sports) ? facility.sports.join(", ") : "";
 
     col.innerHTML = `
-        <div class="card shadow-sm p-0 border-0 h-100" style="border-radius: 16px; overflow: hidden;">
+        <div class="card shadow-sm p-0 border-0 h-100" style="border-radius: 16px; overflow: hidden; position: relative;">
+            
+            <!-- OVERLAY ACTIONS -->
+            <div class="position-absolute top-0 end-0 p-3 d-flex gap-2" style="z-index: 10;">
+                <button class="btn shadow-sm d-flex align-items-center justify-content-center"
+                        style="width: 40px; height: 40px; padding: 0;"
+                        onclick="openEditModal(${facility.id})"
+                        title="Edit Facility">
+                    <i class="material-icons text-white" style="font-size: 1.2rem;">edit</i>
+                </button>
+                <button class="btn shadow-sm d-flex align-items-center justify-content-center"
+                        style="width: 40px; height: 40px; padding: 0;"
+                        onclick="deleteFacility(${facility.id})"
+                        title="Delete Facility">
+                    <i class="material-icons text-white" style="font-size: 1.2rem;">delete</i>
+                </button>
+            </div>
+
             <div style="height: 180px; overflow: hidden; background-color: #f0f0f0;">
                 ${imageContent}
             </div>
@@ -256,13 +294,13 @@ function createFacilityCard(facility) {
                     ${sportsList}
                 </p>
 
-                <div class="d-flex gap-2 mt-3 flex-wrap">
-
+                <div class="d-flex gap-2 mt-3 flex-wrap align-items-center">
+                    
                     <button class="btn bg-accent text-white fw-bold px-3"
                             style="border-radius: 50px;"
                             onclick="openEquipmentPage(${facility.id})">
                         <i class="material-icons align-middle me-1">construction</i>
-                        Equipamentos
+                        Equipments
                     </button>
 
                 </div>
@@ -286,27 +324,91 @@ function openEquipmentPage(facilityId) {
 // ==================================
 // OPEN ADD FACILITY MODAL
 // ==================================
+// ==================================
+// OPEN ADD FACILITY MODAL
+// ==================================
 if (btnAddFacility) {
     btnAddFacility.addEventListener("click", () => {
-        const modalElement = document.getElementById("addFacilityModal");
-        if (!modalElement) return;
-        const modal = new bootstrap.Modal(modalElement);
-        modal.show();
+        openAddModal();
     });
+}
+
+function openAddModal() {
+    editingFacilityId = null; // Reset edit mode
+
+    // Clear form
+    const form = document.getElementById("addFacilityForm");
+    if (form) form.reset();
+
+    // Update title and button
+    document.getElementById("addFacilityLabel").innerHTML = `
+        <i class="material-icons me-2 text-accent">add_circle</i>
+        Add New Facility
+    `;
+    document.getElementById("btnConfirmAddFacility").innerText = "Save Facility";
+
+    // Show image input (allowed for creation)
+    const imageInput = document.getElementById("facilityImage");
+    if (imageInput && imageInput.parentElement) imageInput.parentElement.style.display = "block";
+
+    const modalElement = document.getElementById("addFacilityModal");
+    if (!modalElement) return;
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+}
+
+function openEditModal(facilityId) {
+    const facility = allFacilities.find(f => f.id === facilityId);
+    if (!facility) return;
+
+    editingFacilityId = facilityId;
+
+    // Populate form
+    document.getElementById("facilityName").value = facility.name;
+    document.getElementById("facilityCity").value = facility.city;
+    document.getElementById("facilityAddress").value = facility.address;
+    document.getElementById("facilityDescription").value = facility.description || "";
+    document.getElementById("facilityPrice").value = facility.pricePerHour;
+    document.getElementById("facilityOpening").value = facility.openingTime;
+    document.getElementById("facilityClosing").value = facility.closingTime;
+
+    // Set sports
+    document.querySelectorAll(".facility-sport-check").forEach(cb => {
+        cb.checked = facility.sports && facility.sports.includes(cb.value);
+    });
+
+    // Update title and button
+    document.getElementById("addFacilityLabel").innerHTML = `
+        <i class="material-icons me-2 text-accent">edit</i>
+        Edit Facility
+    `;
+    document.getElementById("btnConfirmAddFacility").innerText = "Update Facility";
+
+    // Hide image input (not supported for update via JSON)
+    const imageInput = document.getElementById("facilityImage");
+    if (imageInput && imageInput.parentElement) imageInput.parentElement.style.display = "none";
+
+    const modalElement = document.getElementById("addFacilityModal");
+    if (!modalElement) return;
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
 }
 
 
 // ==================================
 // CREATE FACILITY
 // ==================================
+// ==================================
+// CREATE OR UPDATE FACILITY
+// ==================================
 const btnConfirmAddFacility = document.getElementById("btnConfirmAddFacility");
 if (btnConfirmAddFacility) {
     btnConfirmAddFacility.addEventListener("click", async () => {
-        await createFacility();
+        await saveFacility();
     });
 }
 
-async function createFacility() {
+async function saveFacility() {
     if (!ownerId) {
         notify("Utilizador não identificado como proprietário.", 'danger');
         return;
@@ -319,14 +421,12 @@ async function createFacility() {
     const price = parseFloat(document.getElementById("facilityPrice").value);
     const opening = document.getElementById("facilityOpening").value;
     const closing = document.getElementById("facilityClosing").value;
-    const imageInput = document.getElementById("facilityImage");
-    const imageFile = imageInput.files[0];
 
     const selectedSports = Array.from(document.querySelectorAll(".facility-sport-check:checked"))
         .map(cb => cb.value);
 
     // Simple validation
-    if (!name || !city || !address || !price || !opening || !closing || selectedSports.length === 0) {
+    if (!name || !city || !address || isNaN(price) || !opening || !closing || selectedSports.length === 0) {
         notify("Por favor preencha todos os campos obrigatórios.", 'warning');
         return;
     }
@@ -342,29 +442,46 @@ async function createFacility() {
         sports: selectedSports
     };
 
-    const formData = new FormData();
-    formData.append('facility', new Blob([JSON.stringify(facilityData)], { type: 'application/json' }));
-    if (imageFile) {
-        formData.append('image', imageFile);
-    }
-
     try {
-        // Headers: Auth only. Content-Type is set automatically by browser with boundary.
-        const headers = authHeaders();
-        delete headers['Content-Type']; // Ensure we don't send application/json
+        let response;
 
-        const response = await fetch(`/api/owner/${ownerId}/facilities`, {
-            method: "POST",
-            headers: headers,
-            body: formData
-        });
+        if (editingFacilityId) {
+            // UDPATE (PUT)
+            response = await fetch(`/api/owner/${ownerId}/facilities/${editingFacilityId}`, {
+                method: "PUT",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getToken()}`
+                },
+                body: JSON.stringify(facilityData)
+            });
+        } else {
+            // CREATE (POST with FormData)
+            const imageInput = document.getElementById("facilityImage");
+            const imageFile = imageInput.files[0];
+
+            const formData = new FormData();
+            formData.append('facility', new Blob([JSON.stringify(facilityData)], { type: 'application/json' }));
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+
+            const headers = authHeaders();
+            delete headers['Content-Type']; // Let browser set boundary
+
+            response = await fetch(`/api/owner/${ownerId}/facilities`, {
+                method: "POST",
+                headers: headers,
+                body: formData
+            });
+        }
 
         if (!response.ok) {
             if (response.status === 401) {
                 logout();
                 return;
             }
-            throw new Error("Erro ao criar campo");
+            throw new Error("Erro ao salvar campo");
         }
 
         const modalElement = document.getElementById("addFacilityModal");
@@ -378,10 +495,47 @@ async function createFacility() {
 
         await loadFacilities();
 
-        notify("Campo criado com sucesso!", 'success');
+        notify(editingFacilityId ? "Campo atualizado com sucesso!" : "Campo criado com sucesso!", 'success');
+        editingFacilityId = null; // Reset
 
     } catch (error) {
         console.error(error);
-        notify("Não foi possível criar o campo.", 'danger');
+        notify("Não foi possível salvar o campo.", 'danger');
+    }
+}
+
+// Old createFacility function removed as it is merged into saveFacility
+function unused_createFacility() {
+    // Placeholder to match previous structure if needed for tools, but I replaced the whole block.
+}
+
+// ==================================
+// DELETE FACILITY
+// ==================================
+async function deleteFacility(facilityId) {
+    if (!confirm("Are you sure you want to delete this facility? This action cannot be undone immediately.")) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/owner/${ownerId}/facilities/${facilityId}`, {
+            method: "DELETE",
+            headers: authHeaders()
+        });
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                logout();
+                return;
+            }
+            throw new Error("Erro ao eliminar campo");
+        }
+
+        notify("Campo eliminado com sucesso.", 'success');
+        await loadFacilities();
+
+    } catch (error) {
+        console.error(error);
+        notify("Não foi possível eliminar o campo.", 'danger');
     }
 }

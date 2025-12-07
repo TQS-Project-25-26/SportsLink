@@ -1,8 +1,10 @@
 package tqs.sportslink.B_Tests_unit;
 
+import java.time.LocalTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -38,26 +40,26 @@ public class UnitFacilityServiceTest {
         facility1.setId(1L);
         facility1.setName("Padel Club Aveiro");
         facility1.setStatus("ACTIVE");
-        
+
         Facility facility2 = new Facility();
         facility2.setId(2L);
         facility2.setName("Sports Center Aveiro");
         facility2.setStatus("ACTIVE");
-        
+
         when(facilityRepository.findByCityAndSportType("Aveiro", Sport.PADEL))
-            .thenReturn(List.of(facility1, facility2));
+                .thenReturn(List.of(facility1, facility2));
         when(rentalRepository.findByFacilityId(anyLong()))
-            .thenReturn(List.of());
-        
+                .thenReturn(List.of());
+
         // When
         List<FacilityResponseDTO> result = facilityService.searchFacilities("Aveiro", "Padel", "19:00");
-        
+
         // Then
         assertThat(result).hasSize(2);
         assertThat(result).extracting(FacilityResponseDTO::getName)
-        .contains("Padel Club Aveiro", "Sports Center Aveiro");
+                .contains("Padel Club Aveiro", "Sports Center Aveiro");
     }
-    
+
     @Test
     @Requirement("SL-27")
     void whenSearchBySport_thenReturnsCorrectFacilities() {
@@ -66,30 +68,30 @@ public class UnitFacilityServiceTest {
         facility.setId(1L);
         facility.setName("Padel Club Aveiro");
         facility.setStatus("ACTIVE");
-        
+
         when(facilityRepository.findByCityAndSportType("Aveiro", Sport.PADEL))
-            .thenReturn(List.of(facility));
+                .thenReturn(List.of(facility));
         when(rentalRepository.findByFacilityId(anyLong()))
-            .thenReturn(List.of());
-        
+                .thenReturn(List.of());
+
         // When
         List<FacilityResponseDTO> result = facilityService.searchFacilities("Aveiro", "Padel", "19:00");
-        
+
         // Then
         assertThat(result).isNotEmpty();
         assertThat(result).extracting(FacilityResponseDTO::getName)
-            .contains("Padel Club Aveiro");
+                .contains("Padel Club Aveiro");
     }
 
     @Test
     void whenSearchWithInvalidLocation_thenReturnsEmpty() {
         // Given
         when(facilityRepository.findByCityAndSportType("InvalidLocation", Sport.PADEL))
-            .thenReturn(List.of());
-        
+                .thenReturn(List.of());
+
         // When
         List<FacilityResponseDTO> result = facilityService.searchFacilities("InvalidLocation", "Padel", "19:00");
-        
+
         // Then
         assertThat(result).isEmpty();
     }
@@ -102,15 +104,15 @@ public class UnitFacilityServiceTest {
         facility.setId(1L);
         facility.setName("Padel Club Aveiro");
         facility.setStatus("ACTIVE");
-        
+
         when(facilityRepository.findByCityAndSportType("Aveiro", Sport.PADEL))
-            .thenReturn(List.of(facility));
+                .thenReturn(List.of(facility));
         when(rentalRepository.findByFacilityId(anyLong()))
-            .thenReturn(List.of());
-        
+                .thenReturn(List.of());
+
         // When
         List<FacilityResponseDTO> result = facilityService.searchFacilities("Aveiro", "Padel", "19:00");
-        
+
         // Then
         assertThat(result).isNotEmpty();
     }
@@ -122,15 +124,102 @@ public class UnitFacilityServiceTest {
         String location = "Aveiro";
         String sport = "Padel";
         String time = "19:00";
-        
+
         when(facilityRepository.findByCityAndSportType("Aveiro", Sport.PADEL))
-            .thenReturn(List.of());
-        
+                .thenReturn(List.of());
+
         // When
         List<FacilityResponseDTO> result = facilityService.searchFacilities(location, sport, time);
-        
+
         // Then
         assertThat(result).isNotNull();
     }
-}
 
+    // --- Time Parsing Tests ---
+
+    @Test
+    void whenSearchWithIsoTime_thenParsesCorrectly() {
+        // Given
+        Facility facility = new Facility();
+        facility.setId(1L);
+        facility.setStatus("ACTIVE");
+
+        when(facilityRepository.findAll()).thenReturn(List.of(facility));
+        when(rentalRepository.findByFacilityId(1L)).thenReturn(List.of());
+
+        // When
+        List<FacilityResponseDTO> result = facilityService.searchFacilities(null, null, "2025-12-25T14:00:00");
+
+        // Then
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void whenSearchWithCustomFormatTime_thenParsesCorrectly() {
+        // Given
+        Facility facility = new Facility();
+        facility.setId(1L);
+        facility.setStatus("ACTIVE");
+
+        when(facilityRepository.findAll()).thenReturn(List.of(facility));
+        when(rentalRepository.findByFacilityId(1L)).thenReturn(List.of());
+
+        // When
+        List<FacilityResponseDTO> result = facilityService.searchFacilities(null, null, "2025-12-25 14:00");
+
+        // Then
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void whenSearchWithTimeOnly_thenParsesCorrectly() {
+        // Given
+        Facility facility = new Facility();
+        facility.setId(1L);
+        facility.setStatus("ACTIVE");
+
+        when(facilityRepository.findAll()).thenReturn(List.of(facility));
+        when(rentalRepository.findByFacilityId(1L)).thenReturn(List.of());
+
+        // When
+        List<FacilityResponseDTO> result = facilityService.searchFacilities(null, null, "14:00");
+
+        // Then
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void whenSearchWithInvalidTimeFormat_thenThrowsException() {
+        // Given
+        Facility facility = new Facility();
+        facility.setId(1L);
+        facility.setStatus("ACTIVE");
+
+        when(facilityRepository.findAll()).thenReturn(List.of(facility));
+
+        // When/Then
+        assertThatThrownBy(() -> facilityService.searchFacilities(null, null, "invalid-time"))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    // --- Availability Tests ---
+
+    @Test
+    void whenFacilityClosedAtRequestedTime_thenExcludesFromResults() {
+        // Given
+        Facility facility = new Facility();
+        facility.setId(1L);
+        facility.setStatus("ACTIVE");
+        facility.setOpeningTime(LocalTime.of(8, 0));
+        facility.setClosingTime(LocalTime.of(12, 0)); // Closes at noon
+
+        // Requesting 14:00
+        when(facilityRepository.findAll()).thenReturn(List.of(facility));
+
+        // When
+        List<FacilityResponseDTO> result = facilityService.searchFacilities(null, null, "14:00");
+
+        // Then
+        assertThat(result).isEmpty();
+    }
+}

@@ -20,16 +20,12 @@ public class MinioStorageService implements StorageService {
     private final String minioUrl;
 
     public MinioStorageService(
+            MinioClient minioClient,
             @Value("${minio.url}") String minioUrl,
-            @Value("${minio.access-key}") String accessKey,
-            @Value("${minio.secret-key}") String secretKey,
             @Value("${minio.bucket-name}") String bucketName) {
+        this.minioClient = minioClient;
         this.minioUrl = minioUrl;
         this.bucketName = bucketName;
-        this.minioClient = MinioClient.builder()
-                .endpoint(minioUrl)
-                .credentials(accessKey, secretKey)
-                .build();
     }
 
     @Override
@@ -37,15 +33,14 @@ public class MinioStorageService implements StorageService {
         try {
             String fileName = UUID.randomUUID() + "-" + file.getOriginalFilename();
             InputStream inputStream = file.getInputStream();
-            
+
             minioClient.putObject(
                     PutObjectArgs.builder()
                             .bucket(bucketName)
                             .object(fileName)
                             .stream(inputStream, file.getSize(), -1)
                             .contentType(file.getContentType())
-                            .build()
-            );
+                            .build());
 
             // Construct public URL since we set download policy to anonymous
             return minioUrl + "/" + bucketName + "/" + fileName;

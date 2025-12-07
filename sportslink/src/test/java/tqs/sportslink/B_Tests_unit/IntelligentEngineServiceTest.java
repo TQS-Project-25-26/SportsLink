@@ -19,7 +19,8 @@ import tqs.sportslink.service.IntelligentEngineService;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -57,9 +58,10 @@ class IntelligentEngineServiceTest {
         facility.setSports(Arrays.asList(Sport.FOOTBALL, Sport.TENNIS));
         facility.setStatus("ACTIVE");
         facility.setRating(4.5);
+        facility.setPricePerHour(20.0);
         facility.setLatitude(40.01);
         facility.setLongitude(-8.01);
-        facility.setUpdatedAt(LocalDateTime.now().minusDays(10)); // NPE Fix
+        facility.setUpdatedAt(LocalDateTime.now().minusDays(10));
 
         football = new Equipment();
         football.setId(100L);
@@ -76,44 +78,253 @@ class IntelligentEngineServiceTest {
         basketball.setSports(Collections.singletonList(Sport.BASKETBALL));
     }
 
+    // --- Facility Suggestion Tests ---
+
     @Test
-    void shouldSuggestFacilitiesBasedOnCityAndSport() {
+    void whenUserHasNoRentals_thenSuggestTopRatedFacilities() {
         // Arrange
-        // Create a new facility that hasn't been visited but matches preferences
-        Facility newFacility = new Facility();
-        newFacility.setId(11L);
-        newFacility.setName("New City Sports");
-        newFacility.setCity("Aveiro"); // Matches preferred city
-        newFacility.setSports(Arrays.asList(Sport.FOOTBALL)); // Matches preferred sport
-        newFacility.setStatus("ACTIVE");
-        newFacility.setRating(5.0);
-        newFacility.setLatitude(40.02);
-        newFacility.setLongitude(-8.02);
-        newFacility.setUpdatedAt(LocalDateTime.now());
-
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(rentalRepository.findByUserId(1L)).thenReturn(Collections.emptyList());
 
-        // Mock rentals to establish preference for Football in Aveiro (using the
-        // 'facility' from setUp)
-        Rental rental = new Rental();
-        rental.setFacility(facility);
-        when(rentalRepository.findByUserId(1L)).thenReturn(Collections.singletonList(rental));
+        Facility topRated = new Facility();
+        topRated.setId(99L);
+        topRated.setName("Elite Gym");
+        topRated.setStatus("ACTIVE");
+        topRated.setRating(5.0);
 
-        // Return both facilities
-        when(facilityRepository.findAll()).thenReturn(Arrays.asList(facility, newFacility));
+        Facility averageGym = new Facility();
+        averageGym.setId(98L);
+        averageGym.setName("Average Gym");
+        averageGym.setStatus("ACTIVE");
+        averageGym.setRating(3.0);
+
+        when(facilityRepository.findAll()).thenReturn(List.of(topRated, averageGym));
 
         // Act
         List<FacilitySuggestionDTO> suggestions = service.suggestFacilitiesForUser(1L);
 
         // Assert
-        assertFalse(suggestions.isEmpty());
-        FacilitySuggestionDTO suggestion = suggestions.get(0);
-        assertEquals("New City Sports", suggestion.getName()); // Suggest the unvisited one
-        assertTrue(suggestion.getScore() > 50.0); // High score expected
+        assertThat(suggestions).hasSize(1); // Only > 4.0 are top rated
+        assertThat(suggestions.get(0).getName()).isEqualTo("Elite Gym");
+        assertThat(suggestions.get(0).getReason()).contains("Top rated");
     }
 
     @Test
-    void shouldSuggestEquipmentStrictlyForSport() {
+    void whenUserHasCoordinates_thenPrioritizeProximity() {
+        // Arrange
+        // User at 40.0, -8.0
+        Facility near = new Facility();
+        near.setId(1L);
+        near.setName("Near");
+        near.setStatus("ACTIVE");
+        near.setRating(4.0);
+        near.setLatitude(40.01);
+        near.setLongitude(-8.01); // Very close (~1.5km)
+        near.setSports(List.of(Sport.PADEL));
+
+        Facility far = new Facility();
+        far.setId(2L);
+        far.setName("Far");
+        far.setStatus("ACTIVE");
+        far.setRating(4.0);
+        far.setLatitude(41.0); // ~100km away
+        far.setLongitude(-8.0);
+        far.setSports(List.of(Sport.PADEL));
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        Rental rental = new Rental();
+        rental.setFacility(facility); // facility is in Aveiro
+        when(rentalRepository.findByUserId(1L)).thenReturn(List.of(rental));
+
+        when(facilityRepository.findAll()).thenReturn(List.of(near, far));
+
+        // Act
+        List<FacilitySuggestionDTO> suggestions = service.suggestFacilitiesForUser(1L);
+
+        // Assert
+        FacilitySuggestionDTO nearSugg = suggestions.stream().filter(s -> s.getName().equals("Near")).findFirst()
+                .orElseThrow();
+        FacilitySuggestionDTO farSugg = suggestions.stream().filter(s -> s.getName().equals("Far")).findFirst()
+                .orElseThrow();
+
+        assertThat(nearSugg.getScore()).isGreaterThan(farSugg.getScore());
+        assertThat(nearSugg.getReason()).contains("km away");
+    }
+
+    @Test
+    void whenUserHasNoCoordinates_thenPrioritizeCityMatch() {
+        // Arrange
+        user.setLatitude(null);
+        user.setLongitude(null);
+
+        Facility inCity = new Facility();
+        inCity.setId(1L);
+        inCity.setName("In City");
+        inCity.setCity("Aveiro"); // Matches user preference
+        inCity.setStatus("ACTIVE");
+        inCity.setRating(4.0);
+        inCity.setSports(List.of(Sport.FOOTBALL));
+
+        Facility outCity = new Facility();
+        outCity.setId(2L);
+        outCity.setName("Out City");
+        outCity.setCity("Lisbon");
+        outCity.setStatus("ACTIVE");
+        outCity.setRating(4.0);
+        outCity.setSports(List.of(Sport.FOOTBALL));
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        Rental rental = new Rental();
+        rental.setFacility(facility); // Aveiro
+        when(rentalRepository.findByUserId(1L)).thenReturn(List.of(rental));
+
+        when(facilityRepository.findAll()).thenReturn(List.of(inCity, outCity));
+
+        // Act
+        List<FacilitySuggestionDTO> suggestions = service.suggestFacilitiesForUser(1L);
+
+        // Assert
+        FacilitySuggestionDTO inCitySugg = suggestions.stream().filter(s -> s.getName().equals("In City")).findFirst()
+                .orElseThrow();
+        FacilitySuggestionDTO outCitySugg = suggestions.stream().filter(s -> s.getName().equals("Out City")).findFirst()
+                .orElseThrow();
+
+        assertThat(inCitySugg.getScore()).isGreaterThan(outCitySugg.getScore());
+        assertThat(inCitySugg.getReason()).contains("In Aveiro");
+    }
+
+    @Test
+    void whenSuggestingFacilities_thenExcludeVisitedOnes() {
+        // Arrange
+        // 'facility' (ID 10) is already in visited list
+        Facility unvisited = new Facility();
+        unvisited.setId(11L);
+        unvisited.setName("Unvisited");
+        unvisited.setStatus("ACTIVE");
+        unvisited.setCity("Aveiro");
+        unvisited.setSports(List.of(Sport.FOOTBALL));
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        Rental rental = new Rental();
+        rental.setFacility(facility);
+        when(rentalRepository.findByUserId(1L)).thenReturn(List.of(rental)); // Visited ID 10
+
+        when(facilityRepository.findAll()).thenReturn(List.of(facility, unvisited));
+
+        // Act
+        List<FacilitySuggestionDTO> suggestions = service.suggestFacilitiesForUser(1L);
+
+        // Assert
+        assertThat(suggestions)
+                .extracting(FacilitySuggestionDTO::getName)
+                .contains("Unvisited")
+                .doesNotContain("City Sports - Visited");
+    }
+
+    // --- Owner Suggestion Tests ---
+
+    @Test
+    void suggestImprovementsForOwner_whenHighDemand_SuggestAddEquipment() {
+        // Arrange
+        User owner = new User();
+        owner.setId(2L);
+        owner.getRoles().add(Role.OWNER);
+        owner.setFacilities(List.of(facility));
+
+        when(userRepository.findById(2L)).thenReturn(Optional.of(owner));
+
+        // Mock 21 rentals in last 30 days
+        List<Rental> rentals = new ArrayList<>();
+        for (int i = 0; i < 21; i++) {
+            Rental r = new Rental();
+            r.setCreatedAt(LocalDateTime.now().minusDays(1)); // Recent
+            rentals.add(r);
+        }
+        when(rentalRepository.findByFacilityId(facility.getId())).thenReturn(rentals);
+
+        // Mock Low Equipment Stock (< 5)
+        when(equipmentRepository.findByFacilityId(facility.getId())).thenReturn(List.of(football)); // Size 1
+
+        // Act
+        List<OwnerSuggestionDTO> results = service.suggestImprovementsForOwner(2L);
+
+        // Assert
+        assertThat(results).isNotEmpty();
+        OwnerSuggestionDTO suggestion = results.get(0);
+        assertThat(suggestion.getType()).isEqualTo("ADD_EQUIPMENT");
+        assertThat(suggestion.getPriority()).isEqualTo("HIGH");
+    }
+
+    @Test
+    void suggestImprovementsForOwner_whenLowRating_SuggestMaintenance() {
+        // Arrange
+        User owner = new User();
+        owner.setId(2L);
+        owner.getRoles().add(Role.OWNER);
+        facility.setRating(3.5); // Low Rating
+        owner.setFacilities(List.of(facility));
+
+        when(userRepository.findById(2L)).thenReturn(Optional.of(owner));
+        when(rentalRepository.findByFacilityId(facility.getId())).thenReturn(Collections.emptyList()); // Low rentals ->
+                                                                                                       // Lower Price
+                                                                                                       // logic
+        // But also Low Rating -> Maintenance logic
+        // The service adds multiple suggestions if conditions met
+
+        // Act
+        List<OwnerSuggestionDTO> results = service.suggestImprovementsForOwner(2L);
+
+        // Assert
+        assertThat(results).extracting(OwnerSuggestionDTO::getType)
+                .contains("LOWER_PRICE", "MAINTENANCE");
+        // EXPECTED: Low rentals (<5) triggers LOWER_PRICE. Low rating triggers
+        // MAINTENANCE.
+    }
+
+    @Test
+    void suggestImprovementsForOwner_whenFacilityOutdated_SuggestMaintenance() {
+        // Arrange
+        User owner = new User();
+        owner.setId(2L);
+        owner.getRoles().add(Role.OWNER);
+
+        facility.setUpdatedAt(LocalDateTime.now().minusDays(100)); // Outdated > 90 days
+        facility.setRating(4.5); // Good rating, but old
+        owner.setFacilities(List.of(facility));
+
+        when(userRepository.findById(2L)).thenReturn(Optional.of(owner));
+        when(rentalRepository.findByFacilityId(facility.getId())).thenReturn(Collections.emptyList());
+
+        // Act
+        List<OwnerSuggestionDTO> results = service.suggestImprovementsForOwner(2L);
+
+        // Assert
+        assertThat(results).extracting(OwnerSuggestionDTO::getType)
+                .contains("MAINTENANCE");
+    }
+
+    @Test
+    void suggestImprovementsForOwner_whenUserNotOwner_ThrowException() {
+        // Arrange
+        User notOwner = new User();
+        notOwner.setId(3L);
+        notOwner.getRoles().add(Role.RENTER); // No OWNER role
+
+        when(userRepository.findById(3L)).thenReturn(Optional.of(notOwner));
+
+        // Act & Assert
+        assertThatThrownBy(() -> service.suggestImprovementsForOwner(3L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("User is not an owner");
+    }
+
+    // --- Equipment Suggestion Tests ---
+
+    @Test
+    void suggestEquipmentForSport_whenValidSport_ReturnsMatches() {
         // Arrange
         when(equipmentRepository.findByFacilityId(10L)).thenReturn(Arrays.asList(football, basketball));
 
@@ -121,42 +332,16 @@ class IntelligentEngineServiceTest {
         List<EquipmentSuggestionDTO> result = service.suggestEquipmentForSport(10L, "FOOTBALL");
 
         // Assert
-        assertEquals(1, result.size());
-        assertEquals("Pro Football", result.get(0).getName());
-        // Basketball should NOT be suggested even though it's a "Ball"
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getName()).isEqualTo("Pro Football");
     }
 
     @Test
-    void shouldNotSuggestEquipmentForMismatchingSport() {
-        // Arrange
-        when(equipmentRepository.findByFacilityId(10L)).thenReturn(Arrays.asList(football, basketball));
-
+    void suggestEquipmentForSport_whenInvalidSport_ReturnsEmpty() {
         // Act
-        List<EquipmentSuggestionDTO> result = service.suggestEquipmentForSport(10L, "TENNIS");
+        List<EquipmentSuggestionDTO> result = service.suggestEquipmentForSport(10L, "NOT_A_SPORT");
 
         // Assert
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void shouldSuggestImprovementsForOwner() {
-        // Arrange
-        User owner = new User();
-        owner.setId(2L);
-        owner.getRoles().add(Role.OWNER);
-        owner.setFacilities(Collections.singletonList(facility));
-
-        when(userRepository.findById(2L)).thenReturn(Optional.of(owner));
-
-        // Mock low rentals
-        when(rentalRepository.findByFacilityId(10L)).thenReturn(Collections.emptyList());
-
-        // Act
-        List<OwnerSuggestionDTO> results = service.suggestImprovementsForOwner(2L);
-
-        // Assert
-        assertFalse(results.isEmpty());
-        // Should suggest LOWER_PRICE because of low rentals
-        assertEquals("LOWER_PRICE", results.get(0).getType());
+        assertThat(result).isEmpty();
     }
 }

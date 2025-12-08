@@ -27,7 +27,6 @@ import tqs.sportslink.service.RentalService;
 
 @RestController
 @RequestMapping("/api/rentals")
-@PreAuthorize("hasRole('RENTER')") // Comentado para testes
 public class RenterController {
 
     private final RentalService rentalService;
@@ -50,30 +49,35 @@ public class RenterController {
     }
 
     @PostMapping("/rental")
+    @PreAuthorize("hasRole('RENTER')")
     public ResponseEntity<RentalResponseDTO> createRental(@Valid @RequestBody RentalRequestDTO request) {
         RentalResponseDTO response = rentalService.createRental(request);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/rental/{id}/cancel")
+    @PreAuthorize("hasRole('RENTER')")
     public ResponseEntity<RentalResponseDTO> cancelRental(@PathVariable Long id) {
         RentalResponseDTO response = rentalService.cancelRental(id);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/rental/{id}/update")
+    @PreAuthorize("hasRole('RENTER')")
     public ResponseEntity<RentalResponseDTO> updateRental(@PathVariable Long id, @Valid @RequestBody RentalRequestDTO request) {
         RentalResponseDTO response = rentalService.updateRental(id, request);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/rental/{id}/status")
+    @PreAuthorize("hasRole('RENTER')")
     public ResponseEntity<RentalResponseDTO> getRentalStatus(@PathVariable Long id) {
         RentalResponseDTO response = rentalService.getRentalStatus(id);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/history")
+    @PreAuthorize("hasRole('RENTER')")
     public ResponseEntity<List<RentalResponseDTO>> getUserHistory(@RequestParam Long userId) {
         List<RentalResponseDTO> history = rentalService.getUserRentals(userId);
         return ResponseEntity.ok(history);

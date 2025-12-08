@@ -127,6 +127,7 @@ public class FacilityService {
         FacilityResponseDTO dto = new FacilityResponseDTO(
             facility.getId(),
             facility.getName(),
+            facility.getImageUrl(),
             facility.getSports(),
             facility.getCity(),
             facility.getAddress(),

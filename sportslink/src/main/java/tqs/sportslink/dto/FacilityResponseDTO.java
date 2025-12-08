@@ -17,6 +17,7 @@ public class FacilityResponseDTO {
     
     private Long id;
     private String name;
+    private String imageUrl;
     private List<Sport> sports;
     private String city;
     private String address;
@@ -27,10 +28,11 @@ public class FacilityResponseDTO {
     private String closingTime;
     
     // Constructor for service layer usage
-    public FacilityResponseDTO(Long id, String name, List<Sport> sports, String city, String address, 
+    public FacilityResponseDTO(Long id, String name, String imageUrl, List<Sport> sports, String city, String address, 
                               String description, Double pricePerHour, Double rating) {
         this.id = id;
         this.name = name;
+        this.imageUrl = imageUrl;
         this.sports = sports;
         this.city = city;
         this.address = address;

@@ -22,7 +22,27 @@
 
   async function apiFetch(path, options = {}) {
     try {
-      const res = await fetch(path, options);
+      // Adicionar headers de autenticação se não estiverem já presentes
+      const headers = options.headers || {};
+      const allHeaders = {
+        ...authHeaders(),  // Inclui Authorization e Content-Type
+        ...headers
+      };
+
+      const fetchOptions = {
+        ...options,
+        headers: allHeaders,
+        credentials: 'include'  // Incluir cookies
+      };
+
+      const res = await fetch(path, fetchOptions);
+
+      // Se 403 Forbidden, redirecionar para login
+      if (res.status === 403) {
+        logout();
+        return { ok: false, status: 403, body: { message: "Session expired" } };
+      }
+
       // try to parse JSON if possible
       const contentType = res.headers.get("content-type") || "";
       const body = contentType.includes("application/json")
@@ -57,7 +77,6 @@
   async function createRental(payload) {
     return apiFetch(`${BASE}/rental`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
   }
@@ -65,7 +84,6 @@
   async function updateRental(id, payload) {
     return apiFetch(`${BASE}/rental/${id}/update`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
   }
@@ -77,82 +95,208 @@
   // UI render helpers
   function createFieldCard(field) {
     const div = document.createElement("div");
-    div.className = "field-card card border-0 shadow-sm";
-    div.style.minWidth = "300px";
+    div.className = "col";
     div.dataset.id = field.id ?? "";
-    
-    // Map sportType to icon
+
+    const card = document.createElement("div");
+    card.className = "field-card card border-0 shadow-sm h-100";
+
+    // Map sports to icon (handle both sports array and sportType for compatibility)
     const sportIcons = {
-      'Football': 'sports_soccer',
-      'Padel': 'sports_tennis',
-      'Tennis': 'sports_tennis',
-      'Basketball': 'sports_basketball',
-      'Volleyball': 'sports_volleyball'
+      'FOOTBALL': 'sports_soccer',
+      'PADEL': 'sports_tennis',
+      'TENNIS': 'sports_tennis',
+      'BASKETBALL': 'sports_basketball',
+      'VOLLEYBALL': 'sports_volleyball'
     };
     const icon = sportIcons[field.sportType] || 'sports';
-    
-    div.innerHTML = `
-      <div class="field-image card-img-top d-flex align-items-center justify-content-center bg-gradient-orange">
-        <i class="material-icons text-accent icon-large">${icon}</i>
+
+    // Updated card content to support images
+    let imageContent;
+    if (field.imageUrl) {
+      imageContent = `<img src="${field.imageUrl}" class="w-100 h-100 object-fit-cover" alt="${field.name}" onerror="this.parentElement.innerHTML='<div class=\\'w-100 h-100 d-flex align-items-center justify-content-center bg-light\\'><i class=\\'material-icons text-muted opacity-50 icon-xlarge\\' style=\\'font-size: 64px;\\'>${icon}</i></div>'">`;
+    } else {
+      imageContent = `<div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
+                          <i class="material-icons text-muted opacity-50 icon-xlarge" style="font-size: 64px;">${icon}</i>
+                        </div>`;
+    }
+
+    card.innerHTML = `
+      <div class="field-image card-img-top position-relative" style="height: 200px; overflow: hidden;">
+        ${imageContent}
+        <div class="position-absolute top-0 start-0 m-3 px-3 py-1 bg-white text-accent rounded-pill fs-7 fw-bold shadow-sm text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+          ${field.sportType || "Sport"}
+        </div>
+        <div class="position-absolute bottom-0 end-0 m-3 px-3 py-1 bg-accent text-white rounded-pill fw-bold shadow-sm">
+           ${field.pricePerHour ? `€${field.pricePerHour}/h` : "Price N/A"}
+        </div>
       </div>
-      <button class="favorite-btn btn position-absolute top-0 end-0 m-2 rounded-circle shadow-sm" aria-label="Favoritar">
+      
+      <button class="favorite-btn btn position-absolute top-0 end-0 m-2 rounded-circle shadow-sm" aria-label="Favoritar" style="z-index: 5;">
         <i class="material-icons">favorite_border</i>
       </button>
-      <div class="card-body">
-        <div class="field-sport text-uppercase fw-bold text-accent small">${
-          field.sportType || ""
-        }</div>
-        <h5 class="field-name card-title fw-bold text-accent-dark">${
-          field.name || "Unnamed"
-        }</h5>
-        <div class="field-location d-flex align-items-center gap-1 text-muted small">
-          <i class="material-icons icon-small">location_on</i> ${
-            field.city || field.address || ""
-          }
+      <div class="card-body d-flex flex-column gap-2">
+        <div class="field-sport text-uppercase fw-bold text-accent small">${field.sports && field.sports.length > 0 ? field.sports.join(', ') : (field.sportType || "")
+      }</div>
+        <h5 class="field-name card-title fw-bold text-dark mb-1 text-truncate">${field.name || "Unnamed Facility"}</h5>
+        
+        <div class="field-location d-flex align-items-center gap-1 text-muted small mb-3">
+          <i class="material-icons icon-small text-accent">location_on</i> 
+          <span class="text-truncate">${field.city || field.address || "Location N/A"}</span>
         </div>
-        <div class="field-details d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-          <div class="field-price fw-bold text-accent-dark">${
-            field.pricePerHour ? `€${field.pricePerHour}/hora` : ""
-          }</div>
-          <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-outline-primary btn-equip">Equipamentos</button>
-            <button class="btn btn-sm btn-primary btn-rent">Reservar</button>
-          </div>
+
+        <div class="mt-auto d-flex gap-2">
+          <button class="btn btn-sm btn-primary text-white btn-equip flex-fill">Equipamentos</button>
+          <button class="btn btn-sm btn-primary btn-rent flex-fill text-white">Reservar</button>
         </div>
       </div>
     `;
+
     // attach handlers
-    div.querySelector(".btn-equip").addEventListener("click", async (e) => {
+    const favoriteBtn = card.querySelector(".favorite-btn");
+    favoriteBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const icon = favoriteBtn.querySelector(".material-icons");
+      favoriteBtn.classList.toggle("liked");
+      icon.textContent = favoriteBtn.classList.contains("liked") ? "favorite" : "favorite_border";
+    });
+
+    card.querySelector(".btn-equip").addEventListener("click", async (e) => {
       e.stopPropagation();
       const fid = div.dataset.id;
       window.location.href = `equipments.html?facilityId=${fid}`;
     });
-    div.querySelector(".btn-rent").addEventListener("click", async (e) => {
+    card.querySelector(".btn-rent").addEventListener("click", async (e) => {
       e.stopPropagation();
       const fid = div.dataset.id;
       window.location.href = `field_detail.html?id=${fid}`;
     });
-    
+
     // Click on card to view details
-    div.addEventListener("click", () => {
-      window.location.href = `field_detail.html?id=${field.id}`;
+    card.addEventListener("click", (e) => {
+      if (!e.target.closest('button')) {
+        window.location.href = `field_detail.html?id=${field.id}`;
+      }
     });
-    
+
+    div.appendChild(card);
     return div;
   }
 
-  async function renderSearchResults(data = [], containerSelector = '#featured') {
-    const container = document.querySelector(containerSelector) || document.querySelector('.carousel');
+  // Pagination state
+  let allFacilities = [];
+  let currentPage = 1;
+  const itemsPerPage = 8; // 8 items per page (4x2 grid)
+
+  function renderPagination() {
+    const totalPages = Math.ceil(allFacilities.length / itemsPerPage);
+    const paginationControls = document.getElementById('paginationControls');
+    if (!paginationControls) return;
+
+    // Ensure styles
+    paginationControls.className = 'pagination';
+    // Wrap in container if not already
+    let wrapper = paginationControls.parentElement;
+    if (!wrapper.classList.contains('pagination-container')) {
+      wrapper.classList.add('pagination-container');
+    }
+
+    paginationControls.innerHTML = '';
+
+    // Previous button
+    const prevLi = document.createElement('li');
+    prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+    prevLi.innerHTML = `<a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>`;
+    prevLi.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (currentPage > 1) {
+        currentPage--;
+        renderPage();
+        renderPagination();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+    paginationControls.appendChild(prevLi);
+
+    // Page numbers
+    for (let i = 1; i <= totalPages; i++) {
+      const li = document.createElement('li');
+      li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+      li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+      li.addEventListener('click', (e) => {
+        e.preventDefault();
+        currentPage = i;
+        renderPage();
+        renderPagination();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      paginationControls.appendChild(li);
+    }
+
+    // Next button
+    const nextLi = document.createElement('li');
+    nextLi.className = `page-item ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''}`;
+    nextLi.innerHTML = `<a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>`;
+    nextLi.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderPage();
+        renderPagination();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+    paginationControls.appendChild(nextLi);
+  }
+
+  function renderPage() {
+    const container = document.querySelector('#featured');
     if (!container) return;
+
+    // Clear but preserve grid classes
+    container.className = 'row row-cols-2 row-cols-md-4 g-3 g-md-4';
     container.innerHTML = '';
-    if (!Array.isArray(data) || data.length === 0) {
+
+    if (allFacilities.length === 0) {
       const empty = document.createElement('div');
-      empty.className = 'text-muted';
+      empty.className = 'col text-muted';
       empty.textContent = 'Nenhum resultado encontrado.';
       container.appendChild(empty);
       return;
     }
-    data.forEach(f => container.appendChild(createFieldCard(f)));
+
+    const startIdx = (currentPage - 1) * itemsPerPage;
+    const endIdx = startIdx + itemsPerPage;
+    const pageData = allFacilities.slice(startIdx, endIdx);
+
+    pageData.forEach(f => container.appendChild(createFieldCard(f)));
+  }
+
+  async function renderSearchResults(data = []) {
+    allFacilities = Array.isArray(data) ? data : [];
+    currentPage = 1;
+    renderPage();
+    renderPagination();
+  }
+
+  // Render nearby facilities in carousel
+  function renderNearbyCarousel(data = []) {
+    const container = document.querySelector('#nearbyCarousel .carousel-item .d-flex');
+    if (!container) return;
+
+    container.innerHTML = '';
+    const facilities = Array.isArray(data) ? data : [];
+
+    if (facilities.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'text-muted';
+      empty.textContent = 'Nenhuma facilidade próxima encontrada.';
+      container.appendChild(empty);
+      return;
+    }
+
+    // For carousel, show max 3 items
+    facilities.slice(0, 3).forEach(f => container.appendChild(createFieldCard(f)));
   }
 
   // Simple equipment panel (appends to body)
@@ -199,9 +343,8 @@
           <small class="text-muted">${eq.description || ""}</small>
           <small class="text-muted"> | Qty: ${eq.quantity || 0}</small>
         </div>
-        <div class="text-end"><small>${
-          eq.pricePerHour ? `€${eq.pricePerHour}` : ""
-        }</small></div>
+        <div class="text-end"><small>${eq.pricePerHour ? `€${eq.pricePerHour}` : ""
+          }</small></div>
       </div>
     `
       )
@@ -224,10 +367,10 @@
     );
     const equipmentIds = equipmentIdsRaw
       ? equipmentIdsRaw
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean)
-          .map(Number)
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .map(Number)
       : [];
     const payload = {
       userId: 1, // Demo user ID
@@ -261,7 +404,7 @@
     if (!searchBtn || !input) return;
     searchBtn.addEventListener("click", async (e) => {
       e.preventDefault();
-      
+
       // Map frontend sport names to backend values
       const sportMap = {
         'futebol': 'Football',
@@ -271,10 +414,10 @@
         'volei': 'Volleyball',
         'badminton': 'Badminton'
       };
-      
+
       const sportValue = sport?.value || undefined;
       const mappedSport = sportValue ? sportMap[sportValue.toLowerCase()] || sportValue : undefined;
-      
+
       const params = {
         location: input.value || undefined,
         sport: mappedSport,
@@ -315,8 +458,63 @@
     if (res.ok) {
       const body = Array.isArray(res.body) ? res.body : [];
       console.log('Nearby facilities data:', body);
-      renderSearchResults(body, "#nearbyCarousel .carousel-item .d-flex");
+      renderNearbyCarousel(body);
     }
+  }
+
+  // Load personalized suggestions
+  async function loadSuggestions() {
+    console.log('Loading personalized suggestions...');
+
+    if (typeof SuggestionsService === 'undefined') {
+      console.log('SuggestionsService not available');
+      return;
+    }
+
+    try {
+      // Try to get user location for better suggestions
+      let userLocation = null;
+      if (typeof LocationService !== 'undefined' && LocationService.isGeolocationSupported()) {
+        try {
+          userLocation = await LocationService.getCachedLocation();
+        } catch (err) {
+          console.log('Location not available, using suggestions without location');
+        }
+      }
+
+      // Get personalized suggestions (default user ID = 1)
+      const suggestions = await SuggestionsService.getFacilitySuggestions(1, userLocation);
+      console.log('Personalized suggestions:', suggestions);
+
+      if (suggestions && suggestions.length > 0) {
+        renderSuggestions(suggestions);
+      }
+    } catch (err) {
+      console.error('Error loading suggestions:', err);
+    }
+  }
+
+  // Render personalized suggestions
+  function renderSuggestions(suggestions = []) {
+    const section = document.getElementById('suggestions-section');
+    const container = document.getElementById('suggestions-container');
+
+    if (!section || !container) return;
+
+    container.innerHTML = '';
+
+    if (suggestions.length === 0) {
+      section.style.display = 'none';
+      return;
+    }
+
+    section.style.display = 'block';
+
+    // Show top 4 suggestions
+    suggestions.slice(0, 4).forEach(suggestion => {
+      const card = SuggestionsService.createSuggestionCard(suggestion);
+      container.appendChild(card);
+    });
   }
 
   // Update DOMContentLoaded
@@ -325,5 +523,6 @@
     bindSearch();
     loadFeatured();
     loadNearby();
+    loadSuggestions(); // Add suggestions
   });
 })();

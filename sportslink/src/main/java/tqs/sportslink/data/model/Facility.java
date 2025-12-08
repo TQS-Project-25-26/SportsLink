@@ -26,6 +26,9 @@ public class Facility {
     @Column(nullable = false, length = 200)
     private String name;
     
+    @Column(length = 500)
+    private String imageUrl;
+    
     @ElementCollection(targetClass = Sport.class)
     @CollectionTable(name = "facility_sports", joinColumns = @JoinColumn(name = "facility_id"))
     @Column(name = "sport")
@@ -37,6 +40,12 @@ public class Facility {
     
     @Column(nullable = false, length = 100)
     private String city;
+    
+    @Column
+    private Double latitude; // Facility geographic latitude
+    
+    @Column
+    private Double longitude; // Facility geographic longitude
     
     @Column(length = 1000)
     private String description;

@@ -24,7 +24,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         // Usar padrões de origem em vez de "*" quando allowCredentials é true
-        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:*", "http://127.0.0.1:*"));
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
@@ -47,8 +47,8 @@ public class SecurityConfig {
                 // Páginas de autenticação - públicas (login, register)
                 .requestMatchers("/pages/register.html").permitAll()
                 
-                // Outras páginas HTML - requerem autenticação
-                .requestMatchers("/pages/**").authenticated()
+                // Páginas HTML - permitir carregamento (segurança feita na API e JS)
+                .requestMatchers("/pages/**").permitAll()
                 
                 // API de rentals - pública para leitura
                 .requestMatchers("GET", "/api/rentals/**").permitAll()

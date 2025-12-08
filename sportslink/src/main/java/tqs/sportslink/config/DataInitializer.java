@@ -284,14 +284,32 @@ public class DataInitializer {
             facility12.setRating(4.5);
             facilityRepository.save(facility12);
 
-            logger.info("Created 12 facilities total");
+            // Facility specifically for Delete test
+            Facility facilityToDelete = new Facility();
+            facilityToDelete.setName("To Be Deleted Facility");
+            facilityToDelete.setSports(List.of(Sport.FOOTBALL)); // Arbitrary sport
+            facilityToDelete.setCity(CITY_AVEIRO);
+            facilityToDelete.setAddress("Delete Street");
+            facilityToDelete.setDescription("This facility should be deleted by tests");
+            facilityToDelete.setPricePerHour(10.0);
+            facilityToDelete.setOpeningTime(LocalTime.parse("09:00"));
+            facilityToDelete.setClosingTime(LocalTime.parse("18:00"));
+            facilityToDelete.setStatus(STATUS_ACTIVE);
+            facilityToDelete.setLatitude(0.0);
+            facilityToDelete.setLongitude(0.0);
+            facilityToDelete.setOwner(ownerUser); // Ensure it has an owner so it shows up in lists if filtered by
+                                                  // owner?
+            // Admin sees all? Admin likely sees all. But owner field is good practice.
+            facilityRepository.save(facilityToDelete);
+
+            logger.info("Created 13 facilities total");
 
             // =============================================================
             // POPULATE EQUIPMENT FOR ALL FACILITIES
             // =============================================================
             List<Facility> facilities = List.of(facility1, facility2, facility3, facility4, facility5,
                     facility6, facility7, facility8, facility9, facility10,
-                    facility11, facility12);
+                    facility11, facility12, facilityToDelete);
 
             for (Facility f : facilities) {
                 createEquipmentForFacility(f, equipmentRepository);

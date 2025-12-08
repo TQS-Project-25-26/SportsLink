@@ -70,8 +70,9 @@ public class SearchAndRentalSteps {
         options.addArguments("--headless"); // Run in headless mode for CI
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--window-size=1920,1080"); // Ensure elements are visible
         driver = new ChromeDriver(options);
-        driver.manage().window().maximize();
+        // driver.manage().window().maximize(); // Maximize doesn't always work in headless
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 

@@ -32,10 +32,10 @@ public class RestExceptionHandler {
         return ResponseEntity.status(status)
                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                 .body(Map.of(
-                TIMESTAMP, OffsetDateTime.now(),
-                STATUS, status.value(),
-                ERROR, error,
-                MESSAGE, message));
+                        TIMESTAMP, OffsetDateTime.now(),
+                        STATUS, status.value(),
+                        ERROR, error,
+                        MESSAGE, message));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -69,7 +69,8 @@ public class RestExceptionHandler {
     }
 
     @ExceptionHandler(org.springframework.web.bind.MissingRequestHeaderException.class)
-    public ResponseEntity<Map<String, Object>> handleMissingHeader(org.springframework.web.bind.MissingRequestHeaderException ex) {
+    public ResponseEntity<Map<String, Object>> handleMissingHeader(
+            org.springframework.web.bind.MissingRequestHeaderException ex) {
         logger.warn("Missing header: {}", ex.getHeaderName());
         return buildErrorResponse(HttpStatus.BAD_REQUEST, "Bad Request", "Missing header: " + ex.getHeaderName());
     }
@@ -80,14 +81,21 @@ public class RestExceptionHandler {
         return buildErrorResponse(HttpStatus.CONFLICT, "Conflict", ex.getMessage());
     }
 
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleAccessDenied(
+            org.springframework.security.access.AccessDeniedException ex) {
+        logger.warn("Access denied: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.FORBIDDEN, "Forbidden", ex.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
         // Ignore ClientAbortException (Connection broken by client)
         if (ex.getClass().getSimpleName().equals("ClientAbortException")) {
             return null;
         }
-        
-        logger.error("Internal error", ex);
+
+        logger.error("Internal error: " + ex.getClass().getName(), ex);
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error",
                 "An unexpected error occurred");
     }

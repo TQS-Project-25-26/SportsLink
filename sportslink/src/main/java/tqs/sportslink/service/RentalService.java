@@ -12,7 +12,9 @@ import tqs.sportslink.data.model.Facility;
 import tqs.sportslink.data.model.Equipment;
 import tqs.sportslink.data.model.User;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class RentalService {
@@ -78,7 +80,7 @@ public class RentalService {
         
         // Validar conflitos - LÓGICA NO SERVICE
         List<Rental> conflictingRentals = rentalRepository
-            .findByFacilityIdAndStartTimeLessThanEqualAndEndTimeGreaterThanEqual(
+            .findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(
                 request.getFacilityId(), request.getEndTime(), request.getStartTime()
             );
         
@@ -105,6 +107,17 @@ public class RentalService {
         // Adicionar equipamentos se houver
         if (request.getEquipmentIds() != null && !request.getEquipmentIds().isEmpty()) {
             List<Equipment> equipments = equipmentRepository.findAllById(request.getEquipmentIds());
+            
+            // Verificar disponibilidade e decrementar stock
+            for (Equipment equip : equipments) {
+                if (equip.getQuantity() <= 0) {
+                    throw new IllegalArgumentException("Equipment " + equip.getName() + " is out of stock");
+                }
+                equip.setQuantity(equip.getQuantity() - 1);
+            }
+            // Guardar alterações de stock
+            equipmentRepository.saveAll(equipments);
+            
             rental.setEquipments(equipments);
         }
 
@@ -136,8 +149,13 @@ public class RentalService {
             .orElseThrow(() -> new IllegalArgumentException(ERROR_RENTAL_NOT_FOUND));
         
         // Validação: não permitir atualizar para horário no passado
+        // Validação: não permitir atualizar para horário no passado ou com menos de 24h
         if (request.getStartTime().isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("Cannot update rental to past time");
+        }
+        
+        if (request.getStartTime().isBefore(LocalDateTime.now().plusHours(24))) {
+            throw new IllegalArgumentException("Updates must be made for a time at least 24 hours in the future");
         }
         
         // Validação: horário de término deve ser depois do início
@@ -145,10 +163,21 @@ public class RentalService {
             request.getEndTime().equals(request.getStartTime())) {
             throw new IllegalArgumentException("End time must be after start time");
         }
+
+        // Buscar facility para validar horários de funcionamento
+        Facility facility = facilityRepository.findById(request.getFacilityId())
+            .orElseThrow(() -> new IllegalArgumentException("Facility not found"));
+
+        // Validação: horários de funcionamento da facility
+        if (facility.getOpeningTime() != null && facility.getClosingTime() != null &&
+            (request.getStartTime().toLocalTime().isBefore(facility.getOpeningTime()) ||
+             request.getEndTime().toLocalTime().isAfter(facility.getClosingTime()))) {
+            throw new IllegalArgumentException("Rental time is outside facility operating hours");
+        }
         
         // Validar novos horários - LÓGICA NO SERVICE (excluindo o próprio rental)
         List<Rental> conflictingRentals = rentalRepository
-            .findByFacilityIdAndStartTimeLessThanEqualAndEndTimeGreaterThanEqual(
+            .findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(
                 request.getFacilityId(), request.getEndTime(), request.getStartTime()
             );
         
@@ -157,11 +186,39 @@ public class RentalService {
             .anyMatch(r -> !STATUS_CANCELLED.equals(r.getStatus()));
         
         if (hasConflict) {
-            throw new IllegalArgumentException("New time slot conflicts with existing booking");
+        throw new IllegalArgumentException("New time slot conflicts with existing booking");
+    }
+
+    // Atualizar Equipamentos (Gerir Stock)
+    if (request.getEquipmentIds() != null) {
+        // 1. Devolver equipamentos antigos ao stock
+        if (rental.getEquipments() != null) {
+            for (Equipment eq : rental.getEquipments()) {
+                eq.setQuantity(eq.getQuantity() + 1);
+            }
+            equipmentRepository.saveAll(rental.getEquipments());
         }
 
-        rental.setStartTime(request.getStartTime());
-        rental.setEndTime(request.getEndTime());
+        // 2. Atribuir novos equipamentos e decrementar stock
+        List<Equipment> newEquipments = new ArrayList<>();
+        if (!request.getEquipmentIds().isEmpty()) {
+             List<Equipment> requestedEquipments = equipmentRepository.findAllById(request.getEquipmentIds());
+             for (Equipment eq : requestedEquipments) {
+                 if (eq.getQuantity() <= 0) {
+                     // Reverter devolução anterior se falhar? 
+                     // Idealmente sim, mas como é RuntimeException, o Transactional deve fazer rollback de tudo.
+                     throw new IllegalArgumentException("Equipment " + eq.getName() + " is out of stock");
+                 }
+                 eq.setQuantity(eq.getQuantity() - 1);
+                 newEquipments.add(eq);
+             }
+             equipmentRepository.saveAll(newEquipments);
+        }
+        rental.setEquipments(newEquipments);
+    }
+
+    rental.setStartTime(request.getStartTime());
+    rental.setEndTime(request.getEndTime());
         Rental updated = rentalRepository.save(rental);
         return mapToResponseDTO(updated);
     }
@@ -170,6 +227,13 @@ public class RentalService {
         Rental rental = rentalRepository.findById(rentalId)
             .orElseThrow(() -> new IllegalArgumentException(ERROR_RENTAL_NOT_FOUND));
         return mapToResponseDTO(rental);
+    }
+
+    public List<RentalResponseDTO> getUserRentals(Long userId) {
+        List<Rental> rentals = rentalRepository.findByUserId(userId);
+        return rentals.stream()
+            .map(this::mapToResponseDTO)
+            .toList();
     }
 
     private RentalResponseDTO mapToResponseDTO(Rental rental) {

@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Equipment Management - SportsLink</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Google Icons & Fonts -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Shared CSS + equipment styles -->
+    <link href="../css/styles.css" rel="stylesheet">
+    <link href="../css/equipments.css" rel="stylesheet">
+</head>
+
+<!-- Navbar -->
+<!-- Navbar -->
+<div id="navbar-placeholder"></div>
+
+<div class="container-fluid px-lg-5 py-5">
+    <!-- Back Button -->
+    <div class="mb-4">
+        <a href="../pages/owner_dashboard.html"
+            class="btn btn-outline-secondary d-inline-flex align-items-center px-4 py-2" style="border-radius: 50px;">
+            <i class="material-icons me-2">arrow_back</i>
+            Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h2 class="fw-bold mb-1">Facility Equipment</h2>
+            <p class="text-muted mb-0">
+                Management of equipment associated with this facility.
+                <span id="facility-label" class="fw-semibold"></span>
+            </p>
+        </div>
+
+        <button class="btn bg-accent text-white fw-bold px-4 py-2" id="btn-open-add-equipment"
+            style="border-radius: 50px;">
+            <i class="material-icons me-2">add_circle</i>
+            Add Equipment
+        </button>
+    </div>
+
+    <!-- Grid de Equipamentos -->
+    <div id="equipment-grid" class="row g-4">
+        <!-- Cards renderizados pelo owner_equipments.js -->
+    </div>
+
+    <!-- Empty state -->
+    <div id="no-equipment" class="text-center text-muted py-5" style="display: none;">
+        <i class="material-icons icon-large opacity-50" style="font-size: 4rem;">inventory_2</i>
+        <p class="mt-3 fs-5">No equipment registered for this facility yet.</p>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-5" style="display: none;">
+        <div class="spinner-border text-accent" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+</div>
+
+<!-- ===================================== -->
+<!-- MODAL: ADICIONAR EQUIPAMENTO -->
+<!-- ===================================== -->
+<div class="modal fade" id="addEquipmentModal" tabindex="-1" aria-labelledby="addEquipmentLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px;">
+
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="addEquipmentLabel">
+                    <i class="material-icons me-2 text-accent">add_circle</i>
+                    Add Equipment
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <form id="addEquipmentForm" class="row g-3">
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Name</label>
+                        <input type="text" class="form-control" id="equipmentName" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Type</label>
+                        <select id="equipmentType" class="form-select" required>
+                            <option value="">Select...</option>
+                            <option value="Ball">Ball</option>
+                            <option value="Racket">Racket</option>
+                            <option value="Vest">Vest</option>
+                            <option value="Net">Net</option>
+                            <option value="Protection">Protection</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Description</label>
+                        <textarea class="form-control" id="equipmentDescription" rows="2"></textarea>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Quantity</label>
+                        <input type="number" min="1" class="form-control" id="equipmentQuantity" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Price per Hour (€)</label>
+                        <input type="number" step="0.01" class="form-control" id="equipmentPrice">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Status</label>
+                        <select id="equipmentStatus" class="form-select" required>
+                            <option value="AVAILABLE">Available</option>
+                            <option value="MAINTENANCE">Maintenance</option>
+                            <option value="UNAVAILABLE">Unavailable</option>
+                        </select>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn bg-accent text-white fw-bold" id="btnConfirmAddEquipment"
+                    style="border-radius: 50px;">
+                    Save Equipment
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ===================================== -->
+<!-- MODAL: EDITAR EQUIPAMENTO -->
+<!-- ===================================== -->
+<div class="modal fade" id="editEquipmentModal" tabindex="-1" aria-labelledby="editEquipmentLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px;">
+
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="editEquipmentLabel">
+                    <i class="material-icons me-2 text-accent">edit</i>
+                    Edit Equipment
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <form id="editEquipmentForm" class="row g-3">
+                    <input type="hidden" id="editEquipmentId">
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Name</label>
+                        <input type="text" class="form-control" id="editEquipmentName" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Type</label>
+                        <select id="editEquipmentType" class="form-select" required>
+                            <option value="">Select...</option>
+                            <option value="Ball">Ball</option>
+                            <option value="Racket">Racket</option>
+                            <option value="Vest">Vest</option>
+                            <option value="Net">Net</option>
+                            <option value="Protection">Protection</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Description</label>
+                        <textarea class="form-control" id="editEquipmentDescription" rows="2"></textarea>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Quantity</label>
+                        <input type="number" min="1" class="form-control" id="editEquipmentQuantity" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Price per Hour (€)</label>
+                        <input type="number" step="0.01" class="form-control" id="editEquipmentPrice">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Status</label>
+                        <select id="editEquipmentStatus" class="form-select" required>
+                            <option value="AVAILABLE">Available</option>
+                            <option value="MAINTENANCE">Maintenance</option>
+                            <option value="UNAVAILABLE">Unavailable</option>
+                        </select>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn bg-accent text-white fw-bold" id="btnConfirmEditEquipment"
+                    style="border-radius: 50px;">
+                    Save Changes
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap + JS Owner Equipments -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Auth helpers (JWT, logout, toasts) -->
+<script src="../js/auth.js"></script>
+
+<script src="../js/owner_equipments.js"></script>
+
+<script src="../js/components/navbar.js"></script>
+
+</body>
+
+</html>

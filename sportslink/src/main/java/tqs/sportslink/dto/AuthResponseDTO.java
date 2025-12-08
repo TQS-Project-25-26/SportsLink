@@ -8,5 +8,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class AuthResponseDTO {
     private String token;
-    private String role;
+    private java.util.Set<String> roles;
+    private String role; // Backward compatibility
+    private Long userId;
 }

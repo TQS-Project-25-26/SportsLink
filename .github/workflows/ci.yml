@@ -180,6 +180,15 @@ jobs:
         run: |
           cd sportslink
           
+          echo "Listing files before cleanup:"
+          ls -la
+          
+          # Force remove old jar to prevent "mv *.jar" from picking it up
+          rm -f app.jar
+          
+          # Rename downloaded artifact
+          # At this point, *.jar should only match the newly downloaded file
+          
           # Rename downloaded artifact to match Dockerfile expectation
           mv *.jar app.jar
           

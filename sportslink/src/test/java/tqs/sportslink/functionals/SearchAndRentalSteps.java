@@ -321,9 +321,6 @@ public class SearchAndRentalSteps {
     // Scenario 6
     // ------------------------------
 
-    // Static counter to ensure each booking scenario uses a different day
-    private static int bookingDayOffset = 0;
-
     @Given("I am on the booking page for facility {int}")
     public void on_booking_page(int id) {
         initDriverIfNeeded();
@@ -337,8 +334,7 @@ public class SearchAndRentalSteps {
 
     @When("I fill the booking form with time {string} and duration {string} hours")
     public void fill_booking_form_with_params(String timeStr, String durationStr) {
-        // Select Date - use bookingDayOffset to ensure each scenario picks a unique day
-        // Wait for calendar container
+        // Select Date
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("calendar-days")));
 
         // Wait for at least one enabled day to be present
@@ -353,24 +349,10 @@ public class SearchAndRentalSteps {
             days = driver.findElements(By.cssSelector(".calendar-day:not(.disabled)"));
         }
 
-        // Select a unique day for each booking scenario using the offset
-        // cycle through available days
-        int dayIndex = bookingDayOffset % days.size();
-        bookingDayOffset++; 
-        
-        WebElement day = days.get(dayIndex);
+        // Select the last available day
+        WebElement day = days.get(days.size() - 1);
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", day);
-        
-        // Try JS click first
         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", day);
-        
-        // Wait for selection to be applied (robustness)
-        try {
-             wait.until(d -> day.getDomAttribute("class").contains("selected"));
-        } catch (org.openqa.selenium.TimeoutException e) {
-             // Fallback: regular click if JS didn't trigger listener (rare but possible)
-             day.click();
-        }
 
         // Set Start Time
         WebElement startTime = driver.findElement(By.id("start-time"));

@@ -13,5 +13,5 @@ import static io.cucumber.junit.platform.engine.Constants.*;
 @ConfigurationParameter(key = PLUGIN_PROPERTY_NAME, value = "pretty")
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "tqs.sportslink.functionals") // Os testes devem estar em tqs.sportlink.functionals
 @ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "not @skip")
-public class RunCucumberTest {
+class RunCucumberTest {
 }

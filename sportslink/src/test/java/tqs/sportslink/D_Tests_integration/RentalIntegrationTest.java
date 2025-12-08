@@ -37,7 +37,7 @@ import tqs.sportslink.dto.RentalRequestDTO;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-public class RentalIntegrationTest {
+class RentalIntegrationTest {
 
     @LocalServerPort
     private int port;

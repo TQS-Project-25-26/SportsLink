@@ -25,8 +25,8 @@ public class DataInitializer {
 
     private static final String STATUS_ACTIVE = "ACTIVE";
     private static final String STATUS_AVAILABLE = "AVAILABLE";
-    private static final String STATUS_UNAVAILABLE = "UNAVAILABLE";
     private static final String CITY_AVEIRO = "Aveiro";
+    private static final String OWNER_EMAIL = "owner@sportslink.com";
 
     @Bean
     CommandLineRunner initDatabase(FacilityRepository facilityRepository,
@@ -49,9 +49,9 @@ public class DataInitializer {
             // =============================================================
             // OWNER USER (criado primeiro → tipicamente ID = 1)
             // =============================================================
-            if (userRepository.findByEmail("owner@sportslink.com").isEmpty()) {
+            if (userRepository.findByEmail(OWNER_EMAIL).isEmpty()) {
                 User ownerUser = new User();
-                ownerUser.setEmail("owner@sportslink.com");
+                ownerUser.setEmail(OWNER_EMAIL);
                 ownerUser.setPassword(passwordEncoder.encode("password123")); // Encoded password
                 ownerUser.setName("Owner User");
                 ownerUser.setPhone("911111111");
@@ -59,7 +59,7 @@ public class DataInitializer {
                 ownerUser.getRoles().add(Role.RENTER);
                 ownerUser.setActive(true);
                 userRepository.save(ownerUser);
-                logger.info("Owner user created: owner@sportslink.com / password123 (id={})", ownerUser.getId());
+                logger.info("Owner user created: {} / password123 (id={})", OWNER_EMAIL, ownerUser.getId());
             }
 
             if (userRepository.findByEmail("test@sportslink.com").isEmpty()) {
@@ -167,7 +167,7 @@ public class DataInitializer {
             facility6.setLatitude(40.6380);
             facility6.setLongitude(-8.6420);
             facility6.setRating(4.6);
-            facility6.setOwner(userRepository.findByEmail("owner@sportslink.com").get());
+            facility6.setOwner(userRepository.findByEmail(OWNER_EMAIL).get());
             facilityRepository.save(facility6);
 
             Facility facility7 = new Facility();
@@ -228,7 +228,7 @@ public class DataInitializer {
             facility10.setLatitude(41.5454);
             facility10.setLongitude(-8.4265);
             facility10.setRating(4.7);
-            facility10.setOwner(userRepository.findByEmail("owner@sportslink.com").get());
+            facility10.setOwner(userRepository.findByEmail(OWNER_EMAIL).get());
             facilityRepository.save(facility10);
 
             Facility facility11 = new Facility();
@@ -263,8 +263,6 @@ public class DataInitializer {
 
             logger.info("Created 12 facilities total");
 
-            logger.info("Created 12 facilities total");
-
             // =============================================================
             // POPULATE EQUIPMENT FOR ALL FACILITIES
             // =============================================================
@@ -279,7 +277,7 @@ public class DataInitializer {
             // =============================================================
             // ASSOCIAR TODAS AS FACILITIES AO OWNER
             // =============================================================
-            User currentOwner = userRepository.findByEmail("owner@sportslink.com").orElse(null);
+            User currentOwner = userRepository.findByEmail(OWNER_EMAIL).orElse(null);
             if (currentOwner != null) {
                 facility1.setOwner(currentOwner);
                 facility2.setOwner(currentOwner);            

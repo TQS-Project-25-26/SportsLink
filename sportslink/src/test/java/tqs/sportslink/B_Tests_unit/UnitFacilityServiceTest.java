@@ -22,7 +22,7 @@ import tqs.sportslink.dto.FacilityResponseDTO;
 import tqs.sportslink.service.FacilityService;
 
 @ExtendWith(MockitoExtension.class)
-public class UnitFacilityServiceTest {
+class UnitFacilityServiceTest {
 
     @Mock
     private FacilityRepository facilityRepository;

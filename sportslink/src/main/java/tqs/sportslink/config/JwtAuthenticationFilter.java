@@ -1,7 +1,6 @@
 package tqs.sportslink.config;
 
 import java.io.IOException;
-import java.util.Collections;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +17,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import tqs.sportslink.data.UserRepository;
-import tqs.sportslink.data.model.Role;
 import tqs.sportslink.data.model.User;
 import tqs.sportslink.service.AuthService;
 import tqs.sportslink.util.JwtUtil;

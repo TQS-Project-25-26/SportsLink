@@ -33,7 +33,7 @@ import tqs.sportslink.dto.RentalResponseDTO;
 import tqs.sportslink.service.RentalService;
 
 @ExtendWith(MockitoExtension.class)
-public class UnitRentalServiceTest {
+class UnitRentalServiceTest {
 
     @Mock
     private RentalRepository rentalRepository;
@@ -58,7 +58,7 @@ public class UnitRentalServiceTest {
     private Rental mockRental;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         startTime = LocalDateTime.now().plusDays(29).withHour(19).withMinute(0).withSecond(0).withNano(0);
         endTime = startTime.plusHours(2); // 2 hours later
 

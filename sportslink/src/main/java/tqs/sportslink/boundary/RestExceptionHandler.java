@@ -64,24 +64,23 @@ public class RestExceptionHandler {
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNoResourceFound(NoResourceFoundException ex) {
         // Não loga como erro - é normal o navegador pedir favicon.ico
-        // logger.debug("Static resource not found: {}", ex.getResourcePath());
         return buildErrorResponse(HttpStatus.NOT_FOUND, "Not Found", "Resource not found");
     }
 
     @ExceptionHandler(org.springframework.web.bind.MissingRequestHeaderException.class)
-    public ResponseEntity<Map<String, Object>> handleMissingHeader(org.springframework.web.bind.MissingRequestHeaderException ex) {
+    ResponseEntity<Map<String, Object>> handleMissingHeader(org.springframework.web.bind.MissingRequestHeaderException ex) {
         logger.warn("Missing header: {}", ex.getHeaderName());
         return buildErrorResponse(HttpStatus.BAD_REQUEST, "Bad Request", "Missing header: " + ex.getHeaderName());
     }
 
     @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<Map<String, Object>> handleConflict(IllegalStateException ex) {
+    ResponseEntity<Map<String, Object>> handleConflict(IllegalStateException ex) {
         logger.warn("Conflict: {}", ex.getMessage());
         return buildErrorResponse(HttpStatus.CONFLICT, "Conflict", ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
+    ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
         // Ignore ClientAbortException (Connection broken by client)
         if (ex.getClass().getSimpleName().equals("ClientAbortException")) {
             return null;

@@ -31,8 +31,28 @@ public class DataInitializer {
     @Bean
     CommandLineRunner initDatabase(FacilityRepository facilityRepository,
             EquipmentRepository equipmentRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            tqs.sportslink.data.RentalRepository rentalRepository) {
         return args -> {
+            // Encode passwords
+            org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder passwordEncoder = new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
+
+            // =============================================================
+            // ADMIN USER (Create if not exists)
+            // =============================================================
+            if (!userRepository.existsByEmail("admin@admin.com")) {
+                User adminUser = new User();
+                adminUser.setEmail("admin@admin.com");
+                adminUser.setPassword(passwordEncoder.encode("pwdAdmin"));
+                adminUser.setName("Admin User");
+                adminUser.getRoles().add(Role.ADMIN);
+                adminUser.setActive(true);
+                userRepository.save(adminUser);
+                logger.info("Admin user created: admin@admin.com / pwdAdmin");
+            } else {
+                logger.info("Admin user already exists");
+            }
+
             // Check if data already exists
             long count = facilityRepository.count();
             logger.info("Current facility count: {}", count);
@@ -42,13 +62,16 @@ public class DataInitializer {
                 // List facilities for debugging
                 facilityRepository.findAll()
                         .forEach(f -> logger.info("  - {} ({} in {})", f.getName(), f.getSports(), f.getCity()));
+
+                // SEED RENTALS IF MISSING (Assume if facilities exist but rentals don't, we
+                // seed rentals)
+                if (rentalRepository.count() == 0) {
+                    seedRentals(userRepository, facilityRepository, rentalRepository);
+                }
                 return; // Data already initialized
             }
 
             logger.info("Initializing sample data...");
-
-            // Encode passwords
-            org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder passwordEncoder = new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
 
             // =============================================================
             // OWNER USER (criado primeiro → tipicamente ID = 1)
@@ -263,8 +286,6 @@ public class DataInitializer {
 
             logger.info("Created 12 facilities total");
 
-            logger.info("Created 12 facilities total");
-
             // =============================================================
             // POPULATE EQUIPMENT FOR ALL FACILITIES
             // =============================================================
@@ -292,15 +313,82 @@ public class DataInitializer {
             // Save updates (owners)
             facilityRepository.saveAll(facilities);
 
-            logger.info("All sample facilities associated with data");
+            // =============================================================
+            // SEED RENTALS
+            // =============================================================
+            seedRentals(userRepository, facilityRepository, rentalRepository);
 
-            // Logs finais
             logger.info("Database initialized with sample data!");
             logger.info("   - 1 owner user created");
             logger.info("   - 1 renter test user created");
             logger.info("   - {} facilities created", facilities.size());
             logger.info("   - Equipment population complete");
+            logger.info("   - Rentals seeded");
         };
+    }
+
+    private void seedRentals(UserRepository userRepository, FacilityRepository facilityRepository,
+            tqs.sportslink.data.RentalRepository rentalRepository) {
+        User renter = userRepository.findByEmail("test@sportslink.com")
+                .orElse(userRepository.findAll().stream().filter(u -> u.getRoles().contains(Role.RENTER)).findFirst()
+                        .orElse(null));
+
+        List<Facility> facilities = facilityRepository.findAll();
+        if (renter == null || facilities.isEmpty())
+            return;
+
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+
+        // Sample rentals
+        createRental(renter, facilities.get(0), now.minusDays(5), now.minusDays(5).plusHours(1), "COMPLETED", 25.0,
+                rentalRepository);
+        createRental(renter, facilities.get(1), now.minusDays(2), now.minusDays(2).plusHours(2), "COMPLETED", 30.0,
+                rentalRepository);
+        createRental(renter, facilities.get(2), now.plusDays(1), now.plusDays(1).plusHours(1), "CONFIRMED", 20.0,
+                rentalRepository);
+        createRental(renter, facilities.get(1), now.plusDays(2), now.plusDays(2).plusHours(1), "PENDING", 15.0,
+                rentalRepository);
+        createRental(renter, facilities.get(3), now.minusDays(1), now.minusDays(1).plusHours(2), "CANCELLED", 60.0,
+                rentalRepository);
+        createRental(renter, facilities.get(4), now.plusDays(5), now.plusDays(5).plusHours(3), "CONFIRMED", 36.0,
+                rentalRepository);
+        createRental(renter, facilities.get(0), now.plusHours(2), now.plusHours(3), "CONFIRMED", 25.0,
+                rentalRepository);
+        createRental(renter, facilities.get(5), now.minusDays(10), now.minusDays(10).plusHours(1), "COMPLETED", 22.0,
+                rentalRepository);
+
+        // ===========================================================================================
+        // MASS BOOKINGS FOR OWNER FACILITY (To test Suggestions/Analytics)
+        // ===========================================================================================
+        Facility ownerFacility = facilities.get(0); // Facility 1 (Aveiro Football)
+        for (int i = 0; i < 50; i++) {
+            // Spread bookings: some past, some future
+            // Randomize days offset between -30 and +30
+            long daysOffset = (long) (Math.random() * 60) - 30;
+            int hour = 9 + (int) (Math.random() * 10); // 09:00 to 19:00
+
+            java.time.LocalDateTime start = now.plusDays(daysOffset).withHour(hour).withMinute(0).withSecond(0)
+                    .withNano(0);
+            java.time.LocalDateTime end = start.plusHours(1);
+
+            String status = "CONFIRMED";
+            if (daysOffset < 0)
+                status = "COMPLETED";
+
+            createRental(renter, ownerFacility, start, end, status, 25.0, rentalRepository);
+        }
+    }
+
+    private void createRental(User user, Facility facility, java.time.LocalDateTime start, java.time.LocalDateTime end,
+            String status, Double price, tqs.sportslink.data.RentalRepository repo) {
+        tqs.sportslink.data.model.Rental r = new tqs.sportslink.data.model.Rental();
+        r.setUser(user);
+        r.setFacility(facility);
+        r.setStartTime(start);
+        r.setEndTime(end);
+        r.setStatus(status);
+        r.setTotalPrice(price);
+        repo.save(r);
     }
 
     private void createEquipmentForFacility(Facility f, EquipmentRepository repo) {

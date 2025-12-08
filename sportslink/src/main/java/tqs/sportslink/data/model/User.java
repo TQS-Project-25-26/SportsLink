@@ -49,9 +49,11 @@ public class User {
     @Column(nullable = false)
     private Boolean active = true;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Rental> rentals = new ArrayList<>();
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
     private List<Facility> facilities = new ArrayList<>();
 
@@ -66,7 +68,8 @@ public class User {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
         if (roles == null || roles.isEmpty()) {
-            if (roles == null) roles = new java.util.HashSet<>();
+            if (roles == null)
+                roles = new java.util.HashSet<>();
             roles.add(Role.RENTER);
         }
     }

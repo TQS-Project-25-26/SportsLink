@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Suggested Activities - SportsLink</title>
+
+    <!-- Bootstrap + Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Shared CSS -->
+    <link href="../css/styles.css" rel="stylesheet">
+
+    <script>
+        // Check auth before loading
+        (function () {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/index.html';
+            }
+        })();
+    </script>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <div id="navbar-placeholder"></div>
+
+    <!-- MAIN CONTENT -->
+    <div class="container-fluid px-lg-5 py-5">
+
+        <div class="d-flex align-items-center mb-4 gap-3">
+            <button
+                class="btn btn-outline-secondary rounded-circle p-2 d-flex align-items-center justify-content-center"
+                onclick="window.location.href='owner_dashboard.html'" style="width: 40px; height: 40px;">
+                <i class="material-icons">arrow_back</i>
+            </button>
+            <div>
+                <h1 class="fw-bold mb-0">Suggested Activities</h1>
+                <p class="text-muted mb-0">Intelligent insights to improve your facilities</p>
+            </div>
+        </div>
+
+        <!-- SUGGESTIONS GRID -->
+        <div id="suggestions-grid" class="row g-4">
+            <!-- Loading State -->
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-accent" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3 text-muted">Analyzing your facilities...</p>
+            </div>
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div id="no-suggestions" class="text-center text-muted py-5" style="display: none;">
+            <i class="material-icons opacity-50" style="font-size: 4rem;">check_circle</i>
+            <p class="mt-3 fs-5">Great job! No urgent suggestions at the moment.</p>
+            <p>Your facilities are performing well.</p>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Auth helpers -->
+    <script src="../js/auth.js"></script>
+
+    <!-- Suggestions Script -->
+    <script src="../js/owner_suggestions.js"></script>
+
+    <!-- Navbar Component -->
+    <script src="../js/components/navbar.js"></script>
+
+</body>
+
+</html>

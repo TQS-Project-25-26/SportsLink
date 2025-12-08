@@ -1,0 +1,135 @@
+/* My Rentals Page Styles */
+
+/* Header Section */
+h1 {
+    font-weight: 700;
+}
+
+/* Tabs */
+.nav-tabs {
+    border-bottom: 2px solid #e9ecef;
+}
+
+.nav-link {
+    color: #6c757d;
+    font-weight: 500;
+    border: none;
+    padding: 1rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #0f172a;
+    border-color: transparent;
+}
+
+.nav-link.active {
+    color: #e63946; /* Accent color */
+    border-bottom: 2px solid #e63946;
+    background: transparent;
+}
+
+/* Rental Card */
+.rental-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.05);
+    background: #fff;
+    cursor: pointer;
+}
+
+.rental-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+}
+
+/* Status Badges */
+.badge-confirmed {
+    background-color: #d1fae5;
+    color: #065f46;
+    font-weight: 600;
+    padding: 0.5em 1em;
+    border-radius: 50px;
+}
+
+.badge-cancelled {
+    background-color: #fee2e2;
+    color: #991b1b;
+    font-weight: 600;
+    padding: 0.5em 1em;
+    border-radius: 50px;
+}
+
+.badge-past {
+    background-color: #f3f4f6;
+    color: #4b5563;
+    font-weight: 600;
+    padding: 0.5em 1em;
+    border-radius: 50px;
+}
+
+/* Card Content */
+.facility-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.rental-date {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+.rental-time {
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.rental-location {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.rental-price {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #e63946;
+}
+
+/* Loading State */
+.loading-container {
+    padding: 3rem;
+    text-align: center;
+    color: #6c757d;
+}
+
+/* Empty State */
+.empty-state {
+    padding: 3rem;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 12px;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: #adb5bd;
+    margin-bottom: 1rem;
+}
+
+/* Modal specific */
+.modal-content {
+    border-radius: 16px;
+    border: none;
+}
+
+.equipment-list-item {
+    font-size: 0.9rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.equipment-list-item:last-child {
+    border-bottom: none;
+}

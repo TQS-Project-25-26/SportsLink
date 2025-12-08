@@ -20,7 +20,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
-public class FunctionalSteps {
+public class SearchAndRentalSteps {
 
     @LocalServerPort
     private int port;
@@ -331,9 +331,9 @@ public class FunctionalSteps {
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("btn-confirm-booking")));
     }
 
-    @When("I fill the booking form with valid data")
-    public void fill_booking_form() {
-        // Select Date (pick the first non-disabled day, preferrably tomorrow)
+    @When("I fill the booking form with time {string} and duration {string} hours")
+    public void fill_booking_form_with_params(String timeStr, String durationStr) {
+        // Select Date (pick the first non-disabled day + 2 days to ensure future safely >24h)
         // Wait for calendar container
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("calendar-days")));
 
@@ -349,18 +349,20 @@ public class FunctionalSteps {
             days = driver.findElements(By.cssSelector(".calendar-day:not(.disabled)"));
         }
 
-        // Click the last available day using JS to avoid intersection issues
+        // Ideally we pick a day in the future.
+        // We select the LAST available day to maximize safety against backend "today" checks
         WebElement day = days.get(days.size() - 1);
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", day);
         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", day);
 
         // Set Start Time
         WebElement startTime = driver.findElement(By.id("start-time"));
-        startTime.sendKeys("14:00");
+        startTime.clear();
+        startTime.sendKeys(timeStr);
 
         // Select Duration
         WebElement duration = driver.findElement(By.id("duration"));
-        new Select(duration).selectByValue("2"); // Select 2 hours
+        new Select(duration).selectByValue(durationStr);
 
         driver.findElement(By.id("user-name")).clear();
         driver.findElement(By.id("user-name")).sendKeys("Test User");
@@ -370,6 +372,13 @@ public class FunctionalSteps {
 
         driver.findElement(By.id("user-phone")).clear();
         driver.findElement(By.id("user-phone")).sendKeys("987654321");
+    }
+
+    // Deprecated step (keeping but redirecting or failing if used without params in future)
+    @When("I fill the booking form with valid data")
+    public void fill_booking_form_deprecated() {
+        // Default behavior for legacy tests if any
+        fill_booking_form_with_params("10:00", "2");
     }
 
     @When("I confirm the booking")
@@ -385,18 +394,30 @@ public class FunctionalSteps {
 
     @Then("a booking confirmation modal should appear with an ID")
     public void booking_modal() {
-        WebElement modal = wait.until(
-                ExpectedConditions.visibilityOfElementLocated(By.id("successModal")));
-        String id = modal.findElement(By.id("booking-id")).getText().trim();
-        assertFalse(id.isBlank());
+        try {
+            WebElement modal = wait.until(
+                    ExpectedConditions.visibilityOfElementLocated(By.id("successModal")));
+            String id = modal.findElement(By.id("booking-id")).getText().trim();
+            assertFalse(id.isBlank());
+        } catch (org.openqa.selenium.TimeoutException e) {
+            // Check for error alert
+            String failureReason = "Modal not found.";
+            try {
+                // Check if browser alert is present
+                String alertText = driver.switchTo().alert().getText();
+                failureReason += " Browser Alert Present: " + alertText;
+                driver.switchTo().alert().accept();
+            } catch (Exception noAlert) {
+                // Check if in-page error is present (if any)
+                // booking.js uses alert() primarily, but maybe we can find something else
+            }
+            throw new RuntimeException("Test Failed: " + failureReason);
+        }
     }
 
     @Then("the booking should be stored in the system")
     public void the_booking_should_be_stored_in_the_system() {
-        // This step verifies that the booking was actually created in the backend
-        // For now, we just verify the modal appeared (already done above)
-        // In a real implementation, we could check the database or make an API call
-        // Since this is a functional test, the modal confirmation is sufficient
+         // Verified by modal
     }
 
     // ------------------------------

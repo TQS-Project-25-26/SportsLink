@@ -1,20 +1,10 @@
 ## Testes
 ## Unit (/unit):
-### Todo:
-- IntelligentEngine
-- 
+### Todo: 
 
-### Done: 
-- RentalService
-- FacilityService (+/-)
-- EquipmentService (+/-)
-- AuthenticationService
 
 ## Controller (/isolation/controller) -> Refactor
 ### Todo:
-- AuthController (++/-)
-- OwnerController
-- RestException
 - IntelligentEngineController
 
 ### Done:
@@ -25,3 +15,10 @@
 ### Todo:
 - AuthIntegrationTest
 - OwnerIntegrationTest
+
+## Funcionais
+### TODO:
+- Autenticação
+- Login
+- Criação de Campos
+- E perceção da sugestão de uma cena que o owner possa fazer 

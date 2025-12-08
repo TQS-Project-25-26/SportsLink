@@ -149,15 +149,7 @@ jobs:
               -Dsonar.organization=sportslink \
               -Dsonar.host.url=https://sonarcloud.io
 
-      - name: Package Application
-        run: mvn package -DskipTests -B
 
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-jar
-          path: sportslink/target/*.jar
-          retention-days: 1
 
 
   deploy-to-vm:
@@ -170,31 +162,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Download Build Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: app-jar
-          path: ./sportslink
-
       - name: Deploy with Docker Compose
         run: |
           cd sportslink
           
-          echo "Listing files before cleanup:"
-          ls -la
-          
-          # Force remove old jar to prevent "mv *.jar" from picking it up
-          rm -f app.jar
-          
-          # Rename downloaded artifact
-          # At this point, *.jar should only match the newly downloaded file
-          
-          # Rename downloaded artifact to match Dockerfile expectation
-          mv *.jar app.jar
-          
-          # Build and start containers
-          # -d: Detached mode
-          # --build: Rebuild images (important to update the app image)
+          # Force container recreation and build from source (Dockerfile)
           docker compose down
           docker compose up -d --build
           

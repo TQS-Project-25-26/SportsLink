@@ -1,10 +1,12 @@
-FROM eclipse-temurin:21-jdk-alpine
+FROM maven:3.9-eclipse-temurin-21
 
 WORKDIR /app
 
-# Copy the jar file (we assume it's placed here by the CI pipeline)
-COPY app.jar app.jar
+# Copy everything
+COPY . .
 
+# Expose your Spring Boot port
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Run Spring Boot using Maven
+CMD ["mvn", "spring-boot:run"]

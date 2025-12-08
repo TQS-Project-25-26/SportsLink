@@ -338,7 +338,7 @@ public class UnitRentalServiceTest {
         updateRequest.setUserId(1L);
         updateRequest.setFacilityId(1L);
         
-        LocalDateTime validStart = LocalDateTime.now().plusHours(30).withHour(15).withMinute(0);
+        LocalDateTime validStart = LocalDateTime.now().plusDays(2).withHour(15).withMinute(0);
         updateRequest.setStartTime(validStart);
         updateRequest.setEndTime(validStart.plusHours(1));
 

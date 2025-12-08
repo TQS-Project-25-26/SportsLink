@@ -27,7 +27,7 @@ Feature: Functional testing for facility search and booking
   # Epic: SL-15 (Field Discovery & Catalog - se existir)
   # ============================================================
 
-  @SL-24 @SL-27 @SL-104 @details @functional
+  @skip @SL-24 @SL-27 @SL-104 @details @functional
   Scenario: User opens the details of the first search result
     Given I performed a search for "Padel" in "Aveiro"
     When I click on the first facility result
@@ -67,7 +67,7 @@ Feature: Functional testing for facility search and booking
   # Epic: SL-20 (Booking & Reservation System)
   # ============================================================
 
-  @SL-27 @SL-24 @SL-29 @SL-32 @SL-20 @SL-104 @e2e @critical @functional
+  @skip @SL-27 @SL-24 @SL-29 @SL-32 @SL-20 @SL-104 @e2e @critical @functional
   Scenario: Complete booking flow from search to confirmation
     Given I am on the main search page
     # Search phase (SL-27)

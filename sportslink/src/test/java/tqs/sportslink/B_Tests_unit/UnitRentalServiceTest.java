@@ -319,7 +319,7 @@ public class UnitRentalServiceTest {
         updateRequest.setUserId(1L);
         updateRequest.setFacilityId(1L);
         // Valid future time (25h+) but outside operating hours (e.g. 02:00 AM)
-        LocalDateTime invalidTime = LocalDateTime.now().plusHours(30).withHour(2).withMinute(0);
+        LocalDateTime invalidTime = LocalDateTime.now().plusDays(2).withHour(2).withMinute(0);
         updateRequest.setStartTime(invalidTime);
         updateRequest.setEndTime(invalidTime.plusHours(2));
 

@@ -15,14 +15,14 @@ public class MinioStorageService implements StorageService {
 
     private final MinioClient minioClient;
     private final String bucketName;
-    private final String minioUrl;
+    private final String publicUrl;  // URL for browser access
 
     public MinioStorageService(
             MinioClient minioClient,
-            @Value("${minio.url}") String minioUrl,
+            @Value("${minio.public-url}") String publicUrl,
             @Value("${minio.bucket-name}") String bucketName) {
         this.minioClient = minioClient;
-        this.minioUrl = minioUrl;
+        this.publicUrl = publicUrl;
         this.bucketName = bucketName;
     }
 
@@ -40,8 +40,8 @@ public class MinioStorageService implements StorageService {
                             .contentType(file.getContentType())
                             .build());
 
-            // Construct public URL since we set download policy to anonymous
-            return minioUrl + "/" + bucketName + "/" + fileName;
+            // Use public URL for browser access
+            return publicUrl + "/" + bucketName + "/" + fileName;
 
         } catch (Exception e) {
             throw new RuntimeException("Error uploading file to MinIO", e);

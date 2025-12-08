@@ -13,6 +13,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 @EnableWebSecurity
@@ -51,11 +52,17 @@ public class SecurityConfig {
                 .requestMatchers("/pages/**").permitAll()
                 
                 // API de rentals - pública para leitura
-                .requestMatchers("GET", "/api/rentals/**").permitAll()
-                .requestMatchers("POST", "/api/rentals/**").authenticated()  // criar/atualizar requer auth
+                .requestMatchers(HttpMethod.GET, "/api/rentals/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/rentals/**").authenticated()  // criar/atualizar requer auth
                 
                 // Auth - público (login, register, logout)
                 .requestMatchers("/api/auth/**").permitAll()
+                
+                // Suggestions - público (sugestões personalizadas)
+                .requestMatchers("/api/suggestions/**").permitAll()
+                
+                // Error page - permitir acesso para mostrar erros corretamente
+                .requestMatchers("/error").permitAll()
                 
                 // Owner endpoints - requerem autenticação
                 .requestMatchers("/api/owner/**").authenticated()

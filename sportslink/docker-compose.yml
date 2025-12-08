@@ -1,4 +1,18 @@
 services:
+  app:
+    build: .
+    container_name: sportslink-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/sportslink_test
+      SPRING_DATASOURCE_USERNAME: sportslink
+      SPRING_DATASOURCE_PASSWORD: sportslink
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      - postgres
+    restart: always
+
   postgres:
     image: postgres:16-alpine
     container_name: sportslink-postgres

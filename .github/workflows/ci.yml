@@ -142,3 +142,42 @@ jobs:
               -Dsonar.projectKey=TQS-Project-25-26_SportsLink \
               -Dsonar.organization=sportslink \
               -Dsonar.host.url=https://sonarcloud.io
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: sportslink/target/*.jar
+          retention-days: 1
+
+
+  deploy-to-vm:
+    name: Deploy to VM
+    needs: test-and-analyze
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: self-hosted
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-jar
+          path: ./sportslink
+
+      - name: Deploy with Docker Compose
+        run: |
+          cd sportslink
+          
+          # Rename downloaded artifact to match Dockerfile expectation
+          mv *.jar app.jar
+          
+          # Build and start containers
+          # -d: Detached mode
+          # --build: Rebuild images (important to update the app image)
+          docker-compose up -d --build
+          
+          # Prune unused images to save space
+          docker image prune -f

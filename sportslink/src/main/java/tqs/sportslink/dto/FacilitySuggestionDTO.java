@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 public class FacilitySuggestionDTO {
     private Long facilityId;
     private String name;
+    private String imageUrl;
     private String address;
     private String city;
     private Double pricePerHour;

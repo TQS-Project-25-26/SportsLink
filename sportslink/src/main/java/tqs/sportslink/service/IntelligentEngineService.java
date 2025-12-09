@@ -213,6 +213,7 @@ public class IntelligentEngineService {
                 .map(f -> new FacilitySuggestionDTO(
                         f.getId(),
                         f.getName(),
+                        f.getImageUrl(),
                         f.getAddress(),
                         f.getCity(),
                         f.getPricePerHour(),
@@ -256,6 +257,7 @@ public class IntelligentEngineService {
         return new FacilitySuggestionDTO(
                 facility.getId(),
                 facility.getName(),
+                facility.getImageUrl(),
                 facility.getAddress(),
                 facility.getCity(),
                 facility.getPricePerHour(),

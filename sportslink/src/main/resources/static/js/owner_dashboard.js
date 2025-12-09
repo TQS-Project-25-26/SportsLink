@@ -353,7 +353,7 @@ function openAddModal() {
 
     const modalElement = document.getElementById("addFacilityModal");
     if (!modalElement) return;
-    const modal = new bootstrap.Modal(modalElement);
+    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
     modal.show();
 }
 

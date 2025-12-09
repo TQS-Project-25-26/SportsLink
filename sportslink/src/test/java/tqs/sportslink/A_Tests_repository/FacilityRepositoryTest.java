@@ -8,7 +8,6 @@ import tqs.sportslink.data.model.Facility;
 import tqs.sportslink.data.model.Sport;
 import tqs.sportslink.data.model.User;
 import tqs.sportslink.data.FacilityRepository;
-import tqs.sportslink.data.UserRepository;
 
 import java.time.LocalTime;
 import java.util.List;

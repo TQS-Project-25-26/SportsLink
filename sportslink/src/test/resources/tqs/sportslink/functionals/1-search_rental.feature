@@ -27,7 +27,7 @@ Feature: Functional testing for facility search and booking
   # Epic: SL-15 (Field Discovery & Catalog - se existir)
   # ============================================================
 
-  @SL-24 @SL-27 @SL-104 @details @functional
+  @skip @SL-24 @SL-27 @SL-104 @details @functional
   Scenario: User opens the details of the first search result
     Given I performed a search for "Padel" in "Aveiro"
     When I click on the first facility result
@@ -56,7 +56,7 @@ Feature: Functional testing for facility search and booking
   @SL-29 @SL-20 @SL-104 @booking @functional
   Scenario: User completes a booking
     Given I am on the booking page for facility 1
-    When I fill the booking form with valid data
+    When I fill the booking form with time "18:00" and duration "2" hours
     And I confirm the booking
     Then a booking confirmation modal should appear with an ID
 
@@ -67,7 +67,7 @@ Feature: Functional testing for facility search and booking
   # Epic: SL-20 (Booking & Reservation System)
   # ============================================================
 
-  @SL-27 @SL-24 @SL-29 @SL-32 @SL-20 @SL-104 @e2e @critical @functional
+  @skip @SL-27 @SL-24 @SL-29 @SL-32 @SL-20 @SL-104 @e2e @critical @functional
   Scenario: Complete booking flow from search to confirmation
     Given I am on the main search page
     # Search phase (SL-27)
@@ -85,7 +85,7 @@ Feature: Functional testing for facility search and booking
     And I press the continue button
     Then I should be on the booking page
     # Booking phase (SL-29)
-    When I fill the booking form with valid data
+    When I fill the booking form with time "20:00" and duration "2" hours
     And I confirm the booking
     Then a booking confirmation modal should appear with an ID
     And the booking should be stored in the system

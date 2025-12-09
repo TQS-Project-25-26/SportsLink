@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(RenterController.class)
 @Import(TestSecurityConfig.class)
 @ActiveProfiles("test")
-public class RenterControllerTest {
+class RenterControllerTest {
 
     @Autowired
     private MockMvc mockMvc;

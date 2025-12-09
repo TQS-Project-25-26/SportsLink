@@ -26,7 +26,6 @@ import tqs.sportslink.service.OwnerService;
 
 @RestController
 @RequestMapping("/api/owner")
-@PreAuthorize("hasRole('OWNER')")
 public class OwnerController {
 
     private final OwnerService ownerService;
@@ -69,6 +68,7 @@ public class OwnerController {
     // ============================
 
     @PostMapping(value = "/{ownerId}/facilities", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('OWNER')")
     public ResponseEntity<FacilityResponseDTO> createFacility(
             @PathVariable Long ownerId,
             @org.springframework.web.bind.annotation.RequestPart("facility") FacilityRequestDTO request,
@@ -78,6 +78,7 @@ public class OwnerController {
     }
 
     @GetMapping("/{ownerId}/facilities")
+    @PreAuthorize("hasRole('OWNER')")
     public ResponseEntity<List<FacilityResponseDTO>> getOwnerFacilities(
             @PathVariable Long ownerId) {
         validateOwnerId(ownerId);
@@ -85,6 +86,7 @@ public class OwnerController {
     }
 
     @PutMapping("/{ownerId}/facilities/{facilityId}")
+    @PreAuthorize("hasRole('OWNER')")
     public ResponseEntity<FacilityResponseDTO> updateFacility(
             @PathVariable Long ownerId,
             @PathVariable Long facilityId,
@@ -94,6 +96,7 @@ public class OwnerController {
     }
 
     @DeleteMapping("/{ownerId}/facilities/{facilityId}")
+    @PreAuthorize("hasRole('OWNER')")
     public ResponseEntity<Void> deleteFacility(
             @PathVariable Long ownerId,
             @PathVariable Long facilityId) {
@@ -107,6 +110,7 @@ public class OwnerController {
     // ============================
 
     @PostMapping("/{ownerId}/facilities/{facilityId}/equipment")
+    @PreAuthorize("hasRole('OWNER')")
     public ResponseEntity<EquipmentResponseDTO> addEquipment(
             @PathVariable Long ownerId,
             @PathVariable Long facilityId,
@@ -116,6 +120,7 @@ public class OwnerController {
     }
 
     @GetMapping("/{ownerId}/facilities/{facilityId}/equipment")
+    @PreAuthorize("hasRole('OWNER')")
     public ResponseEntity<List<EquipmentResponseDTO>> listEquipment(
             @PathVariable Long ownerId,
             @PathVariable Long facilityId) {
@@ -124,6 +129,7 @@ public class OwnerController {
     }
 
     @PutMapping("/{ownerId}/equipment/{equipmentId}")
+    @PreAuthorize("hasRole('OWNER')")
     public ResponseEntity<EquipmentResponseDTO> updateEquipment(
             @PathVariable Long ownerId,
             @PathVariable Long equipmentId,

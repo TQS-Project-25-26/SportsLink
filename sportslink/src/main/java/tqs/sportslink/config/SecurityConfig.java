@@ -13,6 +13,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 @EnableWebSecurity
@@ -24,7 +25,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         // Usar padrões de origem em vez de "*" quando allowCredentials é true
-        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:*", "http://127.0.0.1:*"));
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
@@ -42,20 +43,26 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authz -> authz
                 // Recursos estáticos - permitir acesso público
-                .requestMatchers("/", "/index.html", "/css/**", "/js/**").permitAll()
+                .requestMatchers("/", "/index.html", "/css/**", "/js/**", "/favicon.ico", "/images/**").permitAll()
                 
                 // Páginas de autenticação - públicas (login, register)
                 .requestMatchers("/pages/register.html").permitAll()
                 
-                // Outras páginas HTML - requerem autenticação
-                .requestMatchers("/pages/**").authenticated()
+                // Páginas HTML - permitir carregamento (segurança feita na API e JS)
+                .requestMatchers("/pages/**").permitAll()
                 
                 // API de rentals - pública para leitura
-                .requestMatchers("GET", "/api/rentals/**").permitAll()
-                .requestMatchers("POST", "/api/rentals/**").authenticated()  // criar/atualizar requer auth
+                .requestMatchers(HttpMethod.GET, "/api/rentals/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/rentals/**").authenticated()  // criar/atualizar requer auth
                 
                 // Auth - público (login, register, logout)
                 .requestMatchers("/api/auth/**").permitAll()
+                
+                // Suggestions - público (sugestões personalizadas)
+                .requestMatchers("/api/suggestions/**").permitAll()
+                
+                // Error page - permitir acesso para mostrar erros corretamente
+                .requestMatchers("/error").permitAll()
                 
                 // Owner endpoints - requerem autenticação
                 .requestMatchers("/api/owner/**").authenticated()

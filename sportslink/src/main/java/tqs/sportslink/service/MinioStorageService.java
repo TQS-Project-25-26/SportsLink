@@ -1,30 +1,28 @@
 package tqs.sportslink.service;
 
-import io.minio.GetPresignedObjectUrlArgs;
+
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
-import io.minio.http.Method;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class MinioStorageService implements StorageService {
 
     private final MinioClient minioClient;
     private final String bucketName;
-    private final String minioUrl;
+    private final String publicUrl;  // URL for browser access
 
     public MinioStorageService(
             MinioClient minioClient,
-            @Value("${minio.url}") String minioUrl,
+            @Value("${minio.public-url}") String publicUrl,
             @Value("${minio.bucket-name}") String bucketName) {
         this.minioClient = minioClient;
-        this.minioUrl = minioUrl;
+        this.publicUrl = publicUrl;
         this.bucketName = bucketName;
     }
 
@@ -42,8 +40,8 @@ public class MinioStorageService implements StorageService {
                             .contentType(file.getContentType())
                             .build());
 
-            // Construct public URL since we set download policy to anonymous
-            return minioUrl + "/" + bucketName + "/" + fileName;
+            // Use public URL for browser access
+            return publicUrl + "/" + bucketName + "/" + fileName;
 
         } catch (Exception e) {
             throw new RuntimeException("Error uploading file to MinIO", e);

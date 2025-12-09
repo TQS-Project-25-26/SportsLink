@@ -11,20 +11,7 @@ jobs:
     name: Build, Test and Analyze
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_DB: sportslink_test
-          POSTGRES_USER: sportslink
-          POSTGRES_PASSWORD: sportslink
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U sportslink -d sportslink_test"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+
 
 
     defaults:
@@ -71,21 +58,39 @@ jobs:
       - name: Compile project
         run: mvn clean compile -B
 
-      - name: Run Unit Tests (Repository & Service layer)
+
+      - name: Run Unit Tests (Repository layer)
         run: |
           echo "========================================="
           echo "Running Unit Tests (DataJpaTest, Service)"
           echo "========================================="
-          mvn test -Dtest=**/unit/*Test -B
+          mvn test -Dtest=**/A_Tests_repository/*Test -B
+        continue-on-error: true
+
+      - name: Run Unit Tests (Service layer)
+        run: |
+          echo "========================================="
+          echo "Running Unit Tests (Service)"
+          echo "========================================="
+          mvn test -Dtest=**/B_Tests_unit/*Test -B
         continue-on-error: true
 
 
-      - name: Run Integration Tests (API with MockMvc/RestAssured)
+      - name: Run Controller Tests (With MockMvc)
+        run: |
+          echo "========================================="
+          echo "Running Controller Tests (With MockMvc)"
+          echo "========================================="
+          mvn test -Dtest=**/C_Tests_controller/*Test -B
+        continue-on-error: true
+
+
+      - name: Run Integration Tests (API with RestAssured)
         run: |
           echo "========================================="
           echo "Running Integration Tests (API)"
           echo "========================================="
-          mvn test -Dtest=**/integration/*Test -B
+          mvn test -Dtest=**/D_Tests_integration/*Test -B
         continue-on-error: true
 
 
@@ -96,6 +101,7 @@ jobs:
           echo "========================================="
           mvn test -Dtest=RunCucumberTest -B
         continue-on-error: true
+
 
       - name: Display test results summary
         if: always()
@@ -142,3 +148,27 @@ jobs:
               -Dsonar.projectKey=TQS-Project-25-26_SportsLink \
               -Dsonar.organization=sportslink \
               -Dsonar.host.url=https://sonarcloud.io
+
+
+
+
+  deploy-to-vm:
+    name: Deploy to VM
+    needs: test-and-analyze
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: self-hosted
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy with Docker Compose
+        run: |
+          cd sportslink
+          
+          # Force container recreation and build from source (Dockerfile)
+          docker compose down
+          docker compose up -d --build
+          
+          # Prune unused images to save space
+          docker image prune -f

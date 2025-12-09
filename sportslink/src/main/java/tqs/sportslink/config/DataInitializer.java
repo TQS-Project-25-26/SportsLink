@@ -25,8 +25,8 @@ public class DataInitializer {
 
     private static final String STATUS_ACTIVE = "ACTIVE";
     private static final String STATUS_AVAILABLE = "AVAILABLE";
-    private static final String STATUS_UNAVAILABLE = "UNAVAILABLE";
     private static final String CITY_AVEIRO = "Aveiro";
+    private static final String OWNER_EMAIL = "owner@sportslink.com";
 
     @Bean
     CommandLineRunner initDatabase(FacilityRepository facilityRepository,
@@ -58,47 +58,41 @@ public class DataInitializer {
             logger.info("Current facility count: {}", count);
 
             if (count > 0) {
-                logger.info("Database already has {} facilities", count);
-                // List facilities for debugging
-                facilityRepository.findAll()
-                        .forEach(f -> logger.info("  - {} ({} in {})", f.getName(), f.getSports(), f.getCity()));
-
-                // SEED RENTALS IF MISSING (Assume if facilities exist but rentals don't, we
-                // seed rentals)
-                if (rentalRepository.count() == 0) {
-                    seedRentals(userRepository, facilityRepository, rentalRepository);
-                }
-                return; // Data already initialized
-            }
+                logger.info("Database already has {} facilities. Skipping facility creation.", count);
+            } else {
 
             logger.info("Initializing sample data...");
 
             // =============================================================
             // OWNER USER (criado primeiro → tipicamente ID = 1)
             // =============================================================
-            User ownerUser = new User();
-            ownerUser.setEmail("owner@sportslink.com");
-            ownerUser.setPassword(passwordEncoder.encode("password123")); // Encoded password
-            ownerUser.setName("Owner User");
-            ownerUser.setPhone("911111111");
-            ownerUser.getRoles().add(Role.OWNER);
-            ownerUser.getRoles().add(Role.RENTER);
-            ownerUser.setActive(true);
-            userRepository.save(ownerUser);
-            logger.info("Owner user created: owner@sportslink.com / password123 (id={})", ownerUser.getId());
+            if (userRepository.findByEmail(OWNER_EMAIL).isEmpty()) {
+                User ownerUser = new User();
+                ownerUser.setEmail(OWNER_EMAIL);
+                ownerUser.setPassword(passwordEncoder.encode("password123")); // Encoded password
+                ownerUser.setName("Owner User");
+                ownerUser.setPhone("911111111");
+                ownerUser.getRoles().add(Role.OWNER);
+                ownerUser.getRoles().add(Role.RENTER);
+                ownerUser.setActive(true);
+                userRepository.save(ownerUser);
+                logger.info("Owner user created: {} / password123 (id={})", OWNER_EMAIL, ownerUser.getId());
+            }
 
-            // Create test user for functional tests (como tinhas)
-            User testUser = new User();
-            testUser.setEmail("test@sportslink.com");
-            testUser.setPassword(passwordEncoder.encode("password123")); // Encoded password
-            testUser.setName("Test User");
-            testUser.setPhone("912345678");
-            testUser.getRoles().add(Role.RENTER);
-            testUser.setActive(true);
-            testUser.setLatitude(40.6443);
-            testUser.setLongitude(-8.6455);
-            userRepository.save(testUser);
-            logger.info("Test user created: test@sportslink.com / password123 (id={})", testUser.getId());
+            if (userRepository.findByEmail("test@sportslink.com").isEmpty()) {
+                User testUser = new User();
+                testUser.setEmail("test@sportslink.com");
+                testUser.setPassword(passwordEncoder.encode("password123")); // Encoded password
+                testUser.setName("Test User");
+                testUser.setPhone("912345678");
+                testUser.getRoles().add(Role.RENTER);
+                testUser.setActive(true);
+                testUser.setLatitude(40.6443);
+                testUser.setLongitude(-8.6455);
+                userRepository.save(testUser);
+                logger.info("Test user created: test@sportslink.com / password123 (id={})", testUser.getId());
+            }
+            // Test user creation handled above
 
             // Create sample facilities
             Facility facility1 = new Facility();
@@ -190,7 +184,7 @@ public class DataInitializer {
             facility6.setLatitude(40.6380);
             facility6.setLongitude(-8.6420);
             facility6.setRating(4.6);
-            facility6.setOwner(ownerUser);
+            facility6.setOwner(userRepository.findByEmail(OWNER_EMAIL).get());
             facilityRepository.save(facility6);
 
             Facility facility7 = new Facility();
@@ -251,7 +245,7 @@ public class DataInitializer {
             facility10.setLatitude(41.5454);
             facility10.setLongitude(-8.4265);
             facility10.setRating(4.7);
-            facility10.setOwner(ownerUser);
+            facility10.setOwner(userRepository.findByEmail(OWNER_EMAIL).get());
             facilityRepository.save(facility10);
 
             Facility facility11 = new Facility();
@@ -284,25 +278,7 @@ public class DataInitializer {
             facility12.setRating(4.5);
             facilityRepository.save(facility12);
 
-            // Facility specifically for Delete test
-            Facility facilityToDelete = new Facility();
-            facilityToDelete.setName("To Be Deleted Facility");
-            facilityToDelete.setSports(List.of(Sport.FOOTBALL)); // Arbitrary sport
-            facilityToDelete.setCity(CITY_AVEIRO);
-            facilityToDelete.setAddress("Delete Street");
-            facilityToDelete.setDescription("This facility should be deleted by tests");
-            facilityToDelete.setPricePerHour(10.0);
-            facilityToDelete.setOpeningTime(LocalTime.parse("09:00"));
-            facilityToDelete.setClosingTime(LocalTime.parse("18:00"));
-            facilityToDelete.setStatus(STATUS_ACTIVE);
-            facilityToDelete.setLatitude(0.0);
-            facilityToDelete.setLongitude(0.0);
-            facilityToDelete.setOwner(ownerUser); // Ensure it has an owner so it shows up in lists if filtered by
-                                                  // owner?
-            // Admin sees all? Admin likely sees all. But owner field is good practice.
-            facilityRepository.save(facilityToDelete);
-
-            logger.info("Created 13 facilities total");
+            logger.info("Created 12 facilities total");
 
             // =============================================================
             // POPULATE EQUIPMENT FOR ALL FACILITIES
@@ -318,13 +294,16 @@ public class DataInitializer {
             // =============================================================
             // ASSOCIAR TODAS AS FACILITIES AO OWNER
             // =============================================================
-            facility1.setOwner(ownerUser);
-            facility2.setOwner(ownerUser);
-            facility3.setOwner(ownerUser);
-            facility4.setOwner(ownerUser);
-            facility5.setOwner(ownerUser);
-            facility10.setOwner(ownerUser); // facility6 already set above
-            facility6.setOwner(ownerUser); // ensure consistency
+            User currentOwner = userRepository.findByEmail(OWNER_EMAIL).orElse(null);
+            if (currentOwner != null) {
+                facility1.setOwner(currentOwner);
+                facility2.setOwner(currentOwner);            
+                facility3.setOwner(currentOwner);
+                facility4.setOwner(currentOwner);
+                facility5.setOwner(currentOwner);
+                facility10.setOwner(currentOwner); 
+                facility6.setOwner(currentOwner); 
+            }
             // Note: others might be null or set later, but requirement was just to ensure
             // they exist
 
@@ -341,7 +320,7 @@ public class DataInitializer {
             logger.info("   - 1 renter test user created");
             logger.info("   - {} facilities created", facilities.size());
             logger.info("   - Equipment population complete");
-            logger.info("   - Rentals seeded");
+            } // End else facilities check
         };
     }
 

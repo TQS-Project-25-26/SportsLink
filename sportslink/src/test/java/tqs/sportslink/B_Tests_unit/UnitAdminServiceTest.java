@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 
 @ExtendWith(MockitoExtension.class)
 class UnitAdminServiceTest {

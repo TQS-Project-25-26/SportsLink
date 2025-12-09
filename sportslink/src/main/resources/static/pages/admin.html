@@ -7,6 +7,31 @@
     <title>SportsLink - Admin Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="/css/admin.css">
+
+    <!-- Pagination small CSS -->
+    <style>
+        /* Permite tabela + paginação ficarem alinhadas verticalmente */
+        .table-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pagination-controls {
+            margin-top: 1.25rem;        /* mais espaço em cima */
+            padding-bottom: 0.75rem;    /* mais espaço em baixo */
+            display: flex;
+            gap: 0.75rem;               /* mais espaçamento entre botões */
+            align-items: center;
+            justify-content: center;    /* centra a paginação */
+            font-size: 0.9rem;
+            width: 100%;
+        }
+
+        .pagination-controls .pagination-info {
+            color: #64748b;
+            margin: 0 0.5rem;
+        }
+    </style>
 </head>
 
 <body>
@@ -78,6 +103,7 @@
                         </tr>
                     </tbody>
                 </table>
+                <div id="users-pagination" class="pagination-controls"></div>
             </div>
         </section>
 
@@ -100,8 +126,10 @@
                         </tr>
                     </tbody>
                 </table>
+                <div id="facilities-pagination" class="pagination-controls"></div>
             </div>
         </section>
+
 
         <!-- Monitoring Section -->
         <section id="view-monitoring" class="view-section">
@@ -140,8 +168,10 @@
                         </tr>
                     </tbody>
                 </table>
+                <div id="rentals-pagination" class="pagination-controls"></div>
             </div>
         </section>
+
         <!-- Stats Section -->
         <section id="view-stats" class="view-section">
             <h2>Usage Statistics</h2>
@@ -181,6 +211,20 @@
         let sportChart = null;
         let statusChart = null;
 
+        // Pagination state
+        const USERS_PAGE_SIZE = 5;
+        const FACILITIES_PAGE_SIZE = 10;
+        const RENTALS_PAGE_SIZE = 10;
+
+        let usersData = [];
+        let usersPage = 1;
+
+        let facilitiesData = [];
+        let facilitiesPage = 1;
+
+        let rentalsData = [];
+        let rentalsPage = 1;
+
         // Auth Check
         if (!token) {
             window.location.href = '/index.html';
@@ -216,35 +260,85 @@
             if (tab === 'stats') loadStats();
         }
 
+        // -------- Users --------
         async function loadUsers() {
             try {
                 const res = await fetch(`${API_BASE}/users`, { headers });
                 if (!res.ok) throw new Error('Failed to load users');
-                const users = await res.json();
-
-                const tbody = document.getElementById('users-table-body');
-                tbody.innerHTML = users.map(user => `
-                    <tr>
-                        <td>#${user.id}</td>
-                        <td>${user.name}</td>
-                        <td>${user.email}</td>
-                        <td>${user.roles.map(r => `<span class="badge badge-info">${r}</span>`).join(' ')}</td>
-                        <td>
-                            <span class="badge ${user.active ? 'badge-success' : 'badge-danger'}">
-                                ${user.active ? 'Active' : 'Inactive'}
-                            </span>
-                        </td>
-                        <td>
-                            <button onclick="viewUser(${user.id})" class="btn btn-secondary btn-sm" style="margin-right: 5px;">View</button>
-                            <button onclick="toggleUserStatus(${user.id}, ${!user.active})" class="btn btn-sm ${user.active ? 'btn-danger' : 'btn-primary'}">
-                                ${user.active ? 'Ban' : 'Unban'}
-                            </button>
-                        </td>
-                    </tr>
-                `).join('');
+                usersData = await res.json();
+                usersPage = 1;
+                renderUsersTable();
             } catch (err) {
                 console.error(err);
             }
+        }
+
+        function renderUsersTable() {
+            const tbody = document.getElementById('users-table-body');
+
+            if (!usersData || usersData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="loading">No users found.</td></tr>`;
+                document.getElementById('users-pagination').innerHTML = '';
+                return;
+            }
+
+            const totalPages = Math.ceil(usersData.length / USERS_PAGE_SIZE);
+            if (usersPage > totalPages) usersPage = totalPages;
+
+            const start = (usersPage - 1) * USERS_PAGE_SIZE;
+            const end = start + USERS_PAGE_SIZE;
+            const pageItems = usersData.slice(start, end);
+
+            tbody.innerHTML = pageItems.map(user => `
+                <tr>
+                    <td>#${user.id}</td>
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>${user.roles.map(r => `<span class="badge badge-info">${r}</span>`).join(' ')}</td>
+                    <td>
+                        <span class="badge ${user.active ? 'badge-success' : 'badge-danger'}">
+                            ${user.active ? 'Active' : 'Inactive'}
+                        </span>
+                    </td>
+                    <td>
+                        <button onclick="viewUser(${user.id})" class="btn btn-secondary btn-sm" style="margin-right: 5px;">View</button>
+                        <button onclick="toggleUserStatus(${user.id}, ${!user.active})" class="btn btn-sm ${user.active ? 'btn-danger' : 'btn-primary'}">
+                            ${user.active ? 'Ban' : 'Unban'}
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+
+            renderUsersPagination(totalPages);
+        }
+
+        function renderUsersPagination(totalPages) {
+            const container = document.getElementById('users-pagination');
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = `
+                <button class="btn btn-secondary btn-sm"
+                        onclick="changeUsersPage(${usersPage - 1})"
+                        ${usersPage === 1 ? 'disabled' : ''}>
+                    Previous
+                </button>
+                <span class="pagination-info">Page ${usersPage} of ${totalPages}</span>
+                <button class="btn btn-secondary btn-sm"
+                        onclick="changeUsersPage(${usersPage + 1})"
+                        ${usersPage === totalPages ? 'disabled' : ''}>
+                    Next
+                </button>
+            `;
+        }
+
+        function changeUsersPage(page) {
+            const totalPages = Math.ceil(usersData.length / USERS_PAGE_SIZE);
+            if (page < 1 || page > totalPages) return;
+            usersPage = page;
+            renderUsersTable();
         }
 
         async function viewUser(id) {
@@ -281,27 +375,77 @@
             }
         }
 
+        // -------- Facilities --------
         async function loadFacilities() {
             try {
                 const res = await fetch(`${API_BASE}/facilities`, { headers });
-                const facilities = await res.json();
-
-                const tbody = document.getElementById('facilities-table-body');
-                tbody.innerHTML = facilities.map(f => `
-                    <tr>
-                        <td>#${f.id}</td>
-                        <td>${f.name}</td>
-                        <td>${f.owner ? f.owner.name : 'Unknown'}</td>
-                        <td>${f.address}</td>
-                        <td>
-                            <button onclick="viewFacility(${f.id})" class="btn btn-secondary btn-sm" style="margin-right: 5px;">View</button>
-                            <button onclick="deleteFacility(${f.id})" class="btn btn-danger btn-sm">Delete</button>
-                        </td>
-                    </tr>
-                `).join('');
+                facilitiesData = await res.json();
+                facilitiesPage = 1;
+                renderFacilitiesTable();
             } catch (err) {
                 console.error(err);
             }
+        }
+
+        function renderFacilitiesTable() {
+            const tbody = document.getElementById('facilities-table-body');
+
+            if (!facilitiesData || facilitiesData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="loading">No facilities found.</td></tr>`;
+                document.getElementById('facilities-pagination').innerHTML = '';
+                return;
+            }
+
+            const totalPages = Math.ceil(facilitiesData.length / FACILITIES_PAGE_SIZE);
+            if (facilitiesPage > totalPages) facilitiesPage = totalPages;
+
+            const start = (facilitiesPage - 1) * FACILITIES_PAGE_SIZE;
+            const end = start + FACILITIES_PAGE_SIZE;
+            const pageItems = facilitiesData.slice(start, end);
+
+            tbody.innerHTML = pageItems.map(f => `
+                <tr>
+                    <td>#${f.id}</td>
+                    <td>${f.name}</td>
+                    <td>${f.owner ? f.owner.name : 'Unknown'}</td>
+                    <td>${f.address}</td>
+                    <td>
+                        <button onclick="viewFacility(${f.id})" class="btn btn-secondary btn-sm" style="margin-right: 5px;">View</button>
+                        <button onclick="deleteFacility(${f.id})" class="btn btn-danger btn-sm">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            renderFacilitiesPagination(totalPages);
+        }
+
+        function renderFacilitiesPagination(totalPages) {
+            const container = document.getElementById('facilities-pagination');
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = `
+                <button class="btn btn-secondary btn-sm"
+                        onclick="changeFacilitiesPage(${facilitiesPage - 1})"
+                        ${facilitiesPage === 1 ? 'disabled' : ''}>
+                    Previous
+                </button>
+                <span class="pagination-info">Page ${facilitiesPage} of ${totalPages}</span>
+                <button class="btn btn-secondary btn-sm"
+                        onclick="changeFacilitiesPage(${facilitiesPage + 1})"
+                        ${facilitiesPage === totalPages ? 'disabled' : ''}>
+                    Next
+                </button>
+            `;
+        }
+
+        function changeFacilitiesPage(page) {
+            const totalPages = Math.ceil(facilitiesData.length / FACILITIES_PAGE_SIZE);
+            if (page < 1 || page > totalPages) return;
+            facilitiesPage = page;
+            renderFacilitiesTable();
         }
 
         async function viewFacility(id) {
@@ -354,6 +498,7 @@
             }
         }
 
+        // -------- Monitoring / Rentals --------
         async function loadMonitoring() {
             try {
                 // Stats
@@ -365,30 +510,79 @@
 
                 // Rentals
                 const rentalsRes = await fetch(`${API_BASE}/rentals`, { headers });
-                const rentals = await rentalsRes.json();
+                rentalsData = await rentalsRes.json();
 
-                const tbody = document.getElementById('rentals-table-body');
                 // Sorting rentals by date descending for better visibility
-                rentals.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
-
-                tbody.innerHTML = rentals.slice(0, 10).map(r => `
-                    <tr>
-                        <td>#${r.id}</td>
-                        <td>${r.user ? r.user.name : 'Unknown'}</td>
-                        <td>${r.facility ? r.facility.name : 'Unknown'}</td>
-                        <td>${new Date(r.startTime).toLocaleDateString()}</td>
-                        <td><span class="badge ${getStatusBadge(r.status)}">${r.status}</span></td>
-                        <td>${formatPrice(r.totalPrice)}</td>
-                        <td>
-                            ${r.status === 'CONFIRMED' ?
-                        `<button onclick="cancelRental(${r.id})" class="btn btn-danger btn-sm">Cancel</button>` :
-                        '<span class="text-muted">-</span>'}
-                        </td>
-                    </tr>
-                `).join('');
+                rentalsData.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+                rentalsPage = 1;
+                renderRentalsTable();
             } catch (err) {
                 console.error(err);
             }
+        }
+
+        function renderRentalsTable() {
+            const tbody = document.getElementById('rentals-table-body');
+
+            if (!rentalsData || rentalsData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="loading">No rentals found.</td></tr>`;
+                document.getElementById('rentals-pagination').innerHTML = '';
+                return;
+            }
+
+            const totalPages = Math.ceil(rentalsData.length / RENTALS_PAGE_SIZE);
+            if (rentalsPage > totalPages) rentalsPage = totalPages;
+
+            const start = (rentalsPage - 1) * RENTALS_PAGE_SIZE;
+            const end = start + RENTALS_PAGE_SIZE;
+            const pageItems = rentalsData.slice(start, end);
+
+            tbody.innerHTML = pageItems.map(r => `
+                <tr>
+                    <td>#${r.id}</td>
+                    <td>${r.user ? r.user.name : 'Unknown'}</td>
+                    <td>${r.facility ? r.facility.name : 'Unknown'}</td>
+                    <td>${new Date(r.startTime).toLocaleDateString()}</td>
+                    <td><span class="badge ${getStatusBadge(r.status)}">${r.status}</span></td>
+                    <td>${formatPrice(r.totalPrice)}</td>
+                    <td>
+                        ${r.status === 'CONFIRMED'
+                            ? `<button onclick="cancelRental(${r.id})" class="btn btn-danger btn-sm">Cancel</button>`
+                            : '<span class="text-muted">-</span>'}
+                    </td>
+                </tr>
+            `).join('');
+
+            renderRentalsPagination(totalPages);
+        }
+
+        function renderRentalsPagination(totalPages) {
+            const container = document.getElementById('rentals-pagination');
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = `
+                <button class="btn btn-secondary btn-sm"
+                        onclick="changeRentalsPage(${rentalsPage - 1})"
+                        ${rentalsPage === 1 ? 'disabled' : ''}>
+                    Previous
+                </button>
+                <span class="pagination-info">Page ${rentalsPage} of ${totalPages}</span>
+                <button class="btn btn-secondary btn-sm"
+                        onclick="changeRentalsPage(${rentalsPage + 1})"
+                        ${rentalsPage === totalPages ? 'disabled' : ''}>
+                    Next
+                </button>
+            `;
+        }
+
+        function changeRentalsPage(page) {
+            const totalPages = Math.ceil(rentalsData.length / RENTALS_PAGE_SIZE);
+            if (page < 1 || page > totalPages) return;
+            rentalsPage = page;
+            renderRentalsTable();
         }
 
         async function cancelRental(id) {
@@ -420,6 +614,7 @@
             return price.toFixed(2) + '€';
         }
 
+        // -------- Stats / Charts --------
         async function loadStats() {
             try {
                 const res = await fetch(`${API_BASE}/stats/charts`, { headers });

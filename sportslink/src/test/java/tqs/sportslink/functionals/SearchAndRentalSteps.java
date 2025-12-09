@@ -481,6 +481,14 @@ public class SearchAndRentalSteps {
                     }
                 }
 
+                // Try to find and fill ZIP/postal code (required in some regions)
+                java.util.List<WebElement> zipInputs = driver.findElements(
+                        By.cssSelector("input[name='postalCode'], input[name='postal'], input[name='zip']"));
+                if (!zipInputs.isEmpty()) {
+                    zipInputs.get(0).sendKeys("12345");
+                    System.out.println("ZIP filled in iframe " + i);
+                }
+
                 driver.switchTo().defaultContent();
             } catch (Exception e) {
                 System.out.println("Error in iframe " + i + ": " + e.getMessage());

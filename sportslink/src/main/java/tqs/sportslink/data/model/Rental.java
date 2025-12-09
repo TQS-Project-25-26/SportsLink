@@ -50,6 +50,13 @@ public class Rental {
     @Column(precision = 10)
     private Double totalPrice;
 
+    @Column(length = 20)
+    private String paymentStatus; // UNPAID, PENDING, PAID, REFUNDED
+
+    @OneToOne(mappedBy = "rental", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "hibernateLazyInitializer", "handler", "rental" })
+    private Payment payment;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

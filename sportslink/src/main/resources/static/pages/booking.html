@@ -226,17 +226,75 @@
                     <i class="material-icons text-success" style="font-size: 80px;">check_circle</i>
                     <h3 class="fw-bold mt-3 mb-3">Booking Confirmed!</h3>
                     <p class="text-muted mb-4">
-                        Your booking has been successfully created.<br>
+                        Your booking and payment have been processed successfully.<br>
                         Booking ID: <strong id="booking-id">-</strong>
                     </p>
-                    <button class="btn bg-accent text-white fw-bold"
-                        onclick="window.location.href='../pages/main_page_user.html'">
-                        Back to Home
+                    <div class="d-flex gap-2 justify-content-center flex-wrap">
+                        <a id="view-receipt-btn" href="#" target="_blank"
+                            class="btn btn-outline-success fw-bold d-flex align-items-center justify-content-center"
+                            style="display:none;">
+                            <i class="material-icons me-1" style="font-size: 18px;">receipt</i>
+                            View Receipt
+                        </a>
+                        <button class="btn bg-accent text-white fw-bold"
+                            onclick="window.location.href='../pages/main_page_user.html'">
+                            Back to Home
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal (Stripe) -->
+    <div class="modal fade" id="paymentModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 20px;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">
+                        <i class="material-icons text-accent me-2 align-middle">payment</i>
+                        Complete Payment
+                    </h5>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                            <span>Total Amount:</span>
+                            <h4 class="text-accent fw-bold mb-0" id="payment-amount">€0</h4>
+                        </div>
+                    </div>
+
+                    <!-- Stripe Payment Element Container -->
+                    <div id="payment-element" class="mb-3">
+                        <!-- Stripe Elements will be inserted here -->
+                    </div>
+
+                    <!-- Error messages -->
+                    <div id="payment-message" class="alert alert-danger" style="display: none;"></div>
+
+                    <!-- Loading indicator -->
+                    <div id="payment-loading" class="text-center py-3" style="display: none;">
+                        <div class="spinner-border text-accent" role="status">
+                            <span class="visually-hidden">Processing...</span>
+                        </div>
+                        <p class="text-muted mt-2 mb-0">Processing payment...</p>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" id="cancel-payment" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn bg-accent text-white fw-bold px-4" id="submit-payment">
+                        <i class="material-icons align-middle me-1" style="font-size: 18px;">lock</i>
+                        Pay Now
                     </button>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Stripe.js (must load before booking.js) -->
+    <script src="https://js.stripe.com/v3/"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../js/auth.js"></script>

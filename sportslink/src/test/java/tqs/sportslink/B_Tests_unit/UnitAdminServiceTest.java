@@ -38,6 +38,7 @@ class UnitAdminServiceTest {
     private AdminServiceImpl adminService;
 
     @Test
+    @Requirement("SL-343")
     void testGetAllUsers() {
         User u1 = new User();
         u1.setEmail("u1@test.com");
@@ -51,6 +52,7 @@ class UnitAdminServiceTest {
     }
 
     @Test
+    @Requirement("SL-343")
     void testUpdateUserStatus() {
         User user = new User();
         user.setId(1L);
@@ -64,6 +66,7 @@ class UnitAdminServiceTest {
     }
 
     @Test
+    @Requirement("SL-343")
     void testGetAllFacilities() {
         Facility f1 = new Facility();
         when(facilityRepository.findAll()).thenReturn(Arrays.asList(f1));
@@ -74,6 +77,7 @@ class UnitAdminServiceTest {
     }
 
     @Test
+    @Requirement("SL-343")
     void testDeleteFacility() {
         doNothing().when(facilityRepository).deleteById(1L);
         adminService.deleteFacility(1L);
@@ -81,6 +85,7 @@ class UnitAdminServiceTest {
     }
 
     @Test
+    @Requirement("SL-343")
     void testGetSystemStats() {
         when(userRepository.count()).thenReturn(10L);
         when(facilityRepository.count()).thenReturn(5L);
@@ -93,6 +98,7 @@ class UnitAdminServiceTest {
     }
 
     @Test
+    @Requirement("SL-343")
     void testGetAllRentals() {
         Rental r1 = rental();
         when(rentalRepository.findAll()).thenReturn(Arrays.asList(r1));
@@ -103,6 +109,7 @@ class UnitAdminServiceTest {
     }
 
     @Test
+    @Requirement("SL-343")
     void testGetRentalsBySport() {
         Facility f1 = new Facility();
         f1.setSports(List.of(tqs.sportslink.data.model.Sport.FOOTBALL));
@@ -122,6 +129,7 @@ class UnitAdminServiceTest {
     }
 
     @Test
+    @Requirement("SL-343")
     void testGetRentalsByStatus() {
         Rental r1 = new Rental();
         r1.setStatus("CONFIRMED");
@@ -136,6 +144,7 @@ class UnitAdminServiceTest {
     }
 
     @Test
+    @Requirement("SL-343")
     void testGetUserDetails() {
         User u = new User();
         u.setId(1L);
@@ -146,6 +155,7 @@ class UnitAdminServiceTest {
     }
 
     @Test
+    @Requirement("SL-343")
     void testGetFacilityDetails() {
         Facility f = new Facility();
         f.setId(1L);
@@ -156,6 +166,7 @@ class UnitAdminServiceTest {
     }
 
     @Test
+    @Requirement("SL-343")
     void testCancelRental() {
         Rental rental = new Rental();
         rental.setId(1L);

@@ -27,7 +27,7 @@ public class DataInitializer {
     private static final String STATUS_AVAILABLE = "AVAILABLE";
     private static final String CITY_AVEIRO = "Aveiro";
     private static final String OWNER_EMAIL = "owner@sportslink.com";
-    private static final String MINIO_BASE_URL = "http://192.168.160.31:9000/sportslink-images/";
+    private static final String MINIO_BASE_URL = "http://192.168.160.31:9000/sportslink-images/imagensMinIO/";
 
     @Bean
     CommandLineRunner initDatabase(FacilityRepository facilityRepository,

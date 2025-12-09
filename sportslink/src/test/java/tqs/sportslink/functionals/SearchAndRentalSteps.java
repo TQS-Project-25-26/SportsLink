@@ -68,14 +68,22 @@ public class SearchAndRentalSteps {
         }
 
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless"); // Run in headless mode for CI
+        // Use new headless mode - more stable for complex JS like Stripe
+        options.addArguments("--headless=new");
+        options.addArguments("--window-size=1920,1080"); // Mandatory for Stripe responsive layout
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--window-size=1920,1080"); // Ensure elements are visible
+
+        // CRITICAL: Override User-Agent to look like a real browser (avoid Stripe bot
+        // detection)
+        options.addArguments(
+                "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+
+        // CRITICAL: Hide the "AutomationControlled" flag
+        options.addArguments("--disable-blink-features=AutomationControlled");
+
         driver = new ChromeDriver(options);
-        // driver.manage().window().maximize(); // Maximize doesn't always work in
-        // headless
-        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait = new WebDriverWait(driver, Duration.ofSeconds(15));
     }
 
     @After
@@ -398,7 +406,7 @@ public class SearchAndRentalSteps {
     }
 
     private void complete_stripe_payment() {
-        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(45));
+        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(30));
 
         // Wait for the payment modal to appear
         longWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("paymentModal")));
@@ -409,60 +417,78 @@ public class SearchAndRentalSteps {
             return loadingElem.getCssValue("display").equals("none");
         });
 
-        // Wait for iframes to be present
+        // Wait for Stripe iframes to be present
         longWait.until(ExpectedConditions.presenceOfElementLocated(
-                By.cssSelector("#payment-element iframe")));
+                By.cssSelector("iframe[name^='__privateStripeFrame']")));
 
         // Additional delay to ensure Stripe Elements is fully interactive
         try {
-            Thread.sleep(3000);
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
-        // Get all Stripe iframes within the payment element
-        java.util.List<WebElement> stripeIframes = driver.findElements(
-                By.cssSelector("#payment-element iframe"));
+        // Get all Stripe iframes
+        java.util.List<WebElement> iframes = driver.findElements(
+                By.cssSelector("iframe[name^='__privateStripeFrame']"));
 
-        if (stripeIframes.isEmpty()) {
-            throw new RuntimeException("No Stripe iframes found in payment element");
-        }
+        System.out.println("Found " + iframes.size() + " Stripe iframes");
 
-        // Try to fill the card details - Stripe Payment Element structure varies
-        // Approach: Find iframes and fill inputs by trying common selectors
+        boolean cardFilled = false;
+        boolean expiryFilled = false;
+        boolean cvcFilled = false;
 
-        for (WebElement iframe : stripeIframes) {
+        // Iterate through all iframes and fill available fields
+        for (int i = 0; i < iframes.size() && (!cardFilled || !expiryFilled || !cvcFilled); i++) {
             try {
-                driver.switchTo().frame(iframe);
+                // Switch to iframe by index (re-fetch to avoid stale reference)
+                iframes = driver.findElements(By.cssSelector("iframe[name^='__privateStripeFrame']"));
+                if (i >= iframes.size())
+                    break;
 
-                // Try to find and fill card number input
-                java.util.List<WebElement> cardInputs = driver.findElements(
-                        By.cssSelector(
-                                "input[name='number'], input[name='cardnumber'], input[autocomplete='cc-number']"));
-                if (!cardInputs.isEmpty()) {
-                    cardInputs.get(0).sendKeys("4242424242424242");
+                driver.switchTo().frame(iframes.get(i));
+
+                // Try to find and fill card number
+                if (!cardFilled) {
+                    java.util.List<WebElement> cardInputs = driver.findElements(
+                            By.cssSelector("input[name='cardnumber'], input[name='number']"));
+                    if (!cardInputs.isEmpty()) {
+                        cardInputs.get(0).sendKeys("4242424242424242");
+                        cardFilled = true;
+                        System.out.println("Card number filled in iframe " + i);
+                    }
                 }
 
-                // Try to find and fill expiry input
-                java.util.List<WebElement> expiryInputs = driver.findElements(
-                        By.cssSelector("input[name='expiry'], input[name='exp-date'], input[autocomplete='cc-exp']"));
-                if (!expiryInputs.isEmpty()) {
-                    expiryInputs.get(0).sendKeys("1230");
+                // Try to find and fill expiry
+                if (!expiryFilled) {
+                    java.util.List<WebElement> expiryInputs = driver.findElements(
+                            By.cssSelector("input[name='exp-date'], input[name='expiry']"));
+                    if (!expiryInputs.isEmpty()) {
+                        expiryInputs.get(0).sendKeys("1230");
+                        expiryFilled = true;
+                        System.out.println("Expiry filled in iframe " + i);
+                    }
                 }
 
-                // Try to find and fill CVC input
-                java.util.List<WebElement> cvcInputs = driver.findElements(
-                        By.cssSelector("input[name='cvc'], input[name='cvv'], input[autocomplete='cc-csc']"));
-                if (!cvcInputs.isEmpty()) {
-                    cvcInputs.get(0).sendKeys("123");
+                // Try to find and fill CVC
+                if (!cvcFilled) {
+                    java.util.List<WebElement> cvcInputs = driver.findElements(
+                            By.cssSelector("input[name='cvc']"));
+                    if (!cvcInputs.isEmpty()) {
+                        cvcInputs.get(0).sendKeys("123");
+                        cvcFilled = true;
+                        System.out.println("CVC filled in iframe " + i);
+                    }
                 }
 
                 driver.switchTo().defaultContent();
             } catch (Exception e) {
+                System.out.println("Error in iframe " + i + ": " + e.getMessage());
                 driver.switchTo().defaultContent();
-                // Continue to next iframe
             }
         }
+
+        System.out.println("Fields filled - Card: " + cardFilled + ", Expiry: " + expiryFilled + ", CVC: " + cvcFilled);
 
         // Small delay after filling fields
         try {
@@ -476,17 +502,35 @@ public class SearchAndRentalSteps {
                 ExpectedConditions.elementToBeClickable(By.id("submit-payment")));
         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", payButton);
 
-        // Wait for payment to process - wait for success modal to appear
+        // Wait for payment to process - check for success OR error
         WebDriverWait paymentWait = new WebDriverWait(driver, Duration.ofSeconds(60));
-        paymentWait.until(d -> {
+        boolean success = paymentWait.until(d -> {
             try {
                 // Check if success modal appeared (payment completed)
                 WebElement successModal = d.findElement(By.id("successModal"));
-                return successModal.isDisplayed();
+                if (successModal.isDisplayed()) {
+                    return true;
+                }
             } catch (Exception e) {
-                return false;
+                // Success modal not visible yet
             }
+
+            try {
+                // Check for payment error message
+                WebElement errorMsg = d.findElement(By.id("payment-message"));
+                if (errorMsg.isDisplayed() && !errorMsg.getText().isEmpty()) {
+                    throw new RuntimeException("Payment failed: " + errorMsg.getText());
+                }
+            } catch (org.openqa.selenium.NoSuchElementException e) {
+                // Error element not found, continue waiting
+            }
+
+            return false;
         });
+
+        if (!success) {
+            throw new RuntimeException("Payment did not complete successfully within timeout");
+        }
     }
 
     @Then("a booking confirmation modal should appear with an ID")

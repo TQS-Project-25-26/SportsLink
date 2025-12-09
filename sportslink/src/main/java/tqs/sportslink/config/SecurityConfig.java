@@ -77,6 +77,9 @@ public class SecurityConfig {
                                                                                 // endpoints
                                                                                 // require auth
 
+                        // Swagger/OpenAPI - permitir acesso público
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
                         // Error page - permitir acesso para mostrar erros corretamente
                         .requestMatchers("/error").permitAll()
 

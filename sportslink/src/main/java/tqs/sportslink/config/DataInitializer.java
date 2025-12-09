@@ -27,6 +27,7 @@ public class DataInitializer {
     private static final String STATUS_AVAILABLE = "AVAILABLE";
     private static final String CITY_AVEIRO = "Aveiro";
     private static final String OWNER_EMAIL = "owner@sportslink.com";
+    private static final String MINIO_BASE_URL = "http://192.168.160.31:9000/sportslink-images/";
 
     @Bean
     CommandLineRunner initDatabase(FacilityRepository facilityRepository,
@@ -108,6 +109,7 @@ public class DataInitializer {
                 facility1.setLatitude(40.6443);
                 facility1.setLongitude(-8.6455);
                 facility1.setRating(4.5);
+                facility1.setImageUrl(MINIO_BASE_URL + "campo_Universidade_Aveiro.jpeg");
                 facilityRepository.save(facility1);
 
                 Facility facility2 = new Facility();
@@ -123,6 +125,7 @@ public class DataInitializer {
                 facility2.setLatitude(40.6400);
                 facility2.setLongitude(-8.6500);
                 facility2.setRating(4.7);
+                facility2.setImageUrl(MINIO_BASE_URL + "padel_pitch.jpeg");
                 facilityRepository.save(facility2);
 
                 Facility facility3 = new Facility();
@@ -138,6 +141,7 @@ public class DataInitializer {
                 facility3.setLatitude(40.6410);
                 facility3.setLongitude(-8.6470);
                 facility3.setRating(4.3);
+                facility3.setImageUrl(MINIO_BASE_URL + "tennis_pitch.jpeg");
                 facilityRepository.save(facility3);
 
                 Facility facility4 = new Facility();
@@ -153,6 +157,7 @@ public class DataInitializer {
                 facility4.setLatitude(38.7223);
                 facility4.setLongitude(-9.1393);
                 facility4.setRating(4.8);
+                facility4.setImageUrl(MINIO_BASE_URL + "basktball_court.jpeg");
                 facilityRepository.save(facility4);
 
                 Facility facility5 = new Facility();
@@ -168,6 +173,7 @@ public class DataInitializer {
                 facility5.setLatitude(41.1579);
                 facility5.setLongitude(-8.6291);
                 facility5.setRating(4.2);
+                facility5.setImageUrl(MINIO_BASE_URL + "beach_volyeball.jpg");
                 facilityRepository.save(facility5);
 
                 // Additional facilities for better variety
@@ -185,6 +191,7 @@ public class DataInitializer {
                 facility6.setLongitude(-8.6420);
                 facility6.setRating(4.6);
                 facility6.setOwner(userRepository.findByEmail(OWNER_EMAIL).get());
+                facility6.setImageUrl(MINIO_BASE_URL + "football_pitch.png");
                 facilityRepository.save(facility6);
 
                 Facility facility7 = new Facility();
@@ -200,6 +207,7 @@ public class DataInitializer {
                 facility7.setLatitude(38.7250);
                 facility7.setLongitude(-9.1450);
                 facility7.setRating(4.9);
+                facility7.setImageUrl(MINIO_BASE_URL + "padel_pitch.jpeg");
                 facilityRepository.save(facility7);
 
                 Facility facility8 = new Facility();
@@ -215,6 +223,7 @@ public class DataInitializer {
                 facility8.setLatitude(41.1600);
                 facility8.setLongitude(-8.6350);
                 facility8.setRating(4.4);
+                facility8.setImageUrl(MINIO_BASE_URL + "tennis_pitch.jpeg");
                 facilityRepository.save(facility8);
 
                 Facility facility9 = new Facility();
@@ -230,6 +239,7 @@ public class DataInitializer {
                 facility9.setLatitude(40.2033);
                 facility9.setLongitude(-8.4103);
                 facility9.setRating(4.1);
+                facility9.setImageUrl(MINIO_BASE_URL + "basktball_court.jpeg");
                 facilityRepository.save(facility9);
 
                 Facility facility10 = new Facility();
@@ -246,6 +256,7 @@ public class DataInitializer {
                 facility10.setLongitude(-8.4265);
                 facility10.setRating(4.7);
                 facility10.setOwner(userRepository.findByEmail(OWNER_EMAIL).get());
+                facility10.setImageUrl(MINIO_BASE_URL + "football_pitch.png");
                 facilityRepository.save(facility10);
 
                 Facility facility11 = new Facility();
@@ -261,6 +272,7 @@ public class DataInitializer {
                 facility11.setLatitude(38.6833);
                 facility11.setLongitude(-9.3500);
                 facility11.setRating(4.3);
+                facility11.setImageUrl(MINIO_BASE_URL + "beach_volyeball.jpg");
                 facilityRepository.save(facility11);
 
                 Facility facility12 = new Facility();
@@ -276,6 +288,7 @@ public class DataInitializer {
                 facility12.setLatitude(40.6500);
                 facility12.setLongitude(-8.6400);
                 facility12.setRating(4.5);
+                facility12.setImageUrl(MINIO_BASE_URL + "padel_pitch.jpeg");
                 facilityRepository.save(facility12);
 
                 logger.info("Created 12 facilities total");

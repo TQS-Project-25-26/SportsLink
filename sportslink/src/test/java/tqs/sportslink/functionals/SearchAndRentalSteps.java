@@ -56,9 +56,10 @@ public class SearchAndRentalSteps {
         }
 
         String token = jwtUtil.generateToken(user.getEmail(), roles);
-        
+
         ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', arguments[0]);", token);
-        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('userId', arguments[0]);", user.getId().toString());
+        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('userId', arguments[0]);",
+                user.getId().toString());
     }
 
     private void initDriverIfNeeded() {
@@ -72,7 +73,8 @@ public class SearchAndRentalSteps {
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--window-size=1920,1080"); // Ensure elements are visible
         driver = new ChromeDriver(options);
-        // driver.manage().window().maximize(); // Maximize doesn't always work in headless
+        // driver.manage().window().maximize(); // Maximize doesn't always work in
+        // headless
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
@@ -373,7 +375,8 @@ public class SearchAndRentalSteps {
         driver.findElement(By.id("user-phone")).sendKeys("987654321");
     }
 
-    // Deprecated step (keeping but redirecting or failing if used without params in future)
+    // Deprecated step (keeping but redirecting or failing if used without params in
+    // future)
     @When("I fill the booking form with valid data")
     public void fill_booking_form_deprecated() {
         // Default behavior for legacy tests if any
@@ -389,6 +392,101 @@ public class SearchAndRentalSteps {
         wait.until(ExpectedConditions.elementToBeClickable(button));
 
         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", button);
+
+        // Complete the payment after confirming booking
+        complete_stripe_payment();
+    }
+
+    private void complete_stripe_payment() {
+        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(45));
+
+        // Wait for the payment modal to appear
+        longWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("paymentModal")));
+
+        // Wait for Stripe Elements to load (payment element container)
+        longWait.until(d -> {
+            WebElement loadingElem = d.findElement(By.id("payment-loading"));
+            return loadingElem.getCssValue("display").equals("none");
+        });
+
+        // Wait for iframes to be present
+        longWait.until(ExpectedConditions.presenceOfElementLocated(
+                By.cssSelector("#payment-element iframe")));
+
+        // Additional delay to ensure Stripe Elements is fully interactive
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        // Get all Stripe iframes within the payment element
+        java.util.List<WebElement> stripeIframes = driver.findElements(
+                By.cssSelector("#payment-element iframe"));
+
+        if (stripeIframes.isEmpty()) {
+            throw new RuntimeException("No Stripe iframes found in payment element");
+        }
+
+        // Try to fill the card details - Stripe Payment Element structure varies
+        // Approach: Find iframes and fill inputs by trying common selectors
+
+        for (WebElement iframe : stripeIframes) {
+            try {
+                driver.switchTo().frame(iframe);
+
+                // Try to find and fill card number input
+                java.util.List<WebElement> cardInputs = driver.findElements(
+                        By.cssSelector(
+                                "input[name='number'], input[name='cardnumber'], input[autocomplete='cc-number']"));
+                if (!cardInputs.isEmpty()) {
+                    cardInputs.get(0).sendKeys("4242424242424242");
+                }
+
+                // Try to find and fill expiry input
+                java.util.List<WebElement> expiryInputs = driver.findElements(
+                        By.cssSelector("input[name='expiry'], input[name='exp-date'], input[autocomplete='cc-exp']"));
+                if (!expiryInputs.isEmpty()) {
+                    expiryInputs.get(0).sendKeys("1230");
+                }
+
+                // Try to find and fill CVC input
+                java.util.List<WebElement> cvcInputs = driver.findElements(
+                        By.cssSelector("input[name='cvc'], input[name='cvv'], input[autocomplete='cc-csc']"));
+                if (!cvcInputs.isEmpty()) {
+                    cvcInputs.get(0).sendKeys("123");
+                }
+
+                driver.switchTo().defaultContent();
+            } catch (Exception e) {
+                driver.switchTo().defaultContent();
+                // Continue to next iframe
+            }
+        }
+
+        // Small delay after filling fields
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        // Click the Pay Now button
+        WebElement payButton = longWait.until(
+                ExpectedConditions.elementToBeClickable(By.id("submit-payment")));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", payButton);
+
+        // Wait for payment to process - wait for success modal to appear
+        WebDriverWait paymentWait = new WebDriverWait(driver, Duration.ofSeconds(60));
+        paymentWait.until(d -> {
+            try {
+                // Check if success modal appeared (payment completed)
+                WebElement successModal = d.findElement(By.id("successModal"));
+                return successModal.isDisplayed();
+            } catch (Exception e) {
+                return false;
+            }
+        });
     }
 
     @Then("a booking confirmation modal should appear with an ID")
@@ -416,7 +514,7 @@ public class SearchAndRentalSteps {
 
     @Then("the booking should be stored in the system")
     public void the_booking_should_be_stored_in_the_system() {
-         // Verified by modal
+        // Verified by modal
     }
 
     // ------------------------------

@@ -182,13 +182,12 @@ function createEquipmentCard(eq) {
 
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <h5 class="fw-bold mb-0">${eq.name}</h5>
-                    <span class="badge ${
-                        eq.status === "AVAILABLE"
-                            ? "bg-success"
-                            : eq.status === "MAINTENANCE"
-                                ? "bg-warning text-dark"
-                                : "bg-secondary"
-                    }">
+                    <span class="badge ${eq.status === "AVAILABLE"
+            ? "bg-success"
+            : eq.status === "MAINTENANCE"
+                ? "bg-warning text-dark"
+                : "bg-secondary"
+        }">
                         ${statusLabel(eq.status)}
                     </span>
                 </div>
@@ -214,7 +213,7 @@ function createEquipmentCard(eq) {
                 </div>
 
                 <div class="d-flex gap-2 mt-3">
-                    <button class="btn btn-outline-dark btn-sm flex-fill"
+                    <button class="btn bg-accent text-white btn-sm flex-fill"
                             style="border-radius: 50px;"
                             onclick="openEditEquipment(${eq.id})">
                         <i class="material-icons icon-small align-middle me-1">edit</i>

@@ -6,16 +6,27 @@
 const SuggestionsService = (() => {
   const BASE_URL = '/api/suggestions';
 
-  // Default user ID - in production, get from session/auth
-  const DEFAULT_USER_ID = 1;
+  /**
+   * Get authenticated user ID from localStorage
+   * @returns {number|null} User ID or null if not authenticated
+   */
+  function getAuthenticatedUserId() {
+    const userId = localStorage.getItem('userId');
+    return userId ? parseInt(userId, 10) : null;
+  }
 
   /**
    * Fetch personalized facility suggestions for a user
-   * @param {number} userId - User ID
+   * @param {number} userId - User ID (optional, defaults to authenticated user)
    * @param {Object} location - Optional {latitude, longitude}
    * @returns {Promise<Array>} Facility suggestions
    */
-  async function getFacilitySuggestions(userId = DEFAULT_USER_ID, location = null) {
+  async function getFacilitySuggestions(userId = null, location = null) {
+    const effectiveUserId = userId || getAuthenticatedUserId();
+    if (!effectiveUserId) {
+      console.log('No authenticated user, skipping facility suggestions');
+      return [];
+    }
     try {
       const params = new URLSearchParams();
       if (location?.latitude && location?.longitude) {
@@ -23,8 +34,10 @@ const SuggestionsService = (() => {
         params.set('longitude', location.longitude);
       }
 
-      const url = `${BASE_URL}/facilities/${userId}${params.toString() ? '?' + params.toString() : ''}`;
-      const response = await fetch(url);
+      const url = `${BASE_URL}/facilities/${effectiveUserId}${params.toString() ? '?' + params.toString() : ''}`;
+      const response = await fetch(url, {
+        headers: typeof authHeaders === 'function' ? authHeaders() : {}
+      });
 
       if (!response.ok) {
         throw new Error(`Failed to fetch suggestions: ${response.status}`);
@@ -70,7 +83,13 @@ const SuggestionsService = (() => {
    * @param {Object} options - { latitude, longitude, facilityId, sport }
    * @returns {Promise<Object>} Combined suggestions
    */
-  async function getUserSuggestions(userId = DEFAULT_USER_ID, options = {}) {
+  async function getUserSuggestions(userId = null, options = {}) {
+    const effectiveUserId = userId || getAuthenticatedUserId();
+    if (!effectiveUserId) {
+      console.log('No authenticated user, skipping user suggestions');
+      return { facilitySuggestions: [], equipmentSuggestions: [] };
+    }
+
     try {
       const params = new URLSearchParams();
 
@@ -87,8 +106,10 @@ const SuggestionsService = (() => {
         params.set('sport', options.sport.toUpperCase());
       }
 
-      const url = `${BASE_URL}/user/${userId}${params.toString() ? '?' + params.toString() : ''}`;
-      const response = await fetch(url);
+      const url = `${BASE_URL}/user/${effectiveUserId}${params.toString() ? '?' + params.toString() : ''}`;
+      const response = await fetch(url, {
+        headers: typeof authHeaders === 'function' ? authHeaders() : {}
+      });
 
       if (!response.ok) {
         throw new Error(`Failed to fetch user suggestions: ${response.status}`);

@@ -482,8 +482,15 @@
         }
       }
 
-      // Get personalized suggestions (default user ID = 1)
-      const suggestions = await SuggestionsService.getFacilitySuggestions(1, userLocation);
+      // Get authenticated user ID from localStorage
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        console.log('No authenticated user, skipping personalized suggestions');
+        return;
+      }
+
+      // Get personalized suggestions for authenticated user
+      const suggestions = await SuggestionsService.getFacilitySuggestions(parseInt(userId, 10), userLocation);
       console.log('Personalized suggestions:', suggestions);
 
       if (suggestions && suggestions.length > 0) {

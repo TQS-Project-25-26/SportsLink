@@ -37,46 +37,52 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter)
+            throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(authz -> authz
-                // Recursos estáticos - permitir acesso público
-                .requestMatchers("/", "/index.html", "/css/**", "/js/**", "/favicon.ico", "/images/**").permitAll()
-                
-                // Páginas de autenticação - públicas (login, register)
-                .requestMatchers("/pages/register.html").permitAll()
-                
-                // Páginas HTML - permitir carregamento (segurança feita na API e JS)
-                .requestMatchers("/pages/**").permitAll()
-                
-                // API de rentals - pública para leitura
-                .requestMatchers(HttpMethod.GET, "/api/rentals/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/rentals/**").authenticated()  // criar/atualizar requer auth
-                
-                // Auth - público (login, register, logout)
-                .requestMatchers("/api/auth/**").permitAll()
-                
-                // Suggestions - público (sugestões personalizadas)
-                .requestMatchers("/api/suggestions/**").permitAll()
-                
-                // Error page - permitir acesso para mostrar erros corretamente
-                .requestMatchers("/error").permitAll()
-                
-                // Owner endpoints - requerem autenticação
-                .requestMatchers("/api/owner/**").authenticated()
-                
-                // Admin endpoints - requerem autenticação
-                .requestMatchers("/api/admin/**").authenticated()
-                
-                // H2 console - apenas em desenvolvimento
-                .requestMatchers("/h2-console/**").permitAll()
-                
-                // Outros endpoints requerem autenticação por padrão
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(authz -> authz
+                        // Recursos estáticos - permitir acesso público
+                        .requestMatchers("/", "/index.html", "/css/**", "/js/**", "/favicon.ico", "/images/**")
+                        .permitAll()
+
+                        // Páginas de autenticação - públicas (login, register)
+                        .requestMatchers("/pages/register.html").permitAll()
+
+                        // Páginas HTML - permitir carregamento (segurança feita na API e JS)
+                        .requestMatchers("/pages/**").permitAll()
+
+                        // API de rentals - pública para leitura
+                        .requestMatchers(HttpMethod.GET, "/api/rentals/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/rentals/**").authenticated() // criar/atualizar requer
+                                                                                             // auth
+
+                        // Auth - público (login, register, logout)
+                        .requestMatchers("/api/auth/**").permitAll()
+
+                        // Equipment suggestions - public (needed for booking page)
+                        .requestMatchers("/api/suggestions/equipment/**").permitAll()
+                        // Personalized suggestions - require authentication
+                        .requestMatchers("/api/suggestions/user/**", "/api/suggestions/owner/**",
+                                "/api/suggestions/facilities/**")
+                        .authenticated()
+
+                        // Error page - permitir acesso para mostrar erros corretamente
+                        .requestMatchers("/error").permitAll()
+
+                        // Owner endpoints - requerem autenticação
+                        .requestMatchers("/api/owner/**").authenticated()
+
+                        // Admin endpoints - requerem autenticação
+                        .requestMatchers("/api/admin/**").authenticated()
+
+                        // H2 console - apenas em desenvolvimento
+                        .requestMatchers("/h2-console/**").permitAll()
+
+                        // Outros endpoints requerem autenticação por padrão
+                        .anyRequest().authenticated())
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

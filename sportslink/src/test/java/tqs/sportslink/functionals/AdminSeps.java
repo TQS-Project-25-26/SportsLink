@@ -24,6 +24,10 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import tqs.sportslink.data.UserRepository;
+import tqs.sportslink.data.FacilityRepository;
+import tqs.sportslink.data.model.Facility;
+import tqs.sportslink.data.model.Sport;
+import java.util.List;
 import tqs.sportslink.util.JwtUtil;
 
 public class AdminSeps {
@@ -40,6 +44,9 @@ public class AdminSeps {
 
     @org.springframework.beans.factory.annotation.Autowired
     private UserRepository userRepository;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private FacilityRepository facilityRepository;
 
     private String getBaseUrl() {
         return "http://localhost:" + port;
@@ -113,7 +120,18 @@ public class AdminSeps {
 
     @Given("a facility {string} exists")
     public void ensureFacilityExists(String name) {
-        // Assumed from DataInitializer
+        if (!facilityRepository.existsByName(name)) {
+            Facility f = new Facility();
+            f.setName(name);
+            f.setCity("Test City");
+            f.setAddress("Test Address");
+            f.setPricePerHour(10.0);
+            f.setLatitude(0.0);
+            f.setLongitude(0.0);
+            f.setStatus("ACTIVE");
+            f.setSports(List.of(Sport.FOOTBALL));
+            facilityRepository.save(f);
+        }
     }
 
     // ============================================
@@ -224,27 +242,25 @@ public class AdminSeps {
 
     @Then("the user {string} should be marked as inactive")
     public void checkUserInactive(String email) {
-        // Re-read row
-        WebElement row = driver.findElement(By.xpath("//tr[td[contains(text(), '" + email + "')]]"));
-        // Status column check (assuming it says 'Inactive' or button changed to
-        // 'Activate')
-        // Or we check the button text
-        WebElement statusBtn = row.findElement(By.cssSelector(".btn-success, .btn-danger"));
-        // If blocked, button typically becomes 'Activate' (Success) or status text
-        // changes.
-        // Based on selenium export, it alerts "deactivate this user", implying it was
-        // active.
-        // We assume the UI updates.
-        // Let's check generally for state change availability if possible, or text.
-        // Simpler: wait for UI refresh
+        // Wait for potential page refresh first
         try {
-            Thread.sleep(500);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
         }
-        row = driver.findElement(By.xpath("//tr[td[contains(text(), '" + email + "')]]"));
-        // Verify visual indication (e.g., text-muted, or Activate button presence)
-        assertTrue(row.getText().contains("false") || row.getText().contains("Inactive")
-                || row.getText().contains("Activate"));
+
+        // Use a retry mechanism or explicit wait to handle
+        // StaleElementReferenceException
+        wait.until(driver -> {
+            try {
+                WebElement row = driver.findElement(By.xpath("//tr[td[contains(text(), '" + email + "')]]"));
+                // Check for visual indication (Activate implies it is currently
+                // Inactive/Blocked)
+                // Or check the status text column if available
+                return row.getText().contains("Inactive") || row.getText().contains("Activate");
+            } catch (org.openqa.selenium.StaleElementReferenceException e) {
+                return false; // Retry
+            }
+        });
     }
 
     @Then("I should see a list of facilities")

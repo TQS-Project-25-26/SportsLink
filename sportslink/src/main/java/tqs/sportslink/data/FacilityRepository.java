@@ -12,13 +12,13 @@ import java.util.Optional;
 
 @Repository
 public interface FacilityRepository extends JpaRepository<Facility, Long> {
-    
+
     // Query methods customizados para lidar com ElementCollection
     @Query("SELECT DISTINCT f FROM Facility f JOIN f.sports s WHERE f.city = :city AND s = :sportType")
     List<Facility> findByCityAndSportType(@Param("city") String city, @Param("sportType") Sport sportType);
-    
+
     List<Facility> findByCity(String city);
-    
+
     @Query("SELECT DISTINCT f FROM Facility f JOIN f.sports s WHERE s = :sportType")
     List<Facility> findBySportType(@Param("sportType") Sport sportType);
 
@@ -31,4 +31,6 @@ public interface FacilityRepository extends JpaRepository<Facility, Long> {
      * Validar se a facility pertence ao owner.
      */
     Optional<Facility> findByIdAndOwnerId(Long facilityId, Long ownerId);
+
+    boolean existsByName(String name);
 }

@@ -1,0 +1,51 @@
+Feature: Admin Management
+  
+  # ============================================================
+  # ADMIN ACCESS & DASHBOARD
+  # Epic: SL-23 (Admin Page)
+  # ============================================================
+
+  @SL-343 @admin @functional
+  Scenario: Admin logs in and sees dashboard
+    Given I exist as an admin with email "admin@admin.com" and password "pwdAdmin"
+    When I login as "admin@admin.com" with password "pwdAdmin"
+    Then I should be redirected to the admin dashboard
+    And I should see system statistics
+
+  @SL-343 @admin @functional
+  Scenario: Admin views user management
+    Given I am logged in as admin
+    When I navigate to the users management page
+    Then I should see a list of users
+    And I should see user "owner@sportslink.com"
+
+  @SL-343 @admin @functional
+  Scenario: Admin blocks a user
+    Given I am logged in as admin
+    And a user "test@sportslink.com" exists and is active
+    When I navigate to the users management page
+    And I click to block user "test@sportslink.com"
+    Then the user "test@sportslink.com" should be marked as inactive
+
+  @SL-343 @admin @functional
+  Scenario: Admin Views Facilities
+    Given I am logged in as admin
+    When I navigate to the facilities management page
+    Then I should see a list of facilities
+    And I should see facility "Campo de Futebol da Universidade de Aveiro"
+
+  @SL-343 @admin @functional
+  Scenario: Admin Deletes a Facility
+    Given I am logged in as admin
+    And a facility "To Be Deleted Facility" exists
+    When I navigate to the facilities management page
+    And I click to delete facility "To Be Deleted Facility"
+    Then the facility "To Be Deleted Facility" should no longer appear in the list
+
+  @SL-343 @admin @security @functional
+  Scenario: Renter cannot access admin dashboard
+    Given I exist as a renter with email "renter@user.com" and password "pwdRenter"
+    When I login as "renter@user.com" with password "pwdRenter"
+    And I try to access the admin dashboard
+    Then I should stay on the home page
+    And I should not see the admin dashboard

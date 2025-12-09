@@ -17,12 +17,16 @@
         }
 
         .pagination-controls {
-            margin-top: 1.25rem;        /* mais espaço em cima */
-            padding-bottom: 0.75rem;    /* mais espaço em baixo */
+            margin-top: 1.25rem;
+            /* mais espaço em cima */
+            padding-bottom: 0.75rem;
+            /* mais espaço em baixo */
             display: flex;
-            gap: 0.75rem;               /* mais espaçamento entre botões */
+            gap: 0.75rem;
+            /* mais espaçamento entre botões */
             align-items: center;
-            justify-content: center;    /* centra a paginação */
+            justify-content: center;
+            /* centra a paginação */
             font-size: 0.9rem;
             width: 100%;
         }
@@ -225,8 +229,12 @@
         let rentalsData = [];
         let rentalsPage = 1;
 
-        // Auth Check
-        if (!token) {
+        // Auth Check - must have token AND be ADMIN
+        const role = localStorage.getItem('role');
+        if (!token || role !== 'ADMIN') {
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            localStorage.removeItem('userId');
             window.location.href = '/index.html';
         }
 
@@ -547,8 +555,8 @@
                     <td>${formatPrice(r.totalPrice)}</td>
                     <td>
                         ${r.status === 'CONFIRMED'
-                            ? `<button onclick="cancelRental(${r.id})" class="btn btn-danger btn-sm">Cancel</button>`
-                            : '<span class="text-muted">-</span>'}
+                    ? `<button onclick="cancelRental(${r.id})" class="btn btn-danger btn-sm">Cancel</button>`
+                    : '<span class="text-muted">-</span>'}
                     </td>
                 </tr>
             `).join('');

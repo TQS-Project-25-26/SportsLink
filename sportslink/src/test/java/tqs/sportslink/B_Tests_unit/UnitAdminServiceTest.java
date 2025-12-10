@@ -11,7 +11,7 @@ import tqs.sportslink.data.UserRepository;
 import tqs.sportslink.data.model.Facility;
 import tqs.sportslink.data.model.Rental;
 import tqs.sportslink.data.model.User;
-import tqs.sportslink.service.impl.AdminServiceImpl;
+import tqs.sportslink.service.AdminService;
 
 import java.util.Arrays;
 import java.util.List;
@@ -35,7 +35,7 @@ class UnitAdminServiceTest {
     private RentalRepository rentalRepository;
 
     @InjectMocks
-    private AdminServiceImpl adminService;
+    private AdminService adminService;
 
     @Test
     @Requirement("SL-343")

@@ -14,9 +14,13 @@ import tqs.sportslink.data.model.User;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class RentalService {
+
+    private static final Logger logger = LoggerFactory.getLogger(RentalService.class);
 
     private static final String STATUS_CANCELLED = "CANCELLED";
     private static final String ERROR_RENTAL_NOT_FOUND = "Rental not found";
@@ -132,6 +136,7 @@ public class RentalService {
         rental.setPaymentStatus("UNPAID");
 
         Rental saved = rentalRepository.save(rental);
+        logger.info("Created rental id={} for user {} at facility {}", saved.getId(), user.getEmail(), facility.getId());
         return mapToResponseDTO(saved);
     }
 
@@ -151,6 +156,7 @@ public class RentalService {
 
         rental.setStatus(STATUS_CANCELLED);
         Rental updated = rentalRepository.save(rental);
+        logger.info("Cancelled rental id={}", rentalId);
         return mapToResponseDTO(updated);
     }
 
@@ -230,6 +236,7 @@ public class RentalService {
         rental.setStartTime(request.getStartTime());
         rental.setEndTime(request.getEndTime());
         Rental updated = rentalRepository.save(rental);
+        logger.info("Updated rental id={} new start={} end={}", rentalId, request.getStartTime(), request.getEndTime());
         return mapToResponseDTO(updated);
     }
 

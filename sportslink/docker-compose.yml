@@ -73,18 +73,16 @@ services:
     restart: unless-stopped
 
   prometheus:
-    image: prom/prometheus:latest
+    build: ./observability/prometheus
     container_name: sportslink-prometheus
     ports:
       - "9095:9090"
-    volumes:
-      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     depends_on:
       - app
     restart: unless-stopped
 
   grafana:
-    image: grafana/grafana:latest
+    build: ./observability/grafana
     container_name: sportslink-grafana
     ports:
       - "3000:3000"
@@ -93,8 +91,6 @@ services:
     restart: unless-stopped
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
-      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
 
   loki:
     image: grafana/loki:latest
@@ -105,16 +101,16 @@ services:
     restart: unless-stopped
 
   promtail:
-    image: grafana/promtail:latest
+    build: ./observability/promtail
     container_name: sportslink-promtail
     volumes:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./observability/promtail/promtail-config.yml:/etc/promtail/config.yml:ro
     command: -config.file=/etc/promtail/config.yml
     depends_on:
       - loki
     restart: unless-stopped
+
 
 volumes:
   postgres-data:

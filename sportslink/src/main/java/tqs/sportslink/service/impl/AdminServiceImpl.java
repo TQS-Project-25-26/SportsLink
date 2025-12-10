@@ -9,6 +9,10 @@ import tqs.sportslink.data.model.Rental;
 import tqs.sportslink.data.model.User;
 import tqs.sportslink.service.AdminService;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,10 +38,24 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public User updateUserStatus(Long id, boolean active) {
-        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Utilizador autenticado
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            String currentUsername = auth.getName(); // normalmente o email / username
+
+            // Impedir que o admin desative a própria conta
+            if (!active && currentUsername != null && currentUsername.equals(user.getEmail())) {
+                throw new IllegalStateException("You cannot deactivate your own account.");
+            }
+        }
+
         user.setActive(active);
         return userRepository.save(user);
     }
+
 
     @Override
     public List<Facility> getAllFacilities() {

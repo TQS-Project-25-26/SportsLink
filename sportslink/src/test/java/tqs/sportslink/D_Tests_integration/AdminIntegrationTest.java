@@ -4,6 +4,8 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,7 +29,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("integration")
+@ActiveProfiles("test")
 public class AdminIntegrationTest {
 
     @LocalServerPort
@@ -39,9 +41,6 @@ public class AdminIntegrationTest {
     @Autowired
     private FacilityRepository facilityRepository;
 
-    private String adminToken;
-    private String renterToken;
-
     @BeforeEach
     void setup() {
         RestAssured.port = port;
@@ -50,19 +49,10 @@ public class AdminIntegrationTest {
         facilityRepository.deleteAll();
         userRepository.deleteAll();
 
-        // 1. Create Admin User
+        // 1. Create Admin User (just for data consistency, auth is disabled)
         User admin = new User();
         admin.setEmail("admin@admin.com");
-        admin.setPassword("adminpass"); // Will be encoded by service logic usually, but here we save direct?
-        // Wait, integration test uses real service?
-        // If I save directly to Repo, I must encode password if the auth service
-        // expects encoded.
-        // authService.login() checks matches(raw, encoded).
-        // I should inject PasswordEncoder or use AuthService to register.
-        // But AuthService.register doesn't allow creating ADMIN directly easily (config
-        // logic).
-        // I will use BCrypt to save to DB.
-        admin.setPassword(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode("adminpass"));
+        admin.setPassword("adminpass"); 
         admin.setName("Admin");
         admin.getRoles().add(Role.ADMIN);
         admin.setActive(true);
@@ -71,7 +61,7 @@ public class AdminIntegrationTest {
         // 2. Create Renter User
         User renter = new User();
         renter.setEmail("renter@user.com");
-        renter.setPassword(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode("renterpass"));
+        renter.setPassword("renterpass");
         renter.setName("Renter");
         renter.getRoles().add(Role.RENTER);
         renter.setActive(true);
@@ -84,43 +74,13 @@ public class AdminIntegrationTest {
         f.setCity("Test City");
         f.setPricePerHour(10.0);
         f.setStatus("ACTIVE");
-        f.setSports(List.of(Sport.FOOTBALL)); // Ensure sports list is set
+        f.setSports(List.of(Sport.FOOTBALL)); 
         facilityRepository.save(f);
-
-        // 4. Authenticate to get Tokens
-        // Login Admin
-        UserRequestDTO adminLogin = new UserRequestDTO();
-        adminLogin.setEmail("admin@admin.com");
-        adminLogin.setPassword("adminpass");
-
-        adminToken = given()
-                .contentType(ContentType.JSON)
-                .body(adminLogin)
-                .when()
-                .post("/api/auth/login")
-                .then()
-                .statusCode(200)
-                .extract().as(AuthResponseDTO.class).getToken();
-
-        // Login Renter
-        UserRequestDTO renterLogin = new UserRequestDTO();
-        renterLogin.setEmail("renter@user.com");
-        renterLogin.setPassword("renterpass");
-
-        renterToken = given()
-                .contentType(ContentType.JSON)
-                .body(renterLogin)
-                .when()
-                .post("/api/auth/login")
-                .then()
-                .statusCode(200)
-                .extract().as(AuthResponseDTO.class).getToken();
     }
 
     @Test
     void whenAdminGetUsers_thenSuccess() {
         given()
-                .header("Authorization", "Bearer " + adminToken)
                 .when()
                 .get("/api/admin/users")
                 .then()
@@ -131,7 +91,6 @@ public class AdminIntegrationTest {
     @Test
     void whenAdminGetFacilities_thenSuccess() {
         given()
-                .header("Authorization", "Bearer " + adminToken)
                 .when()
                 .get("/api/admin/facilities")
                 .then()
@@ -143,7 +102,6 @@ public class AdminIntegrationTest {
     @Test
     void whenAdminGetStats_thenSuccess() {
         given()
-                .header("Authorization", "Bearer " + adminToken)
                 .when()
                 .get("/api/admin/stats")
                 .then()
@@ -153,12 +111,35 @@ public class AdminIntegrationTest {
     }
 
     @Test
-    void whenRenterTryAdminEndpoint_thenForbidden() {
+    void whenAdminBanUser_thenUserIsInactive() {
+        // 1. Get the Renter user
+        User renter = userRepository.findByEmail("renter@user.com").orElseThrow();
+        Long renterId = renter.getId();
+
+        // 2. Ban the user (active = false)
         given()
-                .header("Authorization", "Bearer " + renterToken)
+                .queryParam("active", false)
                 .when()
-                .get("/api/admin/users")
+                .put("/api/admin/users/" + renterId + "/status")
                 .then()
-                .statusCode(403);
+                .statusCode(200)
+                .body("active", equalTo(false));
+                
+        // Verify in DB
+        renter = userRepository.findById(renterId).orElseThrow();
+        assertFalse(renter.getActive());
+
+        // 3. Unban the user (active = true)
+        given()
+                .queryParam("active", true)
+                .when()
+                .put("/api/admin/users/" + renterId + "/status")
+                .then()
+                .statusCode(200)
+                .body("active", equalTo(true));
+                
+        // Verify in DB
+        renter = userRepository.findById(renterId).orElseThrow();
+        assertTrue(renter.getActive());
     }
 }

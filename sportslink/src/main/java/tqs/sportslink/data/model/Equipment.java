@@ -51,6 +51,7 @@ public class Equipment {
     @Column(nullable = false, length = 50)
     private String status; // AVAILABLE, MAINTENANCE, UNAVAILABLE
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToMany(mappedBy = "equipments")
     private List<Rental> rentals = new ArrayList<>();
 

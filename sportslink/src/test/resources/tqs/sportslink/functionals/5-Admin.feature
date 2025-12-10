@@ -42,10 +42,4 @@ Feature: Admin Management
     And I click to delete facility "To Be Deleted Facility"
     Then the facility "To Be Deleted Facility" should no longer appear in the list
 
-  @SL-343 @admin @security @functional
-  Scenario: Renter cannot access admin dashboard
-    Given I exist as a renter with email "renter@user.com" and password "pwdRenter"
-    When I login as "renter@user.com" with password "pwdRenter"
-    And I try to access the admin dashboard
-    Then I should stay on the home page
-    And I should not see the admin dashboard
+

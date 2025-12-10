@@ -34,6 +34,9 @@ public class SearchAndRentalSteps {
     @org.springframework.beans.factory.annotation.Autowired
     private tqs.sportslink.data.UserRepository userRepository;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private tqs.sportslink.data.RentalRepository rentalRepository;
+
     private String getBaseUrl() {
         return "http://localhost:" + port;
     }
@@ -42,6 +45,14 @@ public class SearchAndRentalSteps {
     private static final By FACILITY_CARD = By.cssSelector("#featured .card, #nearbyCarousel .card");
 
     // ------------------ SETUP ------------------
+
+    @io.cucumber.java.Before("@booking")
+    public void cleanUpBookings() {
+        userRepository.findByEmail("test@sportslink.com").ifPresent(user -> {
+            var rentals = rentalRepository.findByUserId(user.getId());
+            rentalRepository.deleteAll(rentals);
+        });
+    }
 
     private void setupAuthenticatedState() {
         // Fetch the test user created by DataInitializer
@@ -56,9 +67,10 @@ public class SearchAndRentalSteps {
         }
 
         String token = jwtUtil.generateToken(user.getEmail(), roles);
-        
+
         ((JavascriptExecutor) driver).executeScript("localStorage.setItem('token', arguments[0]);", token);
-        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('userId', arguments[0]);", user.getId().toString());
+        ((JavascriptExecutor) driver).executeScript("localStorage.setItem('userId', arguments[0]);",
+                user.getId().toString());
     }
 
     private void initDriverIfNeeded() {
@@ -67,13 +79,22 @@ public class SearchAndRentalSteps {
         }
 
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless"); // Run in headless mode for CI
+        // Use new headless mode - more stable for complex JS like Stripe
+        options.addArguments("--headless=new");
+        options.addArguments("--window-size=1920,1080"); // Mandatory for Stripe responsive layout
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--window-size=1920,1080"); // Ensure elements are visible
+
+        // CRITICAL: Override User-Agent to look like a real browser (avoid Stripe bot
+        // detection)
+        options.addArguments(
+                "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+
+        // CRITICAL: Hide the "AutomationControlled" flag
+        options.addArguments("--disable-blink-features=AutomationControlled");
+
         driver = new ChromeDriver(options);
-        // driver.manage().window().maximize(); // Maximize doesn't always work in headless
-        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait = new WebDriverWait(driver, Duration.ofSeconds(15));
     }
 
     @After
@@ -373,7 +394,8 @@ public class SearchAndRentalSteps {
         driver.findElement(By.id("user-phone")).sendKeys("987654321");
     }
 
-    // Deprecated step (keeping but redirecting or failing if used without params in future)
+    // Deprecated step (keeping but redirecting or failing if used without params in
+    // future)
     @When("I fill the booking form with valid data")
     public void fill_booking_form_deprecated() {
         // Default behavior for legacy tests if any
@@ -389,6 +411,145 @@ public class SearchAndRentalSteps {
         wait.until(ExpectedConditions.elementToBeClickable(button));
 
         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", button);
+
+        // Complete the payment after confirming booking
+        complete_stripe_payment();
+    }
+
+    private void complete_stripe_payment() {
+        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(30));
+
+        // Wait for the payment modal to appear
+        longWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("paymentModal")));
+
+        // Wait for Stripe Elements to load (payment element container)
+        longWait.until(d -> {
+            WebElement loadingElem = d.findElement(By.id("payment-loading"));
+            return loadingElem.getCssValue("display").equals("none");
+        });
+
+        // Wait for Stripe iframes to be present
+        longWait.until(ExpectedConditions.presenceOfElementLocated(
+                By.cssSelector("iframe[name^='__privateStripeFrame']")));
+
+        // Additional delay to ensure Stripe Elements is fully interactive
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        // Get all Stripe iframes
+        java.util.List<WebElement> iframes = driver.findElements(
+                By.cssSelector("iframe[name^='__privateStripeFrame']"));
+
+        System.out.println("Found " + iframes.size() + " Stripe iframes");
+
+        boolean cardFilled = false;
+        boolean expiryFilled = false;
+        boolean cvcFilled = false;
+
+        // Iterate through all iframes and fill available fields
+        for (int i = 0; i < iframes.size() && (!cardFilled || !expiryFilled || !cvcFilled); i++) {
+            try {
+                // Switch to iframe by index (re-fetch to avoid stale reference)
+                iframes = driver.findElements(By.cssSelector("iframe[name^='__privateStripeFrame']"));
+                if (i >= iframes.size())
+                    break;
+
+                driver.switchTo().frame(iframes.get(i));
+
+                // Try to find and fill card number
+                if (!cardFilled) {
+                    java.util.List<WebElement> cardInputs = driver.findElements(
+                            By.cssSelector("input[name='cardnumber'], input[name='number']"));
+                    if (!cardInputs.isEmpty()) {
+                        cardInputs.get(0).sendKeys("4242424242424242");
+                        cardFilled = true;
+                        System.out.println("Card number filled in iframe " + i);
+                    }
+                }
+
+                // Try to find and fill expiry
+                if (!expiryFilled) {
+                    java.util.List<WebElement> expiryInputs = driver.findElements(
+                            By.cssSelector("input[name='exp-date'], input[name='expiry']"));
+                    if (!expiryInputs.isEmpty()) {
+                        expiryInputs.get(0).sendKeys("1230");
+                        expiryFilled = true;
+                        System.out.println("Expiry filled in iframe " + i);
+                    }
+                }
+
+                // Try to find and fill CVC
+                if (!cvcFilled) {
+                    java.util.List<WebElement> cvcInputs = driver.findElements(
+                            By.cssSelector("input[name='cvc']"));
+                    if (!cvcInputs.isEmpty()) {
+                        cvcInputs.get(0).sendKeys("123");
+                        cvcFilled = true;
+                        System.out.println("CVC filled in iframe " + i);
+                    }
+                }
+
+                // Try to find and fill ZIP/postal code (required in some regions)
+                java.util.List<WebElement> zipInputs = driver.findElements(
+                        By.cssSelector("input[name='postalCode'], input[name='postal'], input[name='zip']"));
+                if (!zipInputs.isEmpty()) {
+                    zipInputs.get(0).sendKeys("12345");
+                    System.out.println("ZIP filled in iframe " + i);
+                }
+
+                driver.switchTo().defaultContent();
+            } catch (Exception e) {
+                System.out.println("Error in iframe " + i + ": " + e.getMessage());
+                driver.switchTo().defaultContent();
+            }
+        }
+
+        System.out.println("Fields filled - Card: " + cardFilled + ", Expiry: " + expiryFilled + ", CVC: " + cvcFilled);
+
+        // Small delay after filling fields
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        // Click the Pay Now button
+        WebElement payButton = longWait.until(
+                ExpectedConditions.elementToBeClickable(By.id("submit-payment")));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", payButton);
+
+        // Wait for payment to process - check for success OR error
+        WebDriverWait paymentWait = new WebDriverWait(driver, Duration.ofSeconds(60));
+        boolean success = paymentWait.until(d -> {
+            try {
+                // Check if success modal appeared (payment completed)
+                WebElement successModal = d.findElement(By.id("successModal"));
+                if (successModal.isDisplayed()) {
+                    return true;
+                }
+            } catch (Exception e) {
+                // Success modal not visible yet
+            }
+
+            try {
+                // Check for payment error message
+                WebElement errorMsg = d.findElement(By.id("payment-message"));
+                if (errorMsg.isDisplayed() && !errorMsg.getText().isEmpty()) {
+                    throw new RuntimeException("Payment failed: " + errorMsg.getText());
+                }
+            } catch (org.openqa.selenium.NoSuchElementException e) {
+                // Error element not found, continue waiting
+            }
+
+            return false;
+        });
+
+        if (!success) {
+            throw new RuntimeException("Payment did not complete successfully within timeout");
+        }
     }
 
     @Then("a booking confirmation modal should appear with an ID")
@@ -416,7 +577,7 @@ public class SearchAndRentalSteps {
 
     @Then("the booking should be stored in the system")
     public void the_booking_should_be_stored_in_the_system() {
-         // Verified by modal
+        // Verified by modal
     }
 
     // ------------------------------

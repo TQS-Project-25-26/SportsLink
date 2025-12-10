@@ -68,6 +68,18 @@ public class SecurityConfig {
                                 "/api/suggestions/facilities/**")
                         .authenticated()
 
+                        // Stripe payments
+                        .requestMatchers("/api/payments/webhook").permitAll() // Stripe webhook
+                                                                                // must be public
+                        .requestMatchers("/api/payments/config").permitAll() // Frontend needs
+                                                                                // publishable key
+                        .requestMatchers("/api/payments/**").authenticated() // Other payment
+                                                                                // endpoints
+                                                                                // require auth
+
+                        // Swagger/OpenAPI - permitir acesso público
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
                         // Error page - permitir acesso para mostrar erros corretamente
                         .requestMatchers("/error").permitAll()
 

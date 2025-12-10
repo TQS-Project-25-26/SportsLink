@@ -188,19 +188,72 @@ public class AdminSeps {
 
     @When("I click to delete facility {string}")
     public void deleteFacility(String facilityName) {
-        // Wait for data to load first
-        wait.until(ExpectedConditions.invisibilityOfElementLocated(By.cssSelector(".loading")));
-        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.id("facilities-table-body"), facilityName));
 
-        // Find row by name
-        WebElement row = driver.findElement(By.xpath("//tr[td[contains(text(), '" + facilityName + "')]]"));
-        WebElement deleteBtn = row.findElement(By.cssSelector(".btn-danger"));
+        // 1. Esperar que a tabela das facilities deixe de mostrar "Loading facilities..."
+        wait.until(ExpectedConditions.not(
+            ExpectedConditions.textToBePresentInElementLocated(
+                By.id("facilities-table-body"), "Loading facilities..."
+            )
+        ));
 
-        deleteBtn.click();
+        boolean found = false;
 
-        Alert alert = wait.until(ExpectedConditions.alertIsPresent());
-        alert.accept();
+        while (true) {
+            // 2. Obter o tbody da página atual
+            WebElement tbody = driver.findElement(By.id("facilities-table-body"));
+
+            // 3. Ver se nesta página existe a facility
+            if (tbody.getText().contains(facilityName)) {
+                // Encontrar a row específica
+                WebElement row = tbody.findElement(By.xpath(
+                    ".//tr[td[contains(normalize-space(.), '" + facilityName + "')]]"
+                ));
+
+                WebElement deleteBtn = row.findElement(By.cssSelector(".btn-danger"));
+                deleteBtn.click();
+
+                // Confirmar o alert do browser
+                Alert alert = wait.until(ExpectedConditions.alertIsPresent());
+                alert.accept();
+
+                found = true;
+                break;
+            }
+
+            // 4. Se não encontrámos nesta página, tentar ir para a próxima
+
+            // Botão Next dentro de #facilities-pagination que NÃO esteja disabled
+            java.util.List<WebElement> nextButtons = driver.findElements(
+                By.xpath("//div[@id='facilities-pagination']//button[normalize-space()='Next' and not(@disabled)]")
+            );
+
+            // Se não há Next ativo, não há mais páginas → sair do ciclo
+            if (nextButtons.isEmpty()) {
+                break;
+            }
+
+            // Clicar em Next
+            WebElement next = nextButtons.get(0);
+            // Guardar o texto atual da tabela para detetar mudança de página
+            String oldTableText = tbody.getText();
+
+            next.click();
+
+            // Esperar até o conteúdo da tabela mudar (nova página renderizada)
+            wait.until(driver -> {
+                WebElement newTbody = driver.findElement(By.id("facilities-table-body"));
+                return !newTbody.getText().equals(oldTableText);
+            });
+        }
+
+        // 5. Falhar explicitamente se nunca encontrámos
+        org.junit.jupiter.api.Assertions.assertTrue(
+            found,
+            "Facility '" + facilityName + "' was not found in any facilities table page"
+        );
     }
+
+
 
     @When("I try to access the admin dashboard")
     public void tryAccessDashboard() {
@@ -278,14 +331,56 @@ public class AdminSeps {
     }
 
     @Then("the facility {string} should no longer appear in the list")
-    public void checkFacilityDeleted(String name) {
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
+    public void checkFacilityDeleted(String facilityName) {
+
+        // 1. Espera até o DELETE terminar e a tabela ser recarregada
+        wait.until(ExpectedConditions.not(
+                ExpectedConditions.textToBePresentInElementLocated(
+                        By.id("facilities-table-body"), facilityName
+                )
+        ));
+
+        boolean found = false;
+
+        while (true) {
+
+            WebElement tbody = driver.findElement(By.id("facilities-table-body"));
+
+            // 2. Verifica se nesta página ainda existe
+            if (tbody.getText().contains(facilityName)) {
+                found = true;
+                break;
+            }
+
+            // 3. Procurar botão NEXT que não esteja disabled
+            List<WebElement> nextButtons = driver.findElements(
+                    By.xpath("//div[@id='facilities-pagination']//button[normalize-space()='Next' and not(@disabled)]")
+            );
+
+            // 4. Se não há Next → acabaram as páginas
+            if (nextButtons.isEmpty()) {
+                break;
+            }
+
+            // 5. Clicar NEXT e esperar a página carregar
+            WebElement next = nextButtons.get(0);
+            String oldTable = tbody.getText();
+            next.click();
+
+            wait.until(driver -> {
+                String newTable = driver.findElement(By.id("facilities-table-body")).getText();
+                return !newTable.equals(oldTable); // tabela mudou → nova página
+            });
         }
-        WebElement table = driver.findElement(By.id("facilities-table-body"));
-        assertFalse(table.getText().contains(name));
+
+        // 6. Se ainda existe em alguma página → falha
+        assertFalse(
+                found,
+                "Facility '" + facilityName + "' still appears in one of the facilities pages after deletion!"
+        );
     }
+
+
 
     @Then("I should stay on the home page")
     public void checkHomePage() {

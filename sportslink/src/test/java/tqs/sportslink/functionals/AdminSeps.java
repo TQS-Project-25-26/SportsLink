@@ -2,8 +2,6 @@ package tqs.sportslink.functionals;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.time.Duration;
 
@@ -14,7 +12,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -80,24 +77,53 @@ public class AdminSeps {
     @Given("I exist as an admin with email {string} and password {string}")
     public void ensureAdminExists(String email, String password) {
         initDriverIfNeeded();
-        // Setup is handled by DataInitializer usually, but we ensure DB state if needed
-        // (optional)
-        // Here we assume the user exists as per DataInitializer or integration test
-        // setup
+        tqs.sportslink.data.model.User admin;
+        if (userRepository.existsByEmail(email)) {
+            admin = userRepository.findByEmail(email).get();
+        } else {
+            admin = new tqs.sportslink.data.model.User();
+            admin.setEmail(email);
+        }
+        admin.setPassword(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode(password));
+        admin.setName("Admin User");
+        // Ensure role
+        if (admin.getRoles().size() == 0 || !admin.getRoles().contains(tqs.sportslink.data.model.Role.ADMIN)) {
+            admin.getRoles().add(tqs.sportslink.data.model.Role.ADMIN);
+        }
+        admin.setActive(true);
+        userRepository.save(admin);
     }
 
     @Given("I exist as a renter with email {string} and password {string}")
     public void ensureRenterExists(String email, String password) {
         initDriverIfNeeded();
-        // Assuming user exists via DataInitializer
+        tqs.sportslink.data.model.User renter;
+        if (userRepository.existsByEmail(email)) {
+            renter = userRepository.findByEmail(email).get();
+        } else {
+            renter = new tqs.sportslink.data.model.User();
+            renter.setEmail(email);
+        }
+        renter.setPassword(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode(password));
+        renter.setName("Renter User");
+        if (renter.getRoles().size() == 0 || !renter.getRoles().contains(tqs.sportslink.data.model.Role.RENTER)) {
+            renter.getRoles().add(tqs.sportslink.data.model.Role.RENTER);
+        }
+        renter.setActive(true);
+        userRepository.save(renter);
     }
 
     @Given("I am logged in as admin")
     public void loginAsAdmin() {
         initDriverIfNeeded();
+        // Ensure admin exists first (default credentials)
+        ensureAdminExists("admin@admin.com", "pwdAdmin");
+
         driver.get(getBaseUrl() + "/index.html");
 
-        // Manual login flow as per selenium export
+        // Simple wait for page load
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("email")));
+
         driver.findElement(By.id("email")).click();
         driver.findElement(By.id("email")).clear();
         driver.findElement(By.id("email")).sendKeys("admin@admin.com");
@@ -114,8 +140,20 @@ public class AdminSeps {
 
     @Given("a user {string} exists and is active")
     public void ensureUserActive(String email) {
-        // In a real test we might interact with DB to ensure state,
-        // but for functional UI test we assume DataInitializer did its job.
+        tqs.sportslink.data.model.User user;
+        if (userRepository.existsByEmail(email)) {
+            user = userRepository.findByEmail(email).get();
+        } else {
+            user = new tqs.sportslink.data.model.User();
+            user.setEmail(email);
+        }
+        user.setPassword(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode("password"));
+        if (user.getName() == null)
+            user.setName("Test User");
+        if (user.getRoles().isEmpty())
+            user.getRoles().add(tqs.sportslink.data.model.Role.RENTER);
+        user.setActive(true);
+        userRepository.save(user);
     }
 
     @Given("a facility {string} exists")
@@ -189,12 +227,11 @@ public class AdminSeps {
     @When("I click to delete facility {string}")
     public void deleteFacility(String facilityName) {
 
-        // 1. Esperar que a tabela das facilities deixe de mostrar "Loading facilities..."
+        // 1. Esperar que a tabela das facilities deixe de mostrar "Loading
+        // facilities..."
         wait.until(ExpectedConditions.not(
-            ExpectedConditions.textToBePresentInElementLocated(
-                By.id("facilities-table-body"), "Loading facilities..."
-            )
-        ));
+                ExpectedConditions.textToBePresentInElementLocated(
+                        By.id("facilities-table-body"), "Loading facilities...")));
 
         boolean found = false;
 
@@ -206,8 +243,7 @@ public class AdminSeps {
             if (tbody.getText().contains(facilityName)) {
                 // Encontrar a row específica
                 WebElement row = tbody.findElement(By.xpath(
-                    ".//tr[td[contains(normalize-space(.), '" + facilityName + "')]]"
-                ));
+                        ".//tr[td[contains(normalize-space(.), '" + facilityName + "')]]"));
 
                 WebElement deleteBtn = row.findElement(By.cssSelector(".btn-danger"));
                 deleteBtn.click();
@@ -224,8 +260,8 @@ public class AdminSeps {
 
             // Botão Next dentro de #facilities-pagination que NÃO esteja disabled
             java.util.List<WebElement> nextButtons = driver.findElements(
-                By.xpath("//div[@id='facilities-pagination']//button[normalize-space()='Next' and not(@disabled)]")
-            );
+                    By.xpath(
+                            "//div[@id='facilities-pagination']//button[normalize-space()='Next' and not(@disabled)]"));
 
             // Se não há Next ativo, não há mais páginas → sair do ciclo
             if (nextButtons.isEmpty()) {
@@ -248,12 +284,9 @@ public class AdminSeps {
 
         // 5. Falhar explicitamente se nunca encontrámos
         org.junit.jupiter.api.Assertions.assertTrue(
-            found,
-            "Facility '" + facilityName + "' was not found in any facilities table page"
-        );
+                found,
+                "Facility '" + facilityName + "' was not found in any facilities table page");
     }
-
-
 
     @When("I try to access the admin dashboard")
     public void tryAccessDashboard() {
@@ -336,9 +369,7 @@ public class AdminSeps {
         // 1. Espera até o DELETE terminar e a tabela ser recarregada
         wait.until(ExpectedConditions.not(
                 ExpectedConditions.textToBePresentInElementLocated(
-                        By.id("facilities-table-body"), facilityName
-                )
-        ));
+                        By.id("facilities-table-body"), facilityName)));
 
         boolean found = false;
 
@@ -354,8 +385,8 @@ public class AdminSeps {
 
             // 3. Procurar botão NEXT que não esteja disabled
             List<WebElement> nextButtons = driver.findElements(
-                    By.xpath("//div[@id='facilities-pagination']//button[normalize-space()='Next' and not(@disabled)]")
-            );
+                    By.xpath(
+                            "//div[@id='facilities-pagination']//button[normalize-space()='Next' and not(@disabled)]"));
 
             // 4. Se não há Next → acabaram as páginas
             if (nextButtons.isEmpty()) {
@@ -376,11 +407,8 @@ public class AdminSeps {
         // 6. Se ainda existe em alguma página → falha
         assertFalse(
                 found,
-                "Facility '" + facilityName + "' still appears in one of the facilities pages after deletion!"
-        );
+                "Facility '" + facilityName + "' still appears in one of the facilities pages after deletion!");
     }
-
-
 
     @Then("I should stay on the home page")
     public void checkHomePage() {

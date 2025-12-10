@@ -1,9 +1,12 @@
 package tqs.sportslink.C_Tests_controller;
 
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
 import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -28,18 +31,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(AdminController.class)
 @Import(TestSecurityConfig.class)
 @ActiveProfiles("test")
+@Requirement("SL-343")
 class AdminControllerTest {
 
     @Autowired
     private MockMvc mvc;
 
-    @MockBean
+    @MockitoBean
     private AdminService adminService;
 
-    @MockBean
+    @MockitoBean
     private AuthService authService; // Security dependency
 
-    @MockBean
+    @MockitoBean
     private JwtUtil jwtUtil; // Security dependency
 
     @Test

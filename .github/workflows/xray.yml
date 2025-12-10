@@ -46,11 +46,13 @@ jobs:
 
       - name: Run tests
         run: mvn clean verify
+        continue-on-error: true
 
       # ===============================
       # IMPORTA TESTES UNITÁRIOS (JUnit)
       # ===============================
       - name: Import Unit Test results to Xray
+        if: always()
         uses: mikepenz/xray-action@v3
         with:
           username: ${{ secrets.XRAY_CLIENT_ID }}

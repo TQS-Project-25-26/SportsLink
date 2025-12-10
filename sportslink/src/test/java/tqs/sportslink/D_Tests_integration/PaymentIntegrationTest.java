@@ -38,8 +38,11 @@ import tqs.sportslink.dto.RentalRequestDTO;
  * Note: Actual Stripe API calls are not made in tests - this tests the database
  * layer and payment record management independently of Stripe.
  */
+import tqs.sportslink.config.TestSecurityConfig;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
+@org.springframework.context.annotation.Import(TestSecurityConfig.class)
 class PaymentIntegrationTest {
 
     @LocalServerPort

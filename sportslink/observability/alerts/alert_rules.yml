@@ -1,0 +1,11 @@
+groups:
+- name: sportslink-alerts
+  rules:
+  - alert: SportsLinkDown
+    expr: up{job="sportslink"} == 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "SportsLink service is down"
+      description: "Prometheus target 'sportslink' is down for >2m"

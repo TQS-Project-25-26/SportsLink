@@ -1,5 +1,7 @@
 package tqs.sportslink.A_Tests_repository;
 
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -24,6 +26,7 @@ class FacilityRepositoryTest {
     private FacilityRepository facilityRepository;
 
     @Test
+    @Requirement("SL-27")
     void whenFindByCityAndSportType_thenReturnFacility() {
         // given
         Facility f = new Facility();
@@ -48,6 +51,7 @@ class FacilityRepositoryTest {
     }
 
     @Test
+    @Requirement("SL-36")
     void whenFindByOwnerId_thenReturnFacilities() {
         // Create owner
         User owner = new User();

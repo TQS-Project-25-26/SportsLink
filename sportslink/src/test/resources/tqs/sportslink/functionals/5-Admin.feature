@@ -15,6 +15,7 @@ Feature: Admin Management
   @SL-343 @admin @functional
   Scenario: Admin views user management
     Given I am logged in as admin
+    And a user "owner@sportslink.com" exists and is active
     When I navigate to the users management page
     Then I should see a list of users
     And I should see user "owner@sportslink.com"
@@ -30,6 +31,7 @@ Feature: Admin Management
   @SL-343 @admin @functional
   Scenario: Admin Views Facilities
     Given I am logged in as admin
+    And a facility "Campo de Futebol da Universidade de Aveiro" exists
     When I navigate to the facilities management page
     Then I should see a list of facilities
     And I should see facility "Campo de Futebol da Universidade de Aveiro"

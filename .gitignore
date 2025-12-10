@@ -132,3 +132,8 @@ sonar-project.properties
 *.tfstate.backup
 .rediscli
 .node_repl_history
+
+# ==================== #
+#       OBSERVABILITY  #
+# ==================== #
+observability/*

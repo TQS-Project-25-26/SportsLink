@@ -22,6 +22,7 @@ import tqs.sportslink.dto.FacilityResponseDTO;
 import tqs.sportslink.service.FacilityService;
 
 @ExtendWith(MockitoExtension.class)
+@Requirement("SL-15")
 class UnitFacilityServiceTest {
 
     @Mock

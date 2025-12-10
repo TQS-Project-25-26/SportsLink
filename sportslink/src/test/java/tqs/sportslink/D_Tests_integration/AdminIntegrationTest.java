@@ -1,12 +1,11 @@
 package tqs.sportslink.D_Tests_integration;
 
-import static io.restassured.RestAssured.given;
+import java.util.List;
+
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,22 +13,22 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.ActiveProfiles;
 
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
+import static io.restassured.RestAssured.given;
 import tqs.sportslink.data.FacilityRepository;
 import tqs.sportslink.data.UserRepository;
 import tqs.sportslink.data.model.Facility;
 import tqs.sportslink.data.model.Role;
 import tqs.sportslink.data.model.Sport;
 import tqs.sportslink.data.model.User;
-import tqs.sportslink.dto.AuthResponseDTO;
-import tqs.sportslink.dto.UserRequestDTO;
 
-import java.time.LocalTime;
-import java.util.List;
+import tqs.sportslink.config.TestSecurityConfig;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
+@Requirement("SL-343")
+@org.springframework.context.annotation.Import(TestSecurityConfig.class)
 public class AdminIntegrationTest {
 
     @LocalServerPort
@@ -52,7 +51,7 @@ public class AdminIntegrationTest {
         // 1. Create Admin User (just for data consistency, auth is disabled)
         User admin = new User();
         admin.setEmail("admin@admin.com");
-        admin.setPassword("adminpass"); 
+        admin.setPassword(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode("adminpass"));
         admin.setName("Admin");
         admin.getRoles().add(Role.ADMIN);
         admin.setActive(true);
@@ -61,7 +60,7 @@ public class AdminIntegrationTest {
         // 2. Create Renter User
         User renter = new User();
         renter.setEmail("renter@user.com");
-        renter.setPassword("renterpass");
+        renter.setPassword(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode("renterpass"));
         renter.setName("Renter");
         renter.getRoles().add(Role.RENTER);
         renter.setActive(true);
@@ -74,7 +73,7 @@ public class AdminIntegrationTest {
         f.setCity("Test City");
         f.setPricePerHour(10.0);
         f.setStatus("ACTIVE");
-        f.setSports(List.of(Sport.FOOTBALL)); 
+        f.setSports(List.of(Sport.FOOTBALL));
         facilityRepository.save(f);
     }
 
@@ -124,7 +123,7 @@ public class AdminIntegrationTest {
                 .then()
                 .statusCode(200)
                 .body("active", equalTo(false));
-                
+
         // Verify in DB
         renter = userRepository.findById(renterId).orElseThrow();
         assertFalse(renter.getActive());
@@ -137,7 +136,7 @@ public class AdminIntegrationTest {
                 .then()
                 .statusCode(200)
                 .body("active", equalTo(true));
-                
+
         // Verify in DB
         renter = userRepository.findById(renterId).orElseThrow();
         assertTrue(renter.getActive());

@@ -32,5 +32,7 @@ public interface FacilityRepository extends JpaRepository<Facility, Long> {
      */
     Optional<Facility> findByIdAndOwnerId(Long facilityId, Long ownerId);
 
+    List<Facility> findByName(String name);
+
     boolean existsByName(String name);
 }

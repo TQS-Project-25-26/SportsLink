@@ -1,5 +1,7 @@
 package tqs.sportslink.A_Tests_repository;
 
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -25,6 +27,7 @@ class RentalRepositoryTest {
     private RentalRepository rentalRepository;
 
     @Test
+    @Requirement("SL-30")
     void whenFindByFacilityId_thenReturnRentals() {
         // Setup User & Facility
         User u = new User();

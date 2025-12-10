@@ -1,5 +1,7 @@
 package tqs.sportslink.A_Tests_repository;
 
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -22,6 +24,7 @@ class UserRepositoryTest {
     private UserRepository userRepository;
 
     @Test
+    @Requirement("SL-42")
     void whenFindByEmail_thenReturnUser() {
         // given
         User user = new User();
@@ -47,6 +50,7 @@ class UserRepositoryTest {
     }
 
     @Test
+    @Requirement("SL-41")
     void whenExistsByEmail_thenReturnTrue() {
         User user = new User();
         user.setEmail("bob@example.com");
@@ -58,6 +62,7 @@ class UserRepositoryTest {
     }
 
     @Test
+    @Requirement("SL-343")
     void whenFindByRolesContaining_thenReturnUser() {
         User user = new User();
         user.setEmail("owner@example.com");

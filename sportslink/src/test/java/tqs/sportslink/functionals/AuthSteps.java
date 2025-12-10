@@ -60,7 +60,7 @@ public class AuthSteps {
     public void fill_registration_form(String email, String password) {
         // Use unique email to avoid conflict if test runs multiple times
         String uniqueEmail = System.currentTimeMillis() + "_" + email;
-        
+
         driver.findElement(By.id("name")).sendKeys("New User");
         driver.findElement(By.id("email")).sendKeys(uniqueEmail);
         driver.findElement(By.id("password")).sendKeys(password);
@@ -96,10 +96,32 @@ public class AuthSteps {
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("loginForm")));
     }
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private tqs.sportslink.data.UserRepository userRepository;
+
     @When("I fill the login form with {string} and {string}")
     public void fill_login_form(String email, String password) {
+        if (!userRepository.existsByEmail(email)) {
+            tqs.sportslink.data.model.User user = new tqs.sportslink.data.model.User();
+            user.setEmail(email);
+            user.setPassword(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode(password));
+            user.setName("Login Test User");
+            if (email.contains("owner")) {
+                user.getRoles().add(tqs.sportslink.data.model.Role.OWNER);
+            } else {
+                user.getRoles().add(tqs.sportslink.data.model.Role.RENTER);
+            }
+            user.setActive(true);
+            userRepository.save(user);
+        } else {
+            // Ensure password matches (force update to avoid conflicts)
+            tqs.sportslink.data.model.User user = userRepository.findByEmail(email).get();
+            user.setPassword(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode(password));
+            userRepository.save(user);
+        }
+
         driver.findElement(By.id("email")).sendKeys(email);
-        driver.findElement(By.id("password")).sendKeys(password); 
+        driver.findElement(By.id("password")).sendKeys(password);
     }
 
     @When("I press the login button")
@@ -111,7 +133,6 @@ public class AuthSteps {
     public void redirected_to_main_page() {
         wait.until(ExpectedConditions.or(
                 ExpectedConditions.urlContains("main_page_user.html"),
-                ExpectedConditions.urlContains("owner_dashboard.html")
-        ));
+                ExpectedConditions.urlContains("owner_dashboard.html")));
     }
 }

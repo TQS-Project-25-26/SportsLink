@@ -213,4 +213,84 @@ class UnitStripePaymentServiceTest {
 
         assertThat(amountInCents).isEqualTo(1999L);
     }
+
+    @Test
+    void whenCreatePaymentIntent_Success_shouldReturnClientSecret() {
+        // Prepare data
+        mockRental.setTotalPrice(50.0);
+        when(rentalRepository.findById(1L)).thenReturn(Optional.of(mockRental));
+        when(paymentRepository.findByRentalId(1L)).thenReturn(Optional.empty());
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(i -> {
+            Payment p = i.getArgument(0);
+            p.setId(100L);
+            return p;
+        });
+
+        // Mock static PaymentIntent.create
+        try (org.mockito.MockedStatic<com.stripe.model.PaymentIntent> mockedPaymentIntent = mockStatic(com.stripe.model.PaymentIntent.class)) {
+            com.stripe.model.PaymentIntent mockIntent = mock(com.stripe.model.PaymentIntent.class);
+            when(mockIntent.getId()).thenReturn("pi_success_123");
+            when(mockIntent.getClientSecret()).thenReturn("secret_123");
+            
+            mockedPaymentIntent.when(() -> com.stripe.model.PaymentIntent.create(any(com.stripe.param.PaymentIntentCreateParams.class)))
+                    .thenReturn(mockIntent);
+
+            // Execute
+            StripePaymentService.PaymentIntentResult result = stripePaymentService.createPaymentIntent(1L, "user@example.com");
+
+            // Assert
+            assertThat(result).isNotNull();
+            assertThat(result.clientSecret()).isEqualTo("secret_123");
+            assertThat(result.paymentId()).isEqualTo(100L);
+            
+            // Verify repository calls
+            verify(paymentRepository).save(any(Payment.class));
+            verify(rentalRepository).save(mockRental);
+            assertThat(mockRental.getPaymentStatus()).isEqualTo("PENDING");
+        } catch (com.stripe.exception.StripeException e) {
+            org.junit.jupiter.api.Assertions.fail("StripeException should not be thrown");
+        }
+    }
+
+    @Test
+    void whenHandleWebhookEvent_PaymentSucceeded_shouldUpdateStatus() {
+        String payload = "{}";
+        String sigHeader = "sig";
+        String webhookSecret = null; // Value from @Value, might need reflection or setting via constructor if possible, but field injection is used. 
+                                     // However, we are mocking Webhook.constructEvent so secret verification logic inside it is bypassed.
+
+        try (org.mockito.MockedStatic<com.stripe.net.Webhook> mockedWebhook = mockStatic(com.stripe.net.Webhook.class)) {
+            // Mock Event
+            com.stripe.model.Event mockEvent = mock(com.stripe.model.Event.class);
+            when(mockEvent.getType()).thenReturn("payment_intent.succeeded");
+
+            // Mock DataObjectDeserializer and PaymentIntent inside Event
+            com.stripe.model.EventDataObjectDeserializer mockDeserializer = mock(com.stripe.model.EventDataObjectDeserializer.class);
+            com.stripe.model.PaymentIntent mockIntent = mock(com.stripe.model.PaymentIntent.class);
+            when(mockIntent.getId()).thenReturn("pi_webhook_123");
+            
+            when(mockEvent.getDataObjectDeserializer()).thenReturn(mockDeserializer);
+            when(mockDeserializer.getObject()).thenReturn(Optional.of(mockIntent));
+
+            mockedWebhook.when(() -> com.stripe.net.Webhook.constructEvent(eq(payload), eq(sigHeader), any()))
+                    .thenReturn(mockEvent);
+
+            // Mock Repository finding payment
+            Payment existingPayment = new Payment(mockRental, "pi_webhook_123", 50.0, "user@example.com");
+            when(paymentRepository.findByStripePaymentIntentId("pi_webhook_123")).thenReturn(Optional.of(existingPayment));
+
+            // Execute
+            try {
+                stripePaymentService.handleWebhookEvent(payload, sigHeader);
+            } catch (Exception e) {
+                 org.junit.jupiter.api.Assertions.fail("Exception should not be thrown");
+            }
+
+            // Assert
+            assertThat(existingPayment.getStatus()).isEqualTo("SUCCEEDED");
+            assertThat(existingPayment.getRental().getPaymentStatus()).isEqualTo("PAID");
+            verify(paymentRepository).save(existingPayment);
+            verify(rentalRepository).save(mockRental);
+        }
+    }
 }

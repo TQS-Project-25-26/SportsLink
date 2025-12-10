@@ -24,6 +24,8 @@ public class PaymentController {
 
     private static final Logger logger = LoggerFactory.getLogger(PaymentController.class);
 
+    private static final String ERROR_KEY = "error";
+
     private final StripePaymentService stripePaymentService;
 
     @Value("${stripe.publishable.key}")
@@ -54,17 +56,17 @@ public class PaymentController {
         } catch (NoSuchElementException e) {
             logger.error("Rental not found: {}", rentalId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", e.getMessage()));
+                    .body(Map.of(ERROR_KEY, e.getMessage()));
 
         } catch (IllegalStateException | IllegalArgumentException e) {
             logger.error("Payment error: {}", e.getMessage());
             return ResponseEntity.badRequest()
-                    .body(Map.of("error", e.getMessage()));
+                    .body(Map.of(ERROR_KEY, e.getMessage()));
 
         } catch (StripeException e) {
             logger.error("Stripe error creating PaymentIntent", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Payment service error: " + e.getMessage()));
+                    .body(Map.of(ERROR_KEY, "Payment service error: " + e.getMessage()));
         }
     }
 

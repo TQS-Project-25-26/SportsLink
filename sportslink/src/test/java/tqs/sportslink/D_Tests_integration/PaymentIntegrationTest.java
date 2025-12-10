@@ -297,4 +297,19 @@ class PaymentIntegrationTest {
         // Payment now exists
         assertThat(paymentRepository.existsByRentalId(testRental.getId())).isTrue();
     }
+
+    /**
+     * Test: Create PaymentIntent with non-existent rental returns 404 and error message
+     */
+    @Test
+    void whenCreatePaymentIntent_withInvalidRental_thenReturns404() {
+        given()
+                .queryParam("email", "test@example.com")
+                .when()
+                .post("/api/payments/create-intent/99999")
+                .then()
+                .statusCode(404)
+                .body("error", notNullValue())
+                .body("error", equalTo("Rental not found: 99999"));
+    }
 }

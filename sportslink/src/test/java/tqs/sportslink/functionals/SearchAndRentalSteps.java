@@ -34,6 +34,9 @@ public class SearchAndRentalSteps {
     @org.springframework.beans.factory.annotation.Autowired
     private tqs.sportslink.data.UserRepository userRepository;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private tqs.sportslink.data.RentalRepository rentalRepository;
+
     private String getBaseUrl() {
         return "http://localhost:" + port;
     }
@@ -42,6 +45,14 @@ public class SearchAndRentalSteps {
     private static final By FACILITY_CARD = By.cssSelector("#featured .card, #nearbyCarousel .card");
 
     // ------------------ SETUP ------------------
+
+    @io.cucumber.java.Before("@booking")
+    public void cleanUpBookings() {
+        userRepository.findByEmail("test@sportslink.com").ifPresent(user -> {
+            var rentals = rentalRepository.findByUserId(user.getId());
+            rentalRepository.deleteAll(rentals);
+        });
+    }
 
     private void setupAuthenticatedState() {
         // Fetch the test user created by DataInitializer

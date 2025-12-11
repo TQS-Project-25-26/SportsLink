@@ -1,6 +1,6 @@
 Feature: Owner Suggestions
 
-  @SL-32 @owner @suggestions @functional
+  @REQ_SL-32 @owner @suggestions @functional
   Scenario: Owner views intelligent suggestions
     Given I am logged in as an owner
     And I am on the owner dashboard

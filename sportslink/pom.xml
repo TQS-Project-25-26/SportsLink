@@ -268,7 +268,8 @@
 					<!-- run tests named *IT.java -->
 					<includes>
 						<include>**/*IT.java</include>
-					</includes>
+					<include>**/*IntegrationTest.java</include>
+				</includes>
 					<!-- ensure Cucumber (if used) writes JSON to target/cucumber-reports -->
 					<systemPropertyVariables>
 						<cucumber.plugin>json:target/cucumber-reports/cucumber.json</cucumber.plugin>

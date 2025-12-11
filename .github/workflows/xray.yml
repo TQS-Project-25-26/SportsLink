@@ -52,6 +52,37 @@ jobs:
       - name: Create Cucumber reports directory
         run: mkdir -p target/cucumber-reports
 
+      # ===============================
+      # IMPORTA FEATURE FILES PARA CRIAR TESTS
+      # (Feature-first approach via REST API)
+      # ===============================
+      - name: Get Xray authentication token
+        id: xray_auth
+        run: |
+          TOKEN=$(curl -s -X POST \
+            "https://xray.cloud.getxray.app/api/v2/authenticate" \
+            -H "Content-Type: application/json" \
+            -d "{\"client_id\":\"${{ secrets.XRAY_CLIENT_ID }}\",\"client_secret\":\"${{ secrets.XRAY_CLIENT_SECRET }}\"}" \
+            | tr -d '"')
+          echo "token=$TOKEN" >> $GITHUB_OUTPUT
+        working-directory: .
+
+      - name: Import Cucumber feature files to Xray
+        run: |
+          cd sportslink
+          for feature in src/test/resources/tqs/sportslink/functionals/*.feature; do
+            echo "Importing $feature..."
+            curl -s -X POST \
+              "https://xray.cloud.getxray.app/api/v2/import/feature?projectKey=SL" \
+              -H "Authorization: Bearer ${{ steps.xray_auth.outputs.token }}" \
+              -H "Content-Type: multipart/form-data" \
+              -F "file=@$feature" \
+              || true
+          done
+        working-directory: .
+        continue-on-error: true
+
+
       - name: Run tests
         run: mvn clean verify
         continue-on-error: true

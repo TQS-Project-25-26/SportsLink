@@ -128,21 +128,32 @@ jobs:
           failOnImportError: false
 
       # ===============================
-      # IMPORTA TESTES BDD (Cucumber JSON)
+      # IMPORTA TESTES BDD (Cucumber JSON via REST API)
       # ===============================
-      - name: Import Cucumber results to Xray
+      - name: Import Cucumber results to Xray via API
         if: always()
-        uses: mikepenz/xray-action@v3
-        with:
-          username: ${{ secrets.XRAY_CLIENT_ID }}
-          password: ${{ secrets.XRAY_CLIENT_SECRET }}
-          testFormat: cucumber
-          testPaths: "**/target/cucumber-reports/*.json"
-          projectKey: SL
-          combineInSingleTestExec: true
-          testExecName: "BDD Tests - GitHub Actions"
-          testPlanKey: SL-104
-          testEnvironments: GitHub-Actions
-          revision: ${{ github.sha }}
-          verbose: true
-          failOnImportError: false
+        run: |
+          if [ -f "sportslink/target/cucumber-reports/cucumber.json" ]; then
+            echo "Importing Cucumber results..."
+            RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+              "https://xray.cloud.getxray.app/api/v2/import/execution/cucumber?projectKey=SL&testPlanKey=SL-104" \
+              -H "Authorization: Bearer ${{ steps.xray_auth.outputs.token }}" \
+              -H "Content-Type: application/json" \
+              -d @sportslink/target/cucumber-reports/cucumber.json)
+            
+            HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+            BODY=$(echo "$RESPONSE" | sed '$d')
+            
+            echo "HTTP Status: $HTTP_CODE"
+            echo "Response: $BODY"
+            
+            if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+              echo "Cucumber results imported successfully"
+            else
+              echo "!!! Cucumber import failed (non-critical)"
+            fi
+          else
+            echo "!!! No cucumber.json file found"
+          fi
+        working-directory: .
+        continue-on-error: true

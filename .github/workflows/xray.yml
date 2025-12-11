@@ -37,12 +37,20 @@ jobs:
           java-version: 21
           cache: maven
 
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+
       - name: Wait for PostgreSQL
         run: |
           until pg_isready -h localhost -p 5432 -U sportslink; do
             echo "Aguardando PostgreSQL..."
             sleep 5
           done
+
+      - name: Create Cucumber reports directory
+        run: mkdir -p target/cucumber-reports
 
       - name: Run tests
         run: mvn clean verify

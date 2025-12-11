@@ -1,3 +1,4 @@
+@REQ_SL-343
 Feature: Admin Management
   
   # ============================================================
@@ -5,14 +6,14 @@ Feature: Admin Management
   # Epic: SL-23 (Admin Page)
   # ============================================================
 
-  @REQ_SL-343 @admin @functional
+  @admin @functional
   Scenario: Admin logs in and sees dashboard
     Given I exist as an admin with email "admin@admin.com" and password "pwdAdmin"
     When I login as "admin@admin.com" with password "pwdAdmin"
     Then I should be redirected to the admin dashboard
     And I should see system statistics
 
-  @REQ_SL-343 @admin @functional
+  @admin @functional
   Scenario: Admin views user management
     Given I am logged in as admin
     And a user "owner@sportslink.com" exists and is active
@@ -20,7 +21,7 @@ Feature: Admin Management
     Then I should see a list of users
     And I should see user "owner@sportslink.com"
 
-  @REQ_SL-343 @admin @functional
+  @admin @functional
   Scenario: Admin blocks a user
     Given I am logged in as admin
     And a user "test@sportslink.com" exists and is active
@@ -28,7 +29,7 @@ Feature: Admin Management
     And I click to block user "test@sportslink.com"
     Then the user "test@sportslink.com" should be marked as inactive
 
-  @REQ_SL-343 @admin @functional
+  @admin @functional
   Scenario: Admin Views Facilities
     Given I am logged in as admin
     And a facility "Campo de Futebol da Universidade de Aveiro" exists
@@ -36,7 +37,7 @@ Feature: Admin Management
     Then I should see a list of facilities
     And I should see facility "Campo de Futebol da Universidade de Aveiro"
 
-  @REQ_SL-343 @admin @functional
+  @admin @functional
   Scenario: Admin Deletes a Facility
     Given I am logged in as admin
     And a facility "To Be Deleted Facility" exists

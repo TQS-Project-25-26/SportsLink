@@ -1,6 +1,7 @@
+@REQ_SL-33
 Feature: Field Creation
 
-  @REQ_SL-33 @owner @field @functional
+  @owner @field @functional
   Scenario: Owner can open the add facility modal
     Given I am logged in as an owner
     And I am on the owner dashboard

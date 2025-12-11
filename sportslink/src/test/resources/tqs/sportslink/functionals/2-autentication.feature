@@ -1,6 +1,7 @@
+@REQ_SL-41
 Feature: User Authentication
 
-  @REQ_SL-41 @auth @functional
+  @auth @functional
   Scenario: User registers specifically
     Given I am on the registration page
     When I fill the registration form with distinct email "newuser@example.com" and password "password123"

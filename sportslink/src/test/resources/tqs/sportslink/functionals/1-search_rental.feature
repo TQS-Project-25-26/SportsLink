@@ -1,3 +1,4 @@
+@REQ_SL-27 @REQ_SL-24 @REQ_SL-29 @REQ_SL-20 @REQ_SL-32
 Feature: Functional testing for facility search and booking
 
   # ============================================================
@@ -6,14 +7,14 @@ Feature: Functional testing for facility search and booking
   # Epic: SL-15 (Field Discovery & Catalog - se existir)
   # ============================================================
   
-  @REQ_SL-27 @SL-104 @search @functional
+  @SL-104 @search @functional
   Scenario: User searches for fields using the sport dropdown
     Given I am on the main search page
     When I select the sport "Football" from the dropdown
     And I press the search button
     Then I should see facilities related to "Football"
 
-  @REQ_SL-27 @SL-104 @search @functional
+  @SL-104 @search @functional
   Scenario: User searches for padel courts in Aveiro
     Given I am on the main search page
     When I select the sport "Padel" from the dropdown
@@ -27,13 +28,13 @@ Feature: Functional testing for facility search and booking
   # Epic: SL-15 (Field Discovery & Catalog - se existir)
   # ============================================================
 
-  @skip @REQ_SL-24 @REQ_SL-27 @SL-104 @details @functional
+  @skip @SL-104 @details @functional
   Scenario: User opens the details of the first search result
     Given I performed a search for "Padel" in "Aveiro"
     When I click on the first facility result
     Then I should be on the facility details page
 
-  @REQ_SL-24 @REQ_SL-32 @SL-104 @details @equipment @functional
+  @SL-104 @details @equipment @functional
   Scenario: User opens equipment list from facility details
     Given I am on the facility details page for facility 1
     When I click the button to view all equipment
@@ -46,14 +47,14 @@ Feature: Functional testing for facility search and booking
   # Epic: SL-20 (Booking & Reservation System)
   # ============================================================
 
-  @REQ_SL-29 @REQ_SL-32 @REQ_SL-20 @SL-104 @booking @equipment @functional
+  @SL-104 @booking @equipment @functional
   Scenario: User selects available equipment and proceeds to booking
     Given I am viewing equipment for facility 1
     When I select at least one available equipment item
     And I press the continue button
     Then I should be on the booking page
 
-  @REQ_SL-29 @REQ_SL-20 @SL-104 @booking @functional
+  @SL-104 @booking @functional
   Scenario: User completes a booking
     Given I am on the booking page for facility 1
     When I fill the booking form with time "18:00" and duration "2" hours
@@ -67,7 +68,7 @@ Feature: Functional testing for facility search and booking
   # Epic: SL-20 (Booking & Reservation System)
   # ============================================================
 
-  @skip @REQ_SL-27 @REQ_SL-24 @REQ_SL-29 @REQ_SL-32 @REQ_SL-20 @SL-104 @e2e @critical @functional
+  @skip @SL-104 @e2e @critical @functional
   Scenario: Complete booking flow from search to confirmation
     Given I am on the main search page
     # Search phase (SL-27)

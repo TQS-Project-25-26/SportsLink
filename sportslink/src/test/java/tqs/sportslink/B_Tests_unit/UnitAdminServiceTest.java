@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 
@@ -179,6 +180,35 @@ class UnitAdminServiceTest {
         assertEquals("CANCELLED", result.getStatus());
         verify(rentalRepository).save(rental);
     }
+
+    @Test
+    void whenAdminTriesToDeactivateOwnAccount_thenThrowIllegalState() {
+        // Arrange
+        User user = new User();
+        user.setId(1L);
+        user.setEmail("admin@admin.com");
+        user.setActive(true);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        // Simulate authenticated admin with same username/email
+        var auth = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                "admin@admin.com", "pw", java.util.List.of());
+        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(auth);
+
+        try {
+            // Act + Assert
+            org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class,
+                    () -> adminService.updateUserStatus(1L, false));
+
+            // Ensure we never persist the change
+            verify(userRepository, never()).save(any(User.class));
+        } finally {
+            // Cleanup to avoid leaking auth into other tests
+            org.springframework.security.core.context.SecurityContextHolder.clearContext();
+        }
+    }
+
 
     private Rental rental() {
         return new Rental();

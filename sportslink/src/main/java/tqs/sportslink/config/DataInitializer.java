@@ -3,6 +3,7 @@ package tqs.sportslink.config;
 import java.time.LocalTime;
 import java.util.List;
 
+import org.bouncycastle.jcajce.provider.asymmetric.dsa.DSASigner.stdDSA;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -28,6 +29,15 @@ public class DataInitializer {
     private static final String CITY_AVEIRO = "Aveiro";
     private static final String OWNER_EMAIL = "owner@sportslink.com";
     private static final String MINIO_BASE_URL = "http://192.168.160.31:9000/sportslink-images/imagensMinIO/";
+    private static final String USER_EMAIL = "test@sportslink.com";
+    private static final String TIME_EXAMPLE_1 = "08:00";
+    private static final String TIME_EXAMPLE_2 = "22:00";
+    private static final String TIME_EXAMPLE_3 = "09:00";
+    private static final String TIME_EXAMPLE_4 = "23:00";
+    private static final String PADEL_JPEG = "padel_pitch.jpeg";
+    private static final String CONFIRMED = "CONFIRMED";
+    private static final String COMPLETED = "COMPLETED";
+
 
     @Bean
     CommandLineRunner initDatabase(FacilityRepository facilityRepository,
@@ -80,9 +90,9 @@ public class DataInitializer {
                     logger.info("Owner user created: {} / password123 (id={})", OWNER_EMAIL, ownerUser.getId());
                 }
 
-                if (userRepository.findByEmail("test@sportslink.com").isEmpty()) {
+                if (userRepository.findByEmail(USER_EMAIL).isEmpty()) {
                     User testUser = new User();
-                    testUser.setEmail("test@sportslink.com");
+                    testUser.setEmail(USER_EMAIL);
                     testUser.setPassword(passwordEncoder.encode("password123")); // Encoded password
                     testUser.setName("Test User");
                     testUser.setPhone("912345678");
@@ -103,8 +113,8 @@ public class DataInitializer {
                 facility1.setAddress("Campus Universitário de Santiago, 3810-193 Aveiro");
                 facility1.setDescription("Campo de futebol sintético com iluminação");
                 facility1.setPricePerHour(25.0);
-                facility1.setOpeningTime(LocalTime.parse("08:00"));
-                facility1.setClosingTime(LocalTime.parse("22:00"));
+                facility1.setOpeningTime(LocalTime.parse(TIME_EXAMPLE_1));
+                facility1.setClosingTime(LocalTime.parse(TIME_EXAMPLE_2));
                 facility1.setStatus(STATUS_ACTIVE);
                 facility1.setLatitude(40.6443);
                 facility1.setLongitude(-8.6455);
@@ -119,13 +129,13 @@ public class DataInitializer {
                 facility2.setAddress("Rua do Clube dos Galitos, 3800-000 Aveiro");
                 facility2.setDescription("Courts de padel cobertos e descobertos");
                 facility2.setPricePerHour(15.0);
-                facility2.setOpeningTime(LocalTime.parse("09:00"));
-                facility2.setClosingTime(LocalTime.parse("23:00"));
+                facility2.setOpeningTime(LocalTime.parse(TIME_EXAMPLE_3));
+                facility2.setClosingTime(LocalTime.parse(TIME_EXAMPLE_4));
                 facility2.setStatus(STATUS_ACTIVE);
                 facility2.setLatitude(40.6400);
                 facility2.setLongitude(-8.6500);
                 facility2.setRating(4.7);
-                facility2.setImageUrl(MINIO_BASE_URL + "padel_pitch.jpeg");
+                facility2.setImageUrl(MINIO_BASE_URL + PADEL_JPEG);
                 facilityRepository.save(facility2);
 
                 Facility facility3 = new Facility();
@@ -135,7 +145,7 @@ public class DataInitializer {
                 facility3.setAddress("Av. Dr. Lourenço Peixinho, 3800-000 Aveiro");
                 facility3.setDescription("Courts de ténis com piso rápido");
                 facility3.setPricePerHour(20.0);
-                facility3.setOpeningTime(LocalTime.parse("08:00"));
+                facility3.setOpeningTime(LocalTime.parse(TIME_EXAMPLE_1));
                 facility3.setClosingTime(LocalTime.parse("21:00"));
                 facility3.setStatus(STATUS_ACTIVE);
                 facility3.setLatitude(40.6410);
@@ -152,7 +162,7 @@ public class DataInitializer {
                 facility4.setDescription("Pavilhão coberto com bancadas");
                 facility4.setPricePerHour(30.0);
                 facility4.setOpeningTime(LocalTime.parse("10:00"));
-                facility4.setClosingTime(LocalTime.parse("22:00"));
+                facility4.setClosingTime(LocalTime.parse(TIME_EXAMPLE_2));
                 facility4.setStatus(STATUS_ACTIVE);
                 facility4.setLatitude(38.7223);
                 facility4.setLongitude(-9.1393);
@@ -167,7 +177,7 @@ public class DataInitializer {
                 facility5.setAddress("Praia de Matosinhos, 4450-000 Porto");
                 facility5.setDescription("Campo de voleibol de praia");
                 facility5.setPricePerHour(12.0);
-                facility5.setOpeningTime(LocalTime.parse("09:00"));
+                facility5.setOpeningTime(LocalTime.parse(TIME_EXAMPLE_3));
                 facility5.setClosingTime(LocalTime.parse("20:00"));
                 facility5.setStatus(STATUS_ACTIVE);
                 facility5.setLatitude(41.1579);
@@ -185,7 +195,7 @@ public class DataInitializer {
                 facility6.setDescription("Complexo multi-desportivo com campos cobertos");
                 facility6.setPricePerHour(22.0);
                 facility6.setOpeningTime(LocalTime.parse("07:00"));
-                facility6.setClosingTime(LocalTime.parse("23:00"));
+                facility6.setClosingTime(LocalTime.parse(TIME_EXAMPLE_4));
                 facility6.setStatus(STATUS_ACTIVE);
                 facility6.setLatitude(40.6380);
                 facility6.setLongitude(-8.6420);
@@ -201,13 +211,13 @@ public class DataInitializer {
                 facility7.setAddress("Av. da Liberdade, 1250-000 Lisboa");
                 facility7.setDescription("Courts premium de padel com ar condicionado");
                 facility7.setPricePerHour(28.0);
-                facility7.setOpeningTime(LocalTime.parse("08:00"));
+                facility7.setOpeningTime(LocalTime.parse(TIME_EXAMPLE_1));
                 facility7.setClosingTime(LocalTime.parse("23:59"));
                 facility7.setStatus(STATUS_ACTIVE);
                 facility7.setLatitude(38.7250);
                 facility7.setLongitude(-9.1450);
                 facility7.setRating(4.9);
-                facility7.setImageUrl(MINIO_BASE_URL + "padel_pitch.jpeg");
+                facility7.setImageUrl(MINIO_BASE_URL + PADEL_JPEG);
                 facilityRepository.save(facility7);
 
                 Facility facility8 = new Facility();
@@ -217,8 +227,8 @@ public class DataInitializer {
                 facility8.setAddress("Rua de Serralves, 4150-000 Porto");
                 facility8.setDescription("Academia de ténis com courts profissionais");
                 facility8.setPricePerHour(24.0);
-                facility8.setOpeningTime(LocalTime.parse("08:00"));
-                facility8.setClosingTime(LocalTime.parse("22:00"));
+                facility8.setOpeningTime(LocalTime.parse(TIME_EXAMPLE_1));
+                facility8.setClosingTime(LocalTime.parse(TIME_EXAMPLE_2));
                 facility8.setStatus(STATUS_ACTIVE);
                 facility8.setLatitude(41.1600);
                 facility8.setLongitude(-8.6350);
@@ -233,7 +243,7 @@ public class DataInitializer {
                 facility9.setAddress("Praça da República, 3000-000 Coimbra");
                 facility9.setDescription("Pavilhão desportivo universitário");
                 facility9.setPricePerHour(18.0);
-                facility9.setOpeningTime(LocalTime.parse("09:00"));
+                facility9.setOpeningTime(LocalTime.parse(TIME_EXAMPLE_3));
                 facility9.setClosingTime(LocalTime.parse("21:00"));
                 facility9.setStatus(STATUS_ACTIVE);
                 facility9.setLatitude(40.2033);
@@ -249,8 +259,8 @@ public class DataInitializer {
                 facility10.setAddress("Av. da Liberdade, 4710-000 Braga");
                 facility10.setDescription("Campo sintético de última geração");
                 facility10.setPricePerHour(26.0);
-                facility10.setOpeningTime(LocalTime.parse("08:00"));
-                facility10.setClosingTime(LocalTime.parse("23:00"));
+                facility10.setOpeningTime(LocalTime.parse(TIME_EXAMPLE_1));
+                facility10.setClosingTime(LocalTime.parse(TIME_EXAMPLE_4));
                 facility10.setStatus(STATUS_ACTIVE);
                 facility10.setLatitude(41.5454);
                 facility10.setLongitude(-8.4265);
@@ -288,7 +298,7 @@ public class DataInitializer {
                 facility12.setLatitude(40.6500);
                 facility12.setLongitude(-8.6400);
                 facility12.setRating(4.5);
-                facility12.setImageUrl(MINIO_BASE_URL + "padel_pitch.jpeg");
+                facility12.setImageUrl(MINIO_BASE_URL + PADEL_JPEG);
                 facilityRepository.save(facility12);
 
                 logger.info("Created 12 facilities total");
@@ -339,7 +349,7 @@ public class DataInitializer {
 
     private void seedRentals(UserRepository userRepository, FacilityRepository facilityRepository,
             tqs.sportslink.data.RentalRepository rentalRepository) {
-        User renter = userRepository.findByEmail("test@sportslink.com")
+        User renter = userRepository.findByEmail(USER_EMAIL)
                 .orElse(userRepository.findAll().stream().filter(u -> u.getRoles().contains(Role.RENTER)).findFirst()
                         .orElse(null));
 
@@ -350,21 +360,21 @@ public class DataInitializer {
         java.time.LocalDateTime now = java.time.LocalDateTime.now();
 
         // Sample rentals
-        createRental(renter, facilities.get(0), now.minusDays(5), now.minusDays(5).plusHours(1), "COMPLETED", 25.0,
+        createRental(renter, facilities.get(0), now.minusDays(5), now.minusDays(5).plusHours(1), COMPLETED, 25.0,
                 rentalRepository);
-        createRental(renter, facilities.get(1), now.minusDays(2), now.minusDays(2).plusHours(2), "COMPLETED", 30.0,
+        createRental(renter, facilities.get(1), now.minusDays(2), now.minusDays(2).plusHours(2), COMPLETED, 30.0,
                 rentalRepository);
-        createRental(renter, facilities.get(2), now.plusDays(1), now.plusDays(1).plusHours(1), "CONFIRMED", 20.0,
+        createRental(renter, facilities.get(2), now.plusDays(1), now.plusDays(1).plusHours(1), CONFIRMED, 20.0,
                 rentalRepository);
         createRental(renter, facilities.get(1), now.plusDays(2), now.plusDays(2).plusHours(1), "PENDING", 15.0,
                 rentalRepository);
         createRental(renter, facilities.get(3), now.minusDays(1), now.minusDays(1).plusHours(2), "CANCELLED", 60.0,
                 rentalRepository);
-        createRental(renter, facilities.get(4), now.plusDays(5), now.plusDays(5).plusHours(3), "CONFIRMED", 36.0,
+        createRental(renter, facilities.get(4), now.plusDays(5), now.plusDays(5).plusHours(3), CONFIRMED, 36.0,
                 rentalRepository);
-        createRental(renter, facilities.get(0), now.plusHours(2), now.plusHours(3), "CONFIRMED", 25.0,
+        createRental(renter, facilities.get(0), now.plusHours(2), now.plusHours(3), CONFIRMED, 25.0,
                 rentalRepository);
-        createRental(renter, facilities.get(5), now.minusDays(10), now.minusDays(10).plusHours(1), "COMPLETED", 22.0,
+        createRental(renter, facilities.get(5), now.minusDays(10), now.minusDays(10).plusHours(1), COMPLETED, 22.0,
                 rentalRepository);
 
         // ===========================================================================================
@@ -381,9 +391,9 @@ public class DataInitializer {
                     .withNano(0);
             java.time.LocalDateTime end = start.plusHours(1);
 
-            String status = "CONFIRMED";
+            String status = CONFIRMED;
             if (daysOffset < 0)
-                status = "COMPLETED";
+                status = COMPLETED;
 
             createRental(renter, ownerFacility, start, end, status, 25.0, rentalRepository);
         }

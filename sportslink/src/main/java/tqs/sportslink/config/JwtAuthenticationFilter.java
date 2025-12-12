@@ -70,7 +70,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            if (!jwtUtil.validateToken(token, email)) {
+            if (!Boolean.TRUE.equals(jwtUtil.validateToken(token, email))) {
                 filterChain.doFilter(request, response);
                 return;
             }

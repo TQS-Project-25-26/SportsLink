@@ -422,10 +422,7 @@ public class DataInitializer {
         for (int i = 0; i < 50; i++) {
             // Spread bookings: some past, some future
             // Randomize days offset between -30 and +30
-            @SuppressWarnings("java:S2245") // Non-security randomness: used only for seed/demo data generation.
             long daysOffset = ThreadLocalRandom.current().nextLong(-30, 30);
-            
-            @SuppressWarnings("java:S2245") // Non-security randomness: used only for seed/demo data generation.
             int hour = ThreadLocalRandom.current().nextInt(9, 19); // 09:00–18:00
 
             java.time.LocalDateTime start = now.plusDays(daysOffset).withHour(hour).withMinute(0).withSecond(0)

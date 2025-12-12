@@ -182,6 +182,7 @@ class UnitAdminServiceTest {
     }
 
     @Test
+    @Requirement("SL-343")
     void whenAdminTriesToDeactivateOwnAccount_thenThrowIllegalState() {
         // Arrange
         User user = new User();

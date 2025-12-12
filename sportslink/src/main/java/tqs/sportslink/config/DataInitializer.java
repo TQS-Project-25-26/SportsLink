@@ -3,7 +3,6 @@ package tqs.sportslink.config;
 import java.time.LocalTime;
 import java.util.List;
 
-import org.bouncycastle.jcajce.provider.asymmetric.dsa.DSASigner.stdDSA;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;

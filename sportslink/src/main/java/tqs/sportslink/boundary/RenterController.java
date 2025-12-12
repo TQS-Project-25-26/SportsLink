@@ -91,7 +91,7 @@ public class RenterController {
 
     @GetMapping("/sports")
     public ResponseEntity<List<String>> getSports() {
-        List<String> sports = Arrays.stream(Sport.values()).map(Enum::name).collect(Collectors.toList());
+        List<String> sports = Arrays.stream(Sport.values()).map(Enum::name).toList();;
         return ResponseEntity.ok(sports);
     }
 }

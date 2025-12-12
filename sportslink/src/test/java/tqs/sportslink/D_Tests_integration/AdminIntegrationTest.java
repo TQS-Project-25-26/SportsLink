@@ -29,7 +29,7 @@ import tqs.sportslink.config.TestSecurityConfig;
 @ActiveProfiles("test")
 @Requirement("SL-343")
 @org.springframework.context.annotation.Import(TestSecurityConfig.class)
-public class AdminIntegrationTest {
+class AdminIntegrationTest {
 
     @LocalServerPort
     private int port;

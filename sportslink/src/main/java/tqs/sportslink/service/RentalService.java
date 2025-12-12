@@ -39,106 +39,30 @@ public class RentalService {
     }
 
     public RentalResponseDTO createRental(RentalRequestDTO request) {
-        // Validação: não permitir reservas no passado
-        if (request.getStartTime().isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("Cannot create rental in the past");
-        }
+        validateCreateRentalRequest(request);
 
-        // Validação: horário de término deve ser depois do início
-        if (request.getEndTime().isBefore(request.getStartTime()) ||
-                request.getEndTime().equals(request.getStartTime())) {
-            throw new IllegalArgumentException("End time must be after start time");
-        }
+        Facility facility = getFacilityOrThrow(request.getFacilityId());
+        validateWithinOperatingHours(facility, request);
 
-        // Validação: duração mínima (1 hora)
-        if (request.getStartTime().plusHours(1).isAfter(request.getEndTime())) {
-            throw new IllegalArgumentException("Rental duration must be at least 1 hour");
-        }
+        ensureNoBookingConflict(request);
 
-        // Validação: duração máxima (4 horas)
-        if (request.getStartTime().plusHours(4).isBefore(request.getEndTime())) {
-            throw new IllegalArgumentException("Rental duration cannot exceed 4 hours");
-        }
+        User user = getUserOrThrow(request.getUserId());
 
-        // Validação: mínimo de antecedência (1 hora)
-        if (request.getStartTime().isBefore(LocalDateTime.now().plusHours(1))) {
-            throw new IllegalArgumentException("Rental must be booked at least 1 hour in advance");
-        }
+        Rental rental = buildBaseRental(request, facility, user);
 
-        // Validação: máximo de antecedência (30 dias)
-        if (request.getStartTime().isAfter(LocalDateTime.now().plusDays(30))) {
-            throw new IllegalArgumentException("Rental cannot be booked more than 30 days in advance");
-        }
-
-        // Buscar facility primeiro para validar horários de funcionamento
-        Facility facility = facilityRepository.findById(request.getFacilityId())
-                .orElseThrow(() -> new IllegalArgumentException("Facility not found"));
-
-        // Validação: horários de funcionamento da facility
-        if (facility.getOpeningTime() != null && facility.getClosingTime() != null &&
-                (request.getStartTime().toLocalTime().isBefore(facility.getOpeningTime()) ||
-                        request.getEndTime().toLocalTime().isAfter(facility.getClosingTime()))) {
-            throw new IllegalArgumentException("Rental time is outside facility operating hours");
-        }
-
-        // Validar conflitos - LÓGICA NO SERVICE
-        List<Rental> conflictingRentals = rentalRepository
-                .findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(
-                        request.getFacilityId(), request.getEndTime(), request.getStartTime());
-
-        // Filtrar rentals cancelados
-        boolean hasConflict = conflictingRentals.stream()
-                .anyMatch(r -> !STATUS_CANCELLED.equals(r.getStatus()));
-
-        if (hasConflict) {
-            throw new IllegalArgumentException("Facility already booked for this time slot");
-        }
-
-        // Criar rental
-        Rental rental = new Rental();
-        rental.setFacility(facility);
-        rental.setStartTime(request.getStartTime());
-        rental.setEndTime(request.getEndTime());
-        rental.setStatus("CONFIRMED");
-
-        // Buscar user do request
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        rental.setUser(user);
-
-        // Adicionar equipamentos se houver
-        List<Equipment> equipments = new ArrayList<>();
-        if (request.getEquipmentIds() != null && !request.getEquipmentIds().isEmpty()) {
-            equipments = equipmentRepository.findAllById(request.getEquipmentIds());
-
-            // Verificar disponibilidade e decrementar stock
-            for (Equipment equip : equipments) {
-                if (equip.getQuantity() <= 0) {
-                    throw new IllegalArgumentException("Equipment " + equip.getName() + " is out of stock");
-                }
-                equip.setQuantity(equip.getQuantity() - 1);
-            }
-            // Guardar alterações de stock
-            equipmentRepository.saveAll(equipments);
-
+        List<Equipment> equipments = handleEquipmentSelectionAndStock(request);
+        if (!equipments.isEmpty()) {
             rental.setEquipments(equipments);
         }
 
-        // Calculate total price
-        double durationHours = java.time.Duration.between(request.getStartTime(), request.getEndTime()).toMinutes()
-                / 60.0;
-        double facilityPrice = facility.getPricePerHour() != null ? facility.getPricePerHour() * durationHours : 0.0;
-        double equipmentPrice = equipments.stream()
-                .mapToDouble(eq -> eq.getPricePerHour() != null ? eq.getPricePerHour() * durationHours : 0.0)
-                .sum();
-        double totalPrice = facilityPrice + equipmentPrice;
-        rental.setTotalPrice(totalPrice);
-        rental.setPaymentStatus("UNPAID");
+        applyPricingAndPaymentStatus(rental, request, facility, equipments);
 
         Rental saved = rentalRepository.save(rental);
         logger.info("Created rental id={} for user {} at facility {}", saved.getId(), user.getEmail(), facility.getId());
         return mapToResponseDTO(saved);
     }
+
+    
 
     public RentalResponseDTO cancelRental(Long rentalId) {
         Rental rental = rentalRepository.findById(rentalId)
@@ -164,81 +88,23 @@ public class RentalService {
         Rental rental = rentalRepository.findById(rentalId)
                 .orElseThrow(() -> new IllegalArgumentException(ERROR_RENTAL_NOT_FOUND));
 
-        // Validação: não permitir atualizar para horário no passado
-        // Validação: não permitir atualizar para horário no passado ou com menos de 24h
-        if (request.getStartTime().isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("Cannot update rental to past time");
-        }
+        validateUpdateRequestTimes(request);
 
-        if (request.getStartTime().isBefore(LocalDateTime.now().plusHours(24))) {
-            throw new IllegalArgumentException("Updates must be made for a time at least 24 hours in the future");
-        }
+        Facility facility = getFacilityOrThrow(request.getFacilityId());
+        validateWithinOperatingHours(facility, request);
 
-        // Validação: horário de término deve ser depois do início
-        if (request.getEndTime().isBefore(request.getStartTime()) ||
-                request.getEndTime().equals(request.getStartTime())) {
-            throw new IllegalArgumentException("End time must be after start time");
-        }
+        ensureNoUpdateConflict(rentalId, request);
 
-        // Buscar facility para validar horários de funcionamento
-        Facility facility = facilityRepository.findById(request.getFacilityId())
-                .orElseThrow(() -> new IllegalArgumentException("Facility not found"));
-
-        // Validação: horários de funcionamento da facility
-        if (facility.getOpeningTime() != null && facility.getClosingTime() != null &&
-                (request.getStartTime().toLocalTime().isBefore(facility.getOpeningTime()) ||
-                        request.getEndTime().toLocalTime().isAfter(facility.getClosingTime()))) {
-            throw new IllegalArgumentException("Rental time is outside facility operating hours");
-        }
-
-        // Validar novos horários - LÓGICA NO SERVICE (excluindo o próprio rental)
-        List<Rental> conflictingRentals = rentalRepository
-                .findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(
-                        request.getFacilityId(), request.getEndTime(), request.getStartTime());
-
-        boolean hasConflict = conflictingRentals.stream()
-                .filter(r -> !r.getId().equals(rentalId)) // Excluir o próprio rental
-                .anyMatch(r -> !STATUS_CANCELLED.equals(r.getStatus()));
-
-        if (hasConflict) {
-            throw new IllegalArgumentException("New time slot conflicts with existing booking");
-        }
-
-        // Atualizar Equipamentos (Gerir Stock)
-        if (request.getEquipmentIds() != null) {
-            // 1. Devolver equipamentos antigos ao stock
-            if (rental.getEquipments() != null) {
-                for (Equipment eq : rental.getEquipments()) {
-                    eq.setQuantity(eq.getQuantity() + 1);
-                }
-                equipmentRepository.saveAll(rental.getEquipments());
-            }
-
-            // 2. Atribuir novos equipamentos e decrementar stock
-            List<Equipment> newEquipments = new ArrayList<>();
-            if (!request.getEquipmentIds().isEmpty()) {
-                List<Equipment> requestedEquipments = equipmentRepository.findAllById(request.getEquipmentIds());
-                for (Equipment eq : requestedEquipments) {
-                    if (eq.getQuantity() <= 0) {
-                        // Reverter devolução anterior se falhar?
-                        // Idealmente sim, mas como é RuntimeException, o Transactional deve fazer
-                        // rollback de tudo.
-                        throw new IllegalArgumentException("Equipment " + eq.getName() + " is out of stock");
-                    }
-                    eq.setQuantity(eq.getQuantity() - 1);
-                    newEquipments.add(eq);
-                }
-                equipmentRepository.saveAll(newEquipments);
-            }
-            rental.setEquipments(newEquipments);
-        }
+        handleEquipmentUpdateAndStock(rental, request);
 
         rental.setStartTime(request.getStartTime());
         rental.setEndTime(request.getEndTime());
+
         Rental updated = rentalRepository.save(rental);
         logger.info("Updated rental id={} new start={} end={}", rentalId, request.getStartTime(), request.getEndTime());
         return mapToResponseDTO(updated);
     }
+
 
     public RentalResponseDTO getRentalStatus(Long rentalId) {
         Rental rental = rentalRepository.findById(rentalId)
@@ -268,4 +134,187 @@ public class RentalService {
         }
         return dto;
     }
+
+    private void validateCreateRentalRequest(RentalRequestDTO request) {
+        LocalDateTime now = LocalDateTime.now();
+
+        if (request.getStartTime().isBefore(now)) {
+            throw new IllegalArgumentException("Cannot create rental in the past");
+        }
+
+        if (request.getEndTime().isBefore(request.getStartTime()) ||
+                request.getEndTime().equals(request.getStartTime())) {
+            throw new IllegalArgumentException("End time must be after start time");
+        }
+
+        if (request.getStartTime().plusHours(1).isAfter(request.getEndTime())) {
+            throw new IllegalArgumentException("Rental duration must be at least 1 hour");
+        }
+
+        if (request.getStartTime().plusHours(4).isBefore(request.getEndTime())) {
+            throw new IllegalArgumentException("Rental duration cannot exceed 4 hours");
+        }
+
+        if (request.getStartTime().isBefore(now.plusHours(1))) {
+            throw new IllegalArgumentException("Rental must be booked at least 1 hour in advance");
+        }
+
+        if (request.getStartTime().isAfter(now.plusDays(30))) {
+            throw new IllegalArgumentException("Rental cannot be booked more than 30 days in advance");
+        }
+    }
+
+    private Facility getFacilityOrThrow(Long facilityId) {
+        return facilityRepository.findById(facilityId)
+                .orElseThrow(() -> new IllegalArgumentException("Facility not found"));
+    }
+
+    private User getUserOrThrow(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    }
+
+    private void validateWithinOperatingHours(Facility facility, RentalRequestDTO request) {
+        if (facility.getOpeningTime() != null && facility.getClosingTime() != null &&
+                (request.getStartTime().toLocalTime().isBefore(facility.getOpeningTime()) ||
+                        request.getEndTime().toLocalTime().isAfter(facility.getClosingTime()))) {
+            throw new IllegalArgumentException("Rental time is outside facility operating hours");
+        }
+    }
+
+    private void ensureNoBookingConflict(RentalRequestDTO request) {
+        List<Rental> conflictingRentals = rentalRepository
+                .findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(
+                        request.getFacilityId(), request.getEndTime(), request.getStartTime());
+
+        boolean hasConflict = conflictingRentals.stream()
+                .anyMatch(r -> !STATUS_CANCELLED.equals(r.getStatus()));
+
+        if (hasConflict) {
+            throw new IllegalArgumentException("Facility already booked for this time slot");
+        }
+    }
+
+    private Rental buildBaseRental(RentalRequestDTO request, Facility facility, User user) {
+        Rental rental = new Rental();
+        rental.setFacility(facility);
+        rental.setStartTime(request.getStartTime());
+        rental.setEndTime(request.getEndTime());
+        rental.setStatus("CONFIRMED");
+        rental.setUser(user);
+        return rental;
+    }
+
+    private List<Equipment> handleEquipmentSelectionAndStock(RentalRequestDTO request) {
+        if (request.getEquipmentIds() == null || request.getEquipmentIds().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<Equipment> equipments = equipmentRepository.findAllById(request.getEquipmentIds());
+
+        for (Equipment equip : equipments) {
+            if (equip.getQuantity() <= 0) {
+                throw new IllegalArgumentException("Equipment " + equip.getName() + " is out of stock");
+            }
+            equip.setQuantity(equip.getQuantity() - 1);
+        }
+
+        equipmentRepository.saveAll(equipments);
+        return equipments;
+    }
+
+    private void applyPricingAndPaymentStatus(Rental rental,
+                                            RentalRequestDTO request,
+                                            Facility facility,
+                                            List<Equipment> equipments) {
+
+        double durationHours = java.time.Duration.between(request.getStartTime(), request.getEndTime()).toMinutes() / 60.0;
+
+        double facilityPrice = facility.getPricePerHour() != null ? facility.getPricePerHour() * durationHours : 0.0;
+
+        double equipmentPrice = equipments.stream()
+                .mapToDouble(eq -> eq.getPricePerHour() != null ? eq.getPricePerHour() * durationHours : 0.0)
+                .sum();
+
+        rental.setTotalPrice(facilityPrice + equipmentPrice);
+        rental.setPaymentStatus("UNPAID");
+    }
+
+    private void validateUpdateRequestTimes(RentalRequestDTO request) {
+        LocalDateTime now = LocalDateTime.now();
+
+        if (request.getStartTime().isBefore(now)) {
+            throw new IllegalArgumentException("Cannot update rental to past time");
+        }
+
+        if (request.getStartTime().isBefore(now.plusHours(24))) {
+            throw new IllegalArgumentException("Updates must be made for a time at least 24 hours in the future");
+        }
+
+        if (request.getEndTime().isBefore(request.getStartTime()) ||
+                request.getEndTime().equals(request.getStartTime())) {
+            throw new IllegalArgumentException("End time must be after start time");
+        }
+    }
+
+    private void ensureNoUpdateConflict(Long rentalId, RentalRequestDTO request) {
+        List<Rental> conflictingRentals = rentalRepository
+                .findByFacilityIdAndStartTimeLessThanAndEndTimeGreaterThan(
+                        request.getFacilityId(), request.getEndTime(), request.getStartTime());
+
+        boolean hasConflict = conflictingRentals.stream()
+                .filter(r -> !r.getId().equals(rentalId)) // Excluir o próprio rental
+                .anyMatch(r -> !STATUS_CANCELLED.equals(r.getStatus()));
+
+        if (hasConflict) {
+            throw new IllegalArgumentException("New time slot conflicts with existing booking");
+        }
+    }
+
+    private void handleEquipmentUpdateAndStock(Rental rental, RentalRequestDTO request) {
+        if (request.getEquipmentIds() == null) {
+            return; // EXACT same behavior: null means "do nothing with equipments"
+        }
+
+        // 1. Devolver equipamentos antigos ao stock
+        returnOldEquipmentsToStock(rental);
+
+        // 2. Atribuir novos equipamentos e decrementar stock
+        List<Equipment> newEquipments = reserveRequestedEquipments(request.getEquipmentIds());
+        rental.setEquipments(newEquipments);
+    }
+
+    private void returnOldEquipmentsToStock(Rental rental) {
+        if (rental.getEquipments() == null) {
+            return;
+        }
+
+        for (Equipment eq : rental.getEquipments()) {
+            eq.setQuantity(eq.getQuantity() + 1);
+        }
+        equipmentRepository.saveAll(rental.getEquipments());
+    }
+
+    private List<Equipment> reserveRequestedEquipments(List<Long> equipmentIds) {
+        List<Equipment> newEquipments = new ArrayList<>();
+
+        if (equipmentIds.isEmpty()) {
+            return newEquipments; // EXACT same behavior: empty list => setEquipments(empty)
+        }
+
+        List<Equipment> requestedEquipments = equipmentRepository.findAllById(equipmentIds);
+
+        for (Equipment eq : requestedEquipments) {
+            if (eq.getQuantity() <= 0) {
+                throw new IllegalArgumentException("Equipment " + eq.getName() + " is out of stock");
+            }
+            eq.setQuantity(eq.getQuantity() - 1);
+            newEquipments.add(eq);
+        }
+
+        equipmentRepository.saveAll(newEquipments);
+        return newEquipments;
+    }
+
+
 }

@@ -73,8 +73,6 @@ public class SearchAndRentalSteps {
             padelFacility.setStatus("ACTIVE");
             padelFacility.setSports(java.util.List.of(tqs.sportslink.data.model.Sport.PADEL));
             facilityRepository.save(padelFacility);
-        } else {
-            padelFacility = facilityRepository.findByName("Aveiro Padel Club").get(0);
         }
 
         // Ensure equipment for Football (used in other tests)
@@ -241,8 +239,6 @@ public class SearchAndRentalSteps {
                 try {
                     String text = card.getText().toLowerCase();
                     // Debug log to ensure we see what's happening if it fails
-                    // System.out.println("DEBUG: Card text: " + text + " | Expected: " +
-                    // expectedText);
                     return text.contains(expectedText);
                 } catch (StaleElementReferenceException e) {
                     return false;
@@ -411,11 +407,6 @@ public class SearchAndRentalSteps {
                     break;
                 }
             }
-            if (!selected)
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                }
         }
         assertTrue(selected, "No available equipment found.");
     }
@@ -612,12 +603,6 @@ public class SearchAndRentalSteps {
 
         System.out.println("Fields filled - Card: " + cardFilled + ", Expiry: " + expiryFilled + ", CVC: " + cvcFilled);
 
-        // Small delay after filling fields
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
         // Click the Pay Now button
         WebElement payButton = longWait.until(

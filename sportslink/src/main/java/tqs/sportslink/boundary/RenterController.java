@@ -2,7 +2,6 @@ package tqs.sportslink.boundary;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -91,7 +90,7 @@ public class RenterController {
 
     @GetMapping("/sports")
     public ResponseEntity<List<String>> getSports() {
-        List<String> sports = Arrays.stream(Sport.values()).map(Enum::name).collect(Collectors.toList());
+        List<String> sports = Arrays.stream(Sport.values()).map(Enum::name).toList();
         return ResponseEntity.ok(sports);
     }
 }

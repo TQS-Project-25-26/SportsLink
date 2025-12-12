@@ -7,7 +7,6 @@ import java.time.Duration;
 
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -25,19 +24,15 @@ import tqs.sportslink.data.FacilityRepository;
 import tqs.sportslink.data.model.Facility;
 import tqs.sportslink.data.model.Sport;
 import java.util.List;
-import tqs.sportslink.util.JwtUtil;
 
-public class AdminSeps {
+public class AdminSteps {
 
     @LocalServerPort
     private int port;
 
     private WebDriver driver;
     private WebDriverWait wait;
-    private JavascriptExecutor js;
 
-    @org.springframework.beans.factory.annotation.Autowired
-    private JwtUtil jwtUtil;
 
     @org.springframework.beans.factory.annotation.Autowired
     private UserRepository userRepository;
@@ -60,7 +55,6 @@ public class AdminSeps {
         driver = new ChromeDriver(options);
         driver.manage().window().maximize();
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        js = (JavascriptExecutor) driver;
     }
 
     @After
@@ -203,9 +197,6 @@ public class AdminSeps {
     @When("I click to block user {string}")
     public void blockUser(String email) {
         // Find row with email
-        // Selenium export used: driver.findElement(By.cssSelector("tr:nth-child(3) >
-        // td:nth-child(6) > .btn-danger")).click();
-        // We make it more dynamic by searching the row
 
         WebElement row = driver.findElement(By.xpath("//tr[td[contains(text(), '" + email + "')]]"));
         WebElement blockBtn = row.findElement(By.cssSelector(".btn-danger")); // Assuming 'block' button is red/danger
@@ -276,7 +267,7 @@ public class AdminSeps {
             next.click();
 
             // Esperar até o conteúdo da tabela mudar (nova página renderizada)
-            wait.until(driver -> {
+            wait.until(d -> {
                 WebElement newTbody = driver.findElement(By.id("facilities-table-body"));
                 return !newTbody.getText().equals(oldTableText);
             });
@@ -328,15 +319,10 @@ public class AdminSeps {
 
     @Then("the user {string} should be marked as inactive")
     public void checkUserInactive(String email) {
-        // Wait for potential page refresh first
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-        }
 
         // Use a retry mechanism or explicit wait to handle
         // StaleElementReferenceException
-        wait.until(driver -> {
+        wait.until(d -> {
             try {
                 WebElement row = driver.findElement(By.xpath("//tr[td[contains(text(), '" + email + "')]]"));
                 // Check for visual indication (Activate implies it is currently
@@ -398,7 +384,7 @@ public class AdminSeps {
             String oldTable = tbody.getText();
             next.click();
 
-            wait.until(driver -> {
+            wait.until(d -> {
                 String newTable = driver.findElement(By.id("facilities-table-body")).getText();
                 return !newTable.equals(oldTable); // tabela mudou → nova página
             });

@@ -1,5 +1,7 @@
 package tqs.sportslink.A_Tests_repository;
 
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -23,6 +25,7 @@ class EquipmentRepositoryTest {
     private EquipmentRepository equipmentRepository;
 
     @Test
+    @Requirement("SL-34")
     void whenFindByFacilityId_thenReturnEquipment() {
         // given
         Facility f = new Facility();

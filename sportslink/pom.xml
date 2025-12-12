@@ -187,6 +187,47 @@
 			<version>8.5.7</version>
 		</dependency>
 
+		<!--  Stripe Payment Method  -->
+		<dependency>
+			<groupId>com.stripe</groupId>
+			<artifactId>stripe-java</artifactId>
+			<version>24.10.0</version>
+		</dependency>
+		
+		<!--  Swagger endpoints  -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.8.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jetbrains.kotlin</groupId>
+			<artifactId>kotlin-reflect</artifactId>
+		<!--Actuator Dependencies-->
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+		<!--Micrometer Dependencies-->
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+		</dependency>
+
+		<!-- Tracing Dependencies -->
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-tracing-bridge-brave</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.zipkin.reporter2</groupId>
+			<artifactId>zipkin-reporter-brave</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -227,7 +268,8 @@
 					<!-- run tests named *IT.java -->
 					<includes>
 						<include>**/*IT.java</include>
-					</includes>
+					<include>**/*IntegrationTest.java</include>
+				</includes>
 					<!-- ensure Cucumber (if used) writes JSON to target/cucumber-reports -->
 					<systemPropertyVariables>
 						<cucumber.plugin>json:target/cucumber-reports/cucumber.json</cucumber.plugin>

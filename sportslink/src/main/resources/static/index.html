@@ -157,7 +157,9 @@
 
                     // Redirect after a brief delay (OWNER vai para dashboard, RENTER para main page)
                     setTimeout(() => {
-                        if (data.role === 'OWNER') {
+                        if (data.role === 'ADMIN') {
+                            window.location.href = '/pages/admin.html';
+                        } else if (data.role === 'OWNER') {
                             window.location.href = '/pages/owner_dashboard.html';
                         } else {
                             window.location.href = '/pages/main_page_user.html';

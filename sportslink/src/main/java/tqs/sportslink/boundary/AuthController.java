@@ -1,5 +1,7 @@
 package tqs.sportslink.boundary;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,10 +17,11 @@ import tqs.sportslink.dto.UserProfileDTO;
 import tqs.sportslink.dto.UserRequestDTO;
 import tqs.sportslink.service.AuthService;
 
-
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     private final AuthService authService;
 
@@ -42,7 +45,9 @@ public class AuthController {
     public ResponseEntity<AuthResponseDTO> loginUser(
             @Valid @RequestBody UserRequestDTO request,
             HttpServletResponse response) {
+        logger.info("Login attempt for user: {}", request.getEmail());
         AuthResponseDTO authResponse = authService.login(request);
+        logger.info("Login successful for user: {}", request.getEmail());
         setTokenCookie(response, authResponse.getToken());
         return ResponseEntity.ok(authResponse);
     }
@@ -51,7 +56,9 @@ public class AuthController {
     public ResponseEntity<AuthResponseDTO> registerUser(
             @Valid @RequestBody UserRequestDTO request,
             HttpServletResponse response) {
+        logger.info("Register attempt for user: {}", request.getEmail());
         AuthResponseDTO authResponse = authService.register(request);
+        logger.info("Register successful for user: {}", request.getEmail());
         setTokenCookie(response, authResponse.getToken());
         return ResponseEntity.ok(authResponse);
     }
@@ -73,4 +80,3 @@ public class AuthController {
         return ResponseEntity.ok(profile);
     }
 }
-

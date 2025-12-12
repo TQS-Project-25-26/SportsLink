@@ -50,6 +50,7 @@ public class AuthService {
 
         // Validar senha
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            logger.warn("Login failed: invalid password for user {}", request.getEmail());
             throw new IllegalArgumentException("Invalid email or password");
         }
 

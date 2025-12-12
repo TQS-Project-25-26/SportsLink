@@ -1,5 +1,7 @@
+version: '3.8'
+
 services:
-  
+
   postgres:
     image: postgres:16-alpine
     container_name: sportslink-postgres
@@ -33,12 +35,12 @@ services:
       - minio
     entrypoint: >
       /bin/sh -c "
-      /usr/bin/mc alias set myminio http://minio:9000 minioadmin minioadmin;
-      /usr/bin/mc mb myminio/sportslink-images;
-      /usr/bin/mc anonymous set download myminio/sportslink-images;
+      mc alias set myminio http://minio:9000 minioadmin minioadmin;
+      mc mb myminio/sportslink-images || true;
+      mc anonymous set download myminio/sportslink-images || true;
       exit 0;
       "
-  
+
   app:
     build: .
     container_name: sportslink-app
@@ -54,19 +56,63 @@ services:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
       MINIO_BUCKET_NAME: sportslink-images
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics,prometheus
+      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: 1.0
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
     depends_on:
       - postgres
       - minio
-    restart: always
+      - zipkin
+    restart: unless-stopped
+
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: sportslink-zipkin
+    ports:
+      - "9411:9411"
+    restart: unless-stopped
+
+  prometheus:
+    build: ./observability/prometheus
+    container_name: sportslink-prometheus
+    ports:
+      - "9095:9090"
+    depends_on:
+      - app
+    restart: unless-stopped
+
+  grafana:
+    build: ./observability/grafana
+    container_name: sportslink-grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    volumes:
+      - grafana-data:/var/lib/grafana
+
+  loki:
+    image: grafana/loki:latest
+    container_name: sportslink-loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    restart: unless-stopped
+
+  promtail:
+    build: ./observability/promtail
+    container_name: sportslink-promtail
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    restart: unless-stopped
+
 
 volumes:
   postgres-data:
   minio-data:
-
-
-networks:
-  default:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 10.5.0.0/16
+  grafana-data:

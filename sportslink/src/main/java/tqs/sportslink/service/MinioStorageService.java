@@ -29,7 +29,8 @@ public class MinioStorageService implements StorageService {
     @Override
     public String uploadFile(MultipartFile file) {
         try {
-            String fileName = UUID.randomUUID() + "-" + file.getOriginalFilename();
+            String folderPrefix = "imagensMinIO/";
+            String fileName = folderPrefix + UUID.randomUUID() + "-" + file.getOriginalFilename();
             InputStream inputStream = file.getInputStream();
 
             minioClient.putObject(

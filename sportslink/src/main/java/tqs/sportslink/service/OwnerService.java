@@ -19,9 +19,13 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class OwnerService {
+
+    private static final Logger logger = LoggerFactory.getLogger(OwnerService.class);
 
         private final FacilityRepository facilityRepository;
         private final EquipmentRepository equipmentRepository;
@@ -65,6 +69,7 @@ public class OwnerService {
                 }
 
                 Facility saved = facilityRepository.save(facility);
+                logger.info("Owner {} created new facility: {} (id={})", ownerId, saved.getName(), saved.getId());
 
                 String openingTimeStr = saved.getOpeningTime() != null ? saved.getOpeningTime().toString() : null;
                 String closingTimeStr = saved.getClosingTime() != null ? saved.getClosingTime().toString() : null;
@@ -126,6 +131,7 @@ public class OwnerService {
 
                 facility.setStatus("DELETED");
                 facilityRepository.save(facility);
+                logger.info("Owner {} deleted facility id={}", ownerId, facilityId);
         }
 
         public FacilityResponseDTO updateFacility(Long ownerId, Long facilityId, FacilityRequestDTO dto) {
@@ -147,6 +153,7 @@ public class OwnerService {
                 facility.setClosingTime(LocalTime.parse(dto.getClosingTime()));
 
                 Facility saved = facilityRepository.save(facility);
+                logger.info("Owner {} updated facility id={}", ownerId, facilityId);
 
                 String openingTimeStr = saved.getOpeningTime() != null ? saved.getOpeningTime().toString() : null;
                 String closingTimeStr = saved.getClosingTime() != null ? saved.getClosingTime().toString() : null;
@@ -188,6 +195,7 @@ public class OwnerService {
                 equipment.setFacility(facility);
 
                 Equipment saved = equipmentRepository.save(equipment);
+                logger.info("Owner {} added equipment {} to facility {}", ownerId, saved.getName(), facilityId);
 
                 return new EquipmentResponseDTO(
                                 saved.getId(),
@@ -238,6 +246,7 @@ public class OwnerService {
                 equipment.setStatus(dto.getStatus());
 
                 Equipment saved = equipmentRepository.save(equipment);
+                logger.info("Owner {} updated equipment id={}", ownerId, equipmentId);
 
                 return new EquipmentResponseDTO(
                                 saved.getId(),

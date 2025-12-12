@@ -50,6 +50,7 @@ nbactions.xml
 !.github/workflows/ci.yml
 !.github/workflows/cd.yml
 !.github/workflows/xray.yml
+!.github/workflows/performance.yml
 actions/**
 
 # ==================== #
@@ -132,3 +133,8 @@ sonar-project.properties
 *.tfstate.backup
 .rediscli
 .node_repl_history
+
+# ==================== #
+#       OBSERVABILITY  #
+# ==================== #
+observability/*

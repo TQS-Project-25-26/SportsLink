@@ -1,10 +1,12 @@
 package tqs.sportslink.C_Tests_controller;
 
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -32,6 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(RenterController.class)
 @Import(TestSecurityConfig.class)
 @ActiveProfiles("test")
+@Requirement("SL-27")
 class RenterControllerTest {
 
     @Autowired
@@ -40,17 +43,18 @@ class RenterControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private RentalService rentalService;
 
-    @MockBean
+    @MockitoBean
     private FacilityService facilityService;
 
-    @MockBean
+    @MockitoBean
     private EquipmentService equipmentService;
 
     @Test
-    void test_searchFacilities_returns200_validParams() throws Exception {
+    @Requirement("SL-27")
+    void whenSearchFacilities_thenReturnList() throws Exception {
         // Given
         FacilityResponseDTO dto1 = new FacilityResponseDTO();
         dto1.setId(1L);
@@ -72,14 +76,15 @@ class RenterControllerTest {
     }
 
     @Test
-    void test_createRental_returns200_validRequest() throws Exception {
+    @Requirement("SL-26")
+    void whenCreateRental_thenReturnRental() throws Exception {
         // Given
         RentalRequestDTO request = new RentalRequestDTO();
         request.setUserId(1L);
         request.setFacilityId(1L);
         request.setStartTime(LocalDateTime.of(2025, 12, 27, 19, 0));
         request.setEndTime(LocalDateTime.of(2025, 12, 27, 21, 0));
-        
+
         RentalResponseDTO response = new RentalResponseDTO();
         response.setId(1L);
         response.setStatus("CONFIRMED");
@@ -111,8 +116,8 @@ class RenterControllerTest {
                 .andExpect(jsonPath("$[0].name", is("Bola")));
     }
 
-
     @Test
+    @Requirement("SL-30")
     void test_cancelRental_returns200_validId() throws Exception {
         // Given
         RentalResponseDTO response = new RentalResponseDTO();
@@ -128,6 +133,7 @@ class RenterControllerTest {
     }
 
     @Test
+    @Requirement("SL-30")
     void test_updateRental_returns200_validChanges() throws Exception {
         // Given
         RentalRequestDTO request = new RentalRequestDTO();
@@ -152,6 +158,7 @@ class RenterControllerTest {
     }
 
     @Test
+    @Requirement("SL-30")
     void test_getRentalStatus_returns200_validId() throws Exception {
         // Given
         RentalResponseDTO response = new RentalResponseDTO();
@@ -167,6 +174,7 @@ class RenterControllerTest {
     }
 
     @Test
+    @Requirement("SL-30")
     void test_getUserHistory_returns200() throws Exception {
         // Given
         RentalResponseDTO r1 = new RentalResponseDTO();

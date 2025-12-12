@@ -17,46 +17,52 @@ import java.util.List;
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
 public class Rental {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "hibernateLazyInitializer", "handler", "rentals",
+            "facilities", "password", "roles" })
     private User user;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "facility_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "hibernateLazyInitializer", "handler", "rentals",
+            "equipments", "owner" })
     private Facility facility;
-    
+
     @ManyToMany
-    @JoinTable(
-        name = "rental_equipments",
-        joinColumns = @JoinColumn(name = "rental_id"),
-        inverseJoinColumns = @JoinColumn(name = "equipment_id")
-    )
+    @JoinTable(name = "rental_equipments", joinColumns = @JoinColumn(name = "rental_id"), inverseJoinColumns = @JoinColumn(name = "equipment_id"))
     private List<Equipment> equipments = new ArrayList<>();
-    
+
     @Column(nullable = false)
     private LocalDateTime startTime;
-    
+
     @Column(nullable = false)
     private LocalDateTime endTime;
-    
+
     @Column(nullable = false, length = 50)
     private String status; // CONFIRMED, CANCELLED, COMPLETED
-    
+
     @Column(precision = 10)
     private Double totalPrice;
-    
-    
+
+    @Column(length = 20)
+    private String paymentStatus; // UNPAID, PENDING, PAID, REFUNDED
+
+    @OneToOne(mappedBy = "rental", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "hibernateLazyInitializer", "handler", "rental" })
+    private Payment payment;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
-    
+
     @Column(nullable = false)
     private LocalDateTime updatedAt;
-    
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -65,7 +71,7 @@ public class Rental {
             status = "CONFIRMED";
         }
     }
-    
+
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();

@@ -1,6 +1,7 @@
+@REQ_SL-42
 Feature: User Login
 
-  @SL-11 @login @functional
+  @login @functional
   Scenario: User logs in successfully
     Given I am on the login page
     When I fill the login form with "test@sportslink.com" and "password123"

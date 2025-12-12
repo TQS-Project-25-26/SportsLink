@@ -27,14 +27,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
+    private final AuthService authService;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private AuthService authService;
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, UserRepository userRepository, AuthService authService) {
+        this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
+        this.authService = authService;
+    }
 
     @Override
     protected void doFilterInternal(

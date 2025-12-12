@@ -540,7 +540,157 @@
         renderCalendar();
     });
 
+    // Stripe payment integration
+    let stripe = null;
+    let elements = null;
+    let paymentElement = null;
+    let currentRentalId = null;
 
+    // Initialize Stripe (lazy load)
+    async function initStripe() {
+        if (stripe) return;
+
+        try {
+            const configRes = await fetch('/api/payments/config');
+            if (!configRes.ok) {
+                throw new Error('Could not load Stripe configuration');
+            }
+            const config = await configRes.json();
+            stripe = Stripe(config.publishableKey);
+        } catch (err) {
+            console.error('Failed to initialize Stripe:', err);
+            throw err;
+        }
+    }
+
+    // Fetch receipt URL and show View Receipt button
+    async function fetchAndShowReceipt(rentalId) {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/payments/status/${rentalId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const paymentStatus = await response.json();
+                if (paymentStatus.receiptUrl) {
+                    const receiptBtn = document.getElementById('view-receipt-btn');
+                    receiptBtn.href = paymentStatus.receiptUrl;
+                    receiptBtn.style.display = 'inline-flex';
+                }
+            }
+        } catch (err) {
+            console.warn('Could not fetch receipt URL:', err);
+            // Non-critical, just don't show the button
+        }
+    }
+
+    // Show payment modal and mount Stripe Elements
+    async function showPaymentModal(rentalId, amount, email) {
+        currentRentalId = rentalId;
+
+        const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
+        document.getElementById('payment-amount').textContent = `€${amount.toFixed(2)}`;
+        document.getElementById('payment-message').style.display = 'none';
+        document.getElementById('payment-loading').style.display = 'block';
+        document.getElementById('payment-element').innerHTML = '';
+        document.getElementById('submit-payment').disabled = true;
+
+        paymentModal.show();
+
+        try {
+            await initStripe();
+
+            // Create PaymentIntent on backend
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/payments/create-intent/${rentalId}?email=${encodeURIComponent(email)}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to create payment intent');
+            }
+
+            const { clientSecret } = await response.json();
+
+            // Mount Stripe Elements
+            elements = stripe.elements({ clientSecret });
+            paymentElement = elements.create('payment', {
+                layout: 'tabs'
+            });
+
+            document.getElementById('payment-loading').style.display = 'none';
+            paymentElement.mount('#payment-element');
+            document.getElementById('submit-payment').disabled = false;
+
+        } catch (err) {
+            console.error('Payment initialization error:', err);
+            document.getElementById('payment-loading').style.display = 'none';
+            document.getElementById('payment-message').textContent = err.message;
+            document.getElementById('payment-message').style.display = 'block';
+        }
+    }
+
+    // Handle payment submission
+    document.getElementById('submit-payment').addEventListener('click', async () => {
+        if (!stripe || !elements) return;
+
+        const submitBtn = document.getElementById('submit-payment');
+        const messageDiv = document.getElementById('payment-message');
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+        messageDiv.style.display = 'none';
+
+        try {
+            const { error, paymentIntent } = await stripe.confirmPayment({
+                elements,
+                confirmParams: {
+                    return_url: window.location.origin + '/pages/booking.html?success=true&rentalId=' + currentRentalId
+                },
+                redirect: 'if_required'
+            });
+
+            if (error) {
+                messageDiv.textContent = error.message;
+                messageDiv.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="material-icons align-middle me-1" style="font-size: 18px;">lock</i> Pay Now';
+            } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+                // Payment successful - close payment modal and show success
+                bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
+
+                document.getElementById('booking-id').textContent = currentRentalId;
+
+                // Fetch receipt URL from payment status
+                await fetchAndShowReceipt(currentRentalId);
+
+                const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                successModal.show();
+            }
+        } catch (err) {
+            console.error('Payment error:', err);
+            messageDiv.textContent = 'Payment failed. Please try again.';
+            messageDiv.style.display = 'block';
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="material-icons align-middle me-1" style="font-size: 18px;">lock</i> Pay Now';
+        }
+    });
+
+    // Handle cancel payment
+    document.getElementById('cancel-payment').addEventListener('click', () => {
+        // Rental was created but payment cancelled - user can pay later
+        if (currentRentalId) {
+            alert('Your booking has been created but is pending payment. You can complete payment from your rentals page.');
+        }
+    });
+
+    // Booking confirmation - now creates rental then shows payment
     document.getElementById('btn-confirm-booking').addEventListener('click', async () => {
         const form = document.getElementById('booking-form');
 
@@ -549,7 +699,7 @@
         const startTime = document.getElementById('start-time').value;
 
         if (!date || !startTime) {
-            alert("Por favor, selecione uma data e um horário.");
+            alert("Please select a date and time.");
             return;
         }
 
@@ -558,8 +708,13 @@
             return;
         }
 
-        const endTime = document.getElementById('end-time').value;
+        const email = document.getElementById('user-email').value;
+        if (!email) {
+            alert("Please enter your email for payment receipt.");
+            return;
+        }
 
+        const endTime = document.getElementById('end-time').value;
         const startDateTime = `${date}T${startTime}:00`;
         const endDateTime = `${date}T${endTime}:00`;
 
@@ -576,6 +731,7 @@
             const token = localStorage.getItem('token');
             if (token) headers['Authorization'] = `Bearer ${token}`;
 
+            // Create rental first
             const response = await fetch('/api/rentals/rental', {
                 method: 'POST',
                 headers: headers,
@@ -586,25 +742,46 @@
                 const text = await response.text();
                 try {
                     const error = JSON.parse(text);
-                    throw new Error(error.message || 'Erro ao criar reserva');
+                    throw new Error(error.message || 'Error creating booking');
                 } catch (e) {
                     if (e instanceof SyntaxError) {
-                        throw new Error(text || 'Erro ao criar reserva (Resposta inválida do servidor)');
+                        throw new Error(text || 'Error creating booking');
                     }
                     throw e;
                 }
             }
 
             const result = await response.json();
-            document.getElementById('booking-id').textContent = result.id;
 
-            const modal = new bootstrap.Modal(document.getElementById('successModal'));
-            modal.show();
+            // Calculate total for payment
+            const duration = parseFloat(document.getElementById('duration').value);
+            const fieldCost = (facilityData?.pricePerHour || 0) * duration;
+            const equipmentCost = selectedEquipments.reduce((sum, eq) => sum + (eq.pricePerHour || 0) * duration, 0);
+            const totalAmount = fieldCost + equipmentCost;
+
+            // Show payment modal
+            await showPaymentModal(result.id, totalAmount, email);
+
         } catch (err) {
-            alert(`Erro: ${err.message}`);
+            alert(`Error: ${err.message}`);
             console.error('Booking error:', err);
         }
     });
 
+    // Check for payment success return (reuse urlParams from line 2)
+    if (urlParams.get('success') === 'true') {
+        const rentalId = urlParams.get('rentalId');
+        if (rentalId) {
+            document.getElementById('booking-id').textContent = rentalId;
+            // Fetch and show receipt button
+            fetchAndShowReceipt(rentalId);
+            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+            successModal.show();
+            // Clean URL
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+    }
+
     loadData();
 })();
+

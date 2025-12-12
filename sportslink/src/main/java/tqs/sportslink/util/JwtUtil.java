@@ -69,6 +69,7 @@ public class JwtUtil {
         return (tokenEmail.equals(email) && !isTokenExpired(token));
     }
 
+    @SuppressWarnings("unchecked")
     public java.util.List<String> extractRoles(String token) {
         final Claims claims = extractAllClaims(token);
         // Claims stores lists as ArrayList by default

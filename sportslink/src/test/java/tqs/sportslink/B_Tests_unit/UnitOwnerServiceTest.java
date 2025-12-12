@@ -1,5 +1,7 @@
 package tqs.sportslink.B_Tests_unit;
 
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -30,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@Requirement("SL-21")
 class UnitOwnerServiceTest {
 
     @Mock
@@ -81,6 +84,7 @@ class UnitOwnerServiceTest {
     // --- Facility Tests ---
 
     @Test
+    @Requirement("SL-33")
     void createFacility_WithImage_ShouldUploadAndSaveUrl() {
         MultipartFile mockFile = mock(MultipartFile.class);
         when(mockFile.isEmpty()).thenReturn(false);
@@ -126,6 +130,7 @@ class UnitOwnerServiceTest {
     }
 
     @Test
+    @Requirement("SL-35")
     void updateFacility_WhenOwnerMatches_ShouldUpdate() {
         when(facilityRepository.findById(10L)).thenReturn(Optional.of(facility));
         when(facilityRepository.save(any(Facility.class))).thenReturn(facility);
@@ -152,6 +157,7 @@ class UnitOwnerServiceTest {
     // --- Equipment Tests ---
 
     @Test
+    @Requirement("SL-34")
     void addEquipment_WhenOwnerMatches_ShouldSuccess() {
         EquipmentRequestDTO equipRequest = new EquipmentRequestDTO();
         equipRequest.setName("New Ball");
@@ -189,6 +195,7 @@ class UnitOwnerServiceTest {
     }
 
     @Test
+    @Requirement("SL-34")
     void updateEquipment_WhenOwnerMatches_ShouldSuccess() {
         Equipment existing = new Equipment();
         existing.setId(50L);
@@ -232,5 +239,48 @@ class UnitOwnerServiceTest {
         assertThatThrownBy(() -> ownerService.createFacility(99L, facilityRequest, null))
                 .isInstanceOf(NoSuchElementException.class)
                 .hasMessage("Owner not found");
+    }
+
+    @Test
+    void deleteFacility_WhenOwnerMatches_ShouldSuccess() {
+        when(facilityRepository.findById(10L)).thenReturn(Optional.of(facility));
+        when(facilityRepository.save(any(Facility.class))).thenReturn(facility);
+
+        ownerService.deleteFacility(1L, 10L);
+
+        assertThat(facility.getStatus()).isEqualTo("DELETED");
+        verify(facilityRepository).save(facility);
+    }
+
+    @Test
+    void deleteFacility_WhenNotOwner_ShouldThrow() {
+        User otherOwner = new User();
+        otherOwner.setId(2L);
+        facility.setOwner(otherOwner);
+
+        when(facilityRepository.findById(10L)).thenReturn(Optional.of(facility));
+
+        assertThatThrownBy(() -> ownerService.deleteFacility(1L, 10L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Owner does not own this facility");
+    }
+
+    @Test
+    void updateEquipment_WhenNotOwner_ShouldThrow() {
+        User otherOwner = new User();
+        otherOwner.setId(2L);
+        facility.setOwner(otherOwner); // Facility linked to equipment belongs to other owner
+
+        Equipment equipment = new Equipment();
+        equipment.setId(50L);
+        equipment.setFacility(facility);
+
+        when(equipmentRepository.findById(50L)).thenReturn(Optional.of(equipment));
+
+        EquipmentRequestDTO updateRequest = new EquipmentRequestDTO();
+
+        assertThatThrownBy(() -> ownerService.updateEquipment(1L, 50L, updateRequest))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Owner does not own this equipment");
     }
 }

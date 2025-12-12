@@ -1,0 +1,65 @@
+name: Performance Tests
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'sportslink/**'
+  schedule:
+    - cron: '0 2 * * *' # Run nightly at 2 AM
+  workflow_dispatch:
+
+jobs:
+  performance-test:
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ./sportslink
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: "zulu"
+
+      - name: Build application
+        run: mvn clean package -DskipTests
+
+      - name: Start containers
+        run: docker compose up -d
+        
+      - name: Wait for service
+        run: |
+          echo "Waiting for service to be healthy..."
+          timeout 60s bash -c 'until curl -s http://localhost:8080/actuator/health | grep "UP"; do sleep 5; done'
+
+      - name: Run Smoke Test (PR)
+        if: github.event_name == 'pull_request'
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: sportslink/performance/smoke_test.js
+          flags: --env BASE_URL=http://localhost:8080
+        
+      - name: Run Load Test (Nightly/Manual)
+        if: github.event_name != 'pull_request'
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: sportslink/performance/load_test.js
+          flags: --env BASE_URL=http://localhost:8080
+
+      - name: Upload K6 Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-report
+          path: results.json
+          if-no-files-found: ignore
+
+      - name: Stop containers
+        if: always()
+        run: docker compose down

@@ -24,6 +24,9 @@ import java.util.Optional;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -152,4 +155,58 @@ class PaymentControllerTest {
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.status", is("FAILED")));
         }
+
+        @Test
+        void whenCreatePaymentIntent_stripeException_thenReturns500() throws Exception {
+                // StripeException is abstract; easiest is to mock it.
+                com.stripe.exception.StripeException stripeEx = mock(com.stripe.exception.StripeException.class);
+                when(stripeEx.getMessage()).thenReturn("boom");
+
+                when(stripePaymentService.createPaymentIntent(anyLong(), anyString()))
+                        .thenThrow(stripeEx);
+
+                mockMvc.perform(post("/api/payments/create-intent/1")
+                                .param("email", "test@example.com"))
+                        .andExpect(status().isInternalServerError())
+                        .andExpect(jsonPath("$.error", containsString("Payment service error: boom")));
+        }
+
+        @Test
+        void whenWebhookSuccess_thenReturns200() throws Exception {
+                doNothing().when(stripePaymentService).handleWebhookEvent(anyString(), anyString());
+
+                mockMvc.perform(post("/api/payments/webhook")
+                                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                                .header("Stripe-Signature", "sig")
+                                .content("{}"))
+                        .andExpect(status().isOk())
+                        .andExpect(content().string("Webhook processed"));
+        }
+
+        @Test
+        void whenWebhookInvalidSignature_thenReturns400() throws Exception {
+                doThrow(new com.stripe.exception.SignatureVerificationException("bad sig", "sig"))
+                        .when(stripePaymentService).handleWebhookEvent(anyString(), anyString());
+
+                mockMvc.perform(post("/api/payments/webhook")
+                                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                                .header("Stripe-Signature", "sig")
+                                .content("{}"))
+                        .andExpect(status().isBadRequest())
+                        .andExpect(content().string("Invalid signature"));
+        }
+
+        @Test
+        void whenWebhookGenericError_thenReturns500() throws Exception {
+                doThrow(new RuntimeException("unexpected"))
+                        .when(stripePaymentService).handleWebhookEvent(anyString(), anyString());
+
+                mockMvc.perform(post("/api/payments/webhook")
+                                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                                .header("Stripe-Signature", "sig")
+                                .content("{}"))
+                        .andExpect(status().isInternalServerError())
+                        .andExpect(content().string("Webhook processing error"));
+        }
+
 }

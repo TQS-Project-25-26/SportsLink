@@ -106,4 +106,54 @@ class AdminControllerTest {
 
         verify(adminService).cancelRental(1L);
     }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void testGetAllRentals() throws Exception {
+        tqs.sportslink.data.model.Rental r1 = new tqs.sportslink.data.model.Rental();
+        r1.setId(1L);
+        r1.setStatus("CONFIRMED");
+
+        given(adminService.getAllRentals()).willReturn(List.of(r1));
+
+        mvc.perform(get("/api/admin/rentals"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].status").value("CONFIRMED"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void testGetUserDetails() throws Exception {
+        User user = new User();
+        user.setId(5L);
+        user.setEmail("u@test.com");
+        user.setName("User 5");
+
+        given(adminService.getUserDetails(eq(5L))).willReturn(user);
+
+        mvc.perform(get("/api/admin/users/5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(5))
+                .andExpect(jsonPath("$.email").value("u@test.com"))
+                .andExpect(jsonPath("$.name").value("User 5"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void testGetFacilityDetails() throws Exception {
+        tqs.sportslink.data.model.Facility f = new tqs.sportslink.data.model.Facility();
+        f.setId(7L);
+        f.setName("Facility 7");
+        f.setCity("Aveiro");
+
+        given(adminService.getFacilityDetails(eq(7L))).willReturn(f);
+
+        mvc.perform(get("/api/admin/facilities/7"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(7))
+                .andExpect(jsonPath("$.name").value("Facility 7"))
+                .andExpect(jsonPath("$.city").value("Aveiro"));
+    }
+
 }

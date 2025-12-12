@@ -20,6 +20,9 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -293,4 +296,152 @@ class UnitStripePaymentServiceTest {
             verify(rentalRepository).save(mockRental);
         }
     }
+
+    @Test
+    void whenHandleWebhookEvent_PaymentFailed_withStripeErrorMessage_shouldMarkPaymentFailed() {
+        String payload = "{}";
+        String sigHeader = "sig";
+
+        try (org.mockito.MockedStatic<com.stripe.net.Webhook> mockedWebhook = mockStatic(com.stripe.net.Webhook.class)) {
+            com.stripe.model.Event mockEvent = mock(com.stripe.model.Event.class);
+            when(mockEvent.getType()).thenReturn("payment_intent.payment_failed");
+
+            com.stripe.model.EventDataObjectDeserializer mockDeserializer =
+                    mock(com.stripe.model.EventDataObjectDeserializer.class);
+
+            com.stripe.model.PaymentIntent mockIntent = mock(com.stripe.model.PaymentIntent.class);
+            when(mockIntent.getId()).thenReturn("pi_failed_123");
+
+            // ✅ StripeError (not PaymentIntent.LastPaymentError)
+            com.stripe.model.StripeError mockError = mock(com.stripe.model.StripeError.class);
+            when(mockError.getMessage()).thenReturn("Card declined");
+            when(mockIntent.getLastPaymentError()).thenReturn(mockError);
+
+            when(mockEvent.getDataObjectDeserializer()).thenReturn(mockDeserializer);
+            when(mockDeserializer.getObject()).thenReturn(Optional.of(mockIntent));
+
+            mockedWebhook.when(() -> com.stripe.net.Webhook.constructEvent(eq(payload), eq(sigHeader), any()))
+                    .thenReturn(mockEvent);
+
+            Payment existingPayment = new Payment(mockRental, "pi_failed_123", 30.0, "user@example.com");
+            when(paymentRepository.findByStripePaymentIntentId("pi_failed_123")).thenReturn(Optional.of(existingPayment));
+
+            stripePaymentService.handleWebhookEvent(payload, sigHeader);
+
+            assertThat(existingPayment.getStatus()).isEqualTo("FAILED");
+            assertThat(existingPayment.getFailureMessage()).isEqualTo("Card declined");
+            verify(paymentRepository).save(existingPayment);
+            verify(rentalRepository, never()).save(any());
+        } catch (Exception e) {
+            org.junit.jupiter.api.Assertions.fail("Exception should not be thrown");
+        }
+    }
+
+
+    @Test
+    void whenHandleWebhookEvent_PaymentFailed_withoutStripeError_shouldUseDefaultMessage() {
+        String payload = "{}";
+        String sigHeader = "sig";
+
+        try (org.mockito.MockedStatic<com.stripe.net.Webhook> mockedWebhook = mockStatic(com.stripe.net.Webhook.class)) {
+            com.stripe.model.Event mockEvent = mock(com.stripe.model.Event.class);
+            when(mockEvent.getType()).thenReturn("payment_intent.payment_failed");
+
+            com.stripe.model.EventDataObjectDeserializer mockDeserializer =
+                    mock(com.stripe.model.EventDataObjectDeserializer.class);
+
+            com.stripe.model.PaymentIntent mockIntent = mock(com.stripe.model.PaymentIntent.class);
+            when(mockIntent.getId()).thenReturn("pi_failed_no_error");
+            when(mockIntent.getLastPaymentError()).thenReturn(null);
+
+            when(mockEvent.getDataObjectDeserializer()).thenReturn(mockDeserializer);
+            when(mockDeserializer.getObject()).thenReturn(Optional.of(mockIntent));
+
+            mockedWebhook.when(() -> com.stripe.net.Webhook.constructEvent(eq(payload), eq(sigHeader), any()))
+                    .thenReturn(mockEvent);
+
+            Payment existingPayment = new Payment(mockRental, "pi_failed_no_error", 30.0, "user@example.com");
+            when(paymentRepository.findByStripePaymentIntentId("pi_failed_no_error"))
+                    .thenReturn(Optional.of(existingPayment));
+
+            stripePaymentService.handleWebhookEvent(payload, sigHeader);
+
+            assertThat(existingPayment.getStatus()).isEqualTo("FAILED");
+            assertThat(existingPayment.getFailureMessage()).isEqualTo("Payment failed");
+            verify(paymentRepository).save(existingPayment);
+            verify(rentalRepository, never()).save(any());
+        } catch (Exception e) {
+            org.junit.jupiter.api.Assertions.fail("Exception should not be thrown");
+        }
+    }
+
+    @Test
+    void whenHandleWebhookEvent_ChargeSucceeded_shouldStoreChargeIdAndReceiptUrl() {
+        String payload = "{}";
+        String sigHeader = "sig";
+
+        try (org.mockito.MockedStatic<com.stripe.net.Webhook> mockedWebhook = mockStatic(com.stripe.net.Webhook.class)) {
+            com.stripe.model.Event mockEvent = mock(com.stripe.model.Event.class);
+            when(mockEvent.getType()).thenReturn("charge.succeeded");
+
+            com.stripe.model.EventDataObjectDeserializer mockDeserializer =
+                    mock(com.stripe.model.EventDataObjectDeserializer.class);
+
+            com.stripe.model.Charge mockCharge = mock(com.stripe.model.Charge.class);
+            when(mockCharge.getPaymentIntent()).thenReturn("pi_charge_123");
+            when(mockCharge.getId()).thenReturn("ch_123");
+            when(mockCharge.getReceiptUrl()).thenReturn("https://receipt.stripe.com/ch_123");
+
+            when(mockEvent.getDataObjectDeserializer()).thenReturn(mockDeserializer);
+            when(mockDeserializer.getObject()).thenReturn(Optional.of(mockCharge));
+
+            mockedWebhook.when(() -> com.stripe.net.Webhook.constructEvent(eq(payload), eq(sigHeader), any()))
+                    .thenReturn(mockEvent);
+
+            Payment existingPayment = new Payment(mockRental, "pi_charge_123", 30.0, "user@example.com");
+            existingPayment.setId(55L);
+            when(paymentRepository.findByStripePaymentIntentId("pi_charge_123")).thenReturn(Optional.of(existingPayment));
+
+            stripePaymentService.handleWebhookEvent(payload, sigHeader);
+
+            assertThat(existingPayment.getStripeChargeId()).isEqualTo("ch_123");
+            assertThat(existingPayment.getReceiptUrl()).isEqualTo("https://receipt.stripe.com/ch_123");
+            verify(paymentRepository).save(existingPayment);
+            verify(rentalRepository, never()).save(any()); // charge handler doesn't update rental
+        } catch (Exception e) {
+            org.junit.jupiter.api.Assertions.fail("Exception should not be thrown");
+        }
+    }
+
+    @Test
+    void whenHandleWebhookEvent_ChargeSucceeded_withoutPaymentIntentId_shouldDoNothing() {
+        String payload = "{}";
+        String sigHeader = "sig";
+
+        try (org.mockito.MockedStatic<com.stripe.net.Webhook> mockedWebhook = mockStatic(com.stripe.net.Webhook.class)) {
+            com.stripe.model.Event mockEvent = mock(com.stripe.model.Event.class);
+            when(mockEvent.getType()).thenReturn("charge.succeeded");
+
+            com.stripe.model.EventDataObjectDeserializer mockDeserializer =
+                    mock(com.stripe.model.EventDataObjectDeserializer.class);
+
+            com.stripe.model.Charge mockCharge = mock(com.stripe.model.Charge.class);
+            when(mockCharge.getPaymentIntent()).thenReturn(null); // triggers early return
+
+            when(mockEvent.getDataObjectDeserializer()).thenReturn(mockDeserializer);
+            when(mockDeserializer.getObject()).thenReturn(Optional.of(mockCharge));
+
+            mockedWebhook.when(() -> com.stripe.net.Webhook.constructEvent(eq(payload), eq(sigHeader), any()))
+                    .thenReturn(mockEvent);
+
+            stripePaymentService.handleWebhookEvent(payload, sigHeader);
+
+            verify(paymentRepository, never()).findByStripePaymentIntentId(anyString());
+            verify(paymentRepository, never()).save(any());
+            verify(rentalRepository, never()).save(any());
+        } catch (Exception e) {
+            org.junit.jupiter.api.Assertions.fail("Exception should not be thrown");
+        }
+    }
+
 }

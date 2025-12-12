@@ -243,7 +243,7 @@ public class DataInitializer {
         facility6.setLatitude(40.6380);
         facility6.setLongitude(-8.6420);
         facility6.setRating(4.6);
-        facility6.setOwner(userRepository.findByEmail(OWNER_EMAIL).get());
+        userRepository.findByEmail(OWNER_EMAIL).ifPresent(facility6::setOwner);
         facility6.setImageUrl(MINIO_BASE_URL + "football_pitch.png");
         facilityRepository.save(facility6);
 
@@ -308,7 +308,7 @@ public class DataInitializer {
         facility10.setLatitude(41.5454);
         facility10.setLongitude(-8.4265);
         facility10.setRating(4.7);
-        facility10.setOwner(userRepository.findByEmail(OWNER_EMAIL).get());
+        userRepository.findByEmail(OWNER_EMAIL).ifPresent(facility10::setOwner);
         facility10.setImageUrl(MINIO_BASE_URL + "football_pitch.png");
         facilityRepository.save(facility10);
 

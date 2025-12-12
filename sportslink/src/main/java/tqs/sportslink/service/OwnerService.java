@@ -18,7 +18,6 @@ import tqs.sportslink.dto.EquipmentResponseDTO;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,7 +119,7 @@ public class OwnerService {
                                                         openingTimeStr,
                                                         closingTimeStr);
                                 })
-                                .collect(Collectors.toList());
+                                .toList();
         }
 
         public void deleteFacility(Long ownerId, Long facilityId) {
@@ -228,7 +227,7 @@ public class OwnerService {
                                                 eq.getQuantity(),
                                                 eq.getPricePerHour(),
                                                 eq.getStatus()))
-                                .collect(Collectors.toList());
+                                .toList();
         }
 
         public EquipmentResponseDTO updateEquipment(Long ownerId, Long equipmentId, EquipmentRequestDTO dto) {

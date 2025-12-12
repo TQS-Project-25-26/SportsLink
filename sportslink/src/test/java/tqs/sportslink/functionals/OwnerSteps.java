@@ -150,7 +150,7 @@ public class OwnerSteps {
         WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(30));
 
         // Wait for either: modal to become hidden OR success toast to appear
-        longWait.until(driver -> {
+        longWait.until(d -> {
             // Check if modal is hidden using JS (more reliable than CSS visibility)
             Boolean modalHidden = (Boolean) ((JavascriptExecutor) driver).executeScript(
                     "var modal = document.getElementById('addFacilityModal');" +
@@ -158,12 +158,6 @@ public class OwnerSteps {
             return modalHidden;
         });
 
-        // Allow time for the page to refresh and show updated facilities list
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
-        }
     }
 
     @Then("I should see {string} in my facilities list")

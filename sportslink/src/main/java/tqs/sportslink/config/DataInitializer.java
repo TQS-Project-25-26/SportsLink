@@ -2,7 +2,7 @@ package tqs.sportslink.config;
 
 import java.time.LocalTime;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
+import java.security.SecureRandom;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +38,9 @@ public class DataInitializer {
     private static final String CONFIRMED = "CONFIRMED";
     private static final String COMPLETED = "COMPLETED";
     private static final String ACCESSORY = "Accessory";
+
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
 
     // 🔐 Passwords via environment variables (defaults keep behavior unchanged)
     private static final String ADMIN_PASSWORD =
@@ -422,8 +425,8 @@ public class DataInitializer {
         for (int i = 0; i < 50; i++) {
             // Spread bookings: some past, some future
             // Randomize days offset between -30 and +30
-            long daysOffset = ThreadLocalRandom.current().nextLong(-30, 30);
-            int hour = ThreadLocalRandom.current().nextInt(9, 19); // 09:00–18:00
+            long daysOffset = SECURE_RANDOM.nextLong(61) - 30; // range [-30, 30]
+            int hour = 9 + SECURE_RANDOM.nextInt(10);           // range [9, 18]
 
             java.time.LocalDateTime start = now.plusDays(daysOffset).withHour(hour).withMinute(0).withSecond(0)
                     .withNano(0);

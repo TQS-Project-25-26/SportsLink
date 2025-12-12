@@ -21,7 +21,6 @@ import tqs.sportslink.util.JwtUtil;
 import java.util.List;
 import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -65,7 +64,7 @@ class AdminControllerTest {
         User user = new User();
         user.setId(1L);
         user.setActive(false);
-        given(adminService.updateUserStatus(eq(1L), eq(false))).willReturn(user);
+        given(adminService.updateUserStatus(1L, false)).willReturn(user);
 
         mvc.perform(put("/api/admin/users/1/status?active=false"))
                 .andExpect(status().isOk())
@@ -130,7 +129,7 @@ class AdminControllerTest {
         user.setEmail("u@test.com");
         user.setName("User 5");
 
-        given(adminService.getUserDetails(eq(5L))).willReturn(user);
+        given(adminService.getUserDetails(5L)).willReturn(user);
 
         mvc.perform(get("/api/admin/users/5"))
                 .andExpect(status().isOk())
@@ -147,7 +146,7 @@ class AdminControllerTest {
         f.setName("Facility 7");
         f.setCity("Aveiro");
 
-        given(adminService.getFacilityDetails(eq(7L))).willReturn(f);
+        given(adminService.getFacilityDetails(7L)).willReturn(f);
 
         mvc.perform(get("/api/admin/facilities/7"))
                 .andExpect(status().isOk())

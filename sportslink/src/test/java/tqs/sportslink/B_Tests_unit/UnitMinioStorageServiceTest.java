@@ -23,12 +23,12 @@ class UnitMinioStorageServiceTest {
 
     private MinioStorageService minioStorageService;
 
-    private final String MINIO_URL = "http://localhost:9000";
-    private final String BUCKET_NAME = "test-bucket";
+    private final String minioUrl = "http://localhost:9000";
+    private final String bucketName = "test-bucket";
 
     @BeforeEach
     void setUp() {
-        minioStorageService = new MinioStorageService(minioClient, MINIO_URL, BUCKET_NAME);
+        minioStorageService = new MinioStorageService(minioClient, minioUrl, bucketName);
     }
 
     @Test
@@ -45,14 +45,14 @@ class UnitMinioStorageServiceTest {
 
         // Then
         assertNotNull(resultUrl);
-        assertTrue(resultUrl.startsWith(MINIO_URL + "/" + BUCKET_NAME + "/"));
+        assertTrue(resultUrl.startsWith(minioUrl + "/" + bucketName + "/"));
         assertTrue(resultUrl.endsWith("-test-image.jpg"));
 
         verify(minioClient).putObject(any(PutObjectArgs.class));
     }
 
     @Test
-    void uploadFile_ShouldThrowException_WhenMinioErrorOccurs() throws Exception {
+    void uploadFile_ShouldThrowIllegalStateException_WhenMinioErrorOccurs() throws Exception {
         // Arrange
         MockMultipartFile file = new MockMultipartFile(
                 "file",
@@ -64,8 +64,12 @@ class UnitMinioStorageServiceTest {
                 .thenThrow(new RuntimeException("MinIO connection failed"));
 
         // Act & Assert
-        Exception exception = assertThrows(RuntimeException.class, () -> minioStorageService.uploadFile(file));
+        IllegalStateException exception =
+                assertThrows(IllegalStateException.class, () -> minioStorageService.uploadFile(file));
 
         assertEquals("Error uploading file to MinIO", exception.getMessage());
+        assertNotNull(exception.getCause());
+        assertEquals("MinIO connection failed", exception.getCause().getMessage());
     }
+
 }

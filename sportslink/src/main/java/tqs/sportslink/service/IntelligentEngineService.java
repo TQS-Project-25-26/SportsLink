@@ -93,14 +93,13 @@ public class IntelligentEngineService {
                 .toList();
 
         // Score facilities
-        List<FacilitySuggestionDTO> suggestions = candidates.stream()
+        return candidates.stream()
                 .map(facility -> createFacilitySuggestion(facility, preferredCity, preferredSports, effectiveLat,
                         effectiveLon))
                 .sorted(Comparator.comparingDouble(FacilitySuggestionDTO::getScore).reversed())
                 .limit(5)
                 .toList();
 
-        return suggestions;
     }
 
     /**

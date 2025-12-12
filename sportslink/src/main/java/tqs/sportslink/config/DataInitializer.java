@@ -2,7 +2,7 @@ package tqs.sportslink.config;
 
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -387,7 +387,6 @@ public class DataInitializer {
     private void seedRentals(UserRepository userRepository, FacilityRepository facilityRepository,
             tqs.sportslink.data.RentalRepository rentalRepository) {
 
-        Random random = new Random();
         User renter = userRepository.findByEmail(USER_EMAIL)
                 .orElse(userRepository.findAll().stream().filter(u -> u.getRoles().contains(Role.RENTER)).findFirst()
                         .orElse(null));
@@ -423,9 +422,8 @@ public class DataInitializer {
         for (int i = 0; i < 50; i++) {
             // Spread bookings: some past, some future
             // Randomize days offset between -30 and +30
-            long daysOffset = random.nextLong(60) - 30; // [-30, +29]
-
-            int hour = 9 + random.nextInt(10); // 09:00 to 18:00 (same as before)
+            long daysOffset = ThreadLocalRandom.current().nextLong(-30, 30);
+            int hour = ThreadLocalRandom.current().nextInt(9, 19); // 09:00–18:00
 
             java.time.LocalDateTime start = now.plusDays(daysOffset).withHour(hour).withMinute(0).withSecond(0)
                     .withNano(0);

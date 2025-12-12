@@ -213,7 +213,7 @@ public class StripePaymentService {
                     PaymentIntent intent = PaymentIntent.retrieve(payment.getStripePaymentIntentId());
 
                     // Check if payment succeeded and get the latest charge
-                    if (SUCCEEDED.equals(intent.getStatus()) && intent.getLatestCharge() != null) {
+                    if ("succeeded".equals(intent.getStatus()) && intent.getLatestCharge() != null) {
                         Charge charge = Charge.retrieve(intent.getLatestCharge());
 
                         if (charge.getReceiptUrl() != null) {

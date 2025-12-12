@@ -141,55 +141,18 @@ public class IntelligentEngineService {
         User owner = userRepository.findById(ownerId)
                 .orElseThrow(() -> new IllegalArgumentException("Owner not found"));
 
-        if (!owner.getRoles().contains(Role.OWNER)) {
-            throw new IllegalArgumentException("User is not an owner");
-        }
+        validateOwner(owner);
 
         List<OwnerSuggestionDTO> suggestions = new ArrayList<>();
 
         for (Facility facility : owner.getFacilities()) {
             List<Rental> rentals = rentalRepository.findByFacilityId(facility.getId());
 
-            // 1. Demand Analysis
-            long recentBookings = rentals.stream()
-                    .filter(r -> r.getCreatedAt().isAfter(LocalDateTime.now().minusDays(30)))
-                    .count();
+            long recentBookings = countRecentBookingsLast30Days(rentals);
 
-            if (recentBookings > 20) {
-                // High demand -> Suggest adding equipment if low stock
-                long equipmentCount = equipmentRepository.findByFacilityId(facility.getId()).size();
-                if (equipmentCount < 5) {
-                    suggestions.add(new OwnerSuggestionDTO(
-                            "ADD_EQUIPMENT",
-                            facility.getId(),
-                            facility.getName(),
-                            "High Demand Detected",
-                            "High booking volume detected. Add more equipment to maximize revenue.",
-                            "HIGH",
-                            facility.getPricePerHour() * 10));
-                }
-            } else if (recentBookings < 5) {
-                suggestions.add(new OwnerSuggestionDTO(
-                        "LOWER_PRICE",
-                        facility.getId(),
-                        facility.getName(),
-                        "Low Utilization",
-                        "Few bookings recently. Consider a promotion or price reduction.",
-                        "MEDIUM",
-                        null));
-            }
+            addDemandSuggestions(suggestions, facility, recentBookings);
 
-            // 2. Maintenance Analysis
-            boolean needsMaintenance = false;
-            if (facility.getRating() != null && facility.getRating() < 4.0) {
-                needsMaintenance = true;
-            } else {
-                long daysSinceUpdate = ChronoUnit.DAYS.between(facility.getUpdatedAt(), LocalDateTime.now());
-                if (daysSinceUpdate > 90)
-                    needsMaintenance = true;
-            }
-
-            if (needsMaintenance) {
+            if (needsMaintenance(facility)) {
                 suggestions.add(new OwnerSuggestionDTO(
                         "MAINTENANCE",
                         facility.getId(),
@@ -203,6 +166,61 @@ public class IntelligentEngineService {
 
         return suggestions;
     }
+
+    private void validateOwner(User owner) {
+        if (!owner.getRoles().contains(Role.OWNER)) {
+            throw new IllegalArgumentException("User is not an owner");
+        }
+    }
+
+    private long countRecentBookingsLast30Days(List<Rental> rentals) {
+        LocalDateTime cutoff = LocalDateTime.now().minusDays(30);
+        return rentals.stream()
+                .filter(r -> r.getCreatedAt().isAfter(cutoff))
+                .count();
+    }
+
+    private void addDemandSuggestions(List<OwnerSuggestionDTO> suggestions, Facility facility, long recentBookings) {
+        if (recentBookings > 20) {
+            addHighDemandSuggestionIfLowEquipment(suggestions, facility);
+            return;
+        }
+
+        if (recentBookings < 5) {
+            suggestions.add(new OwnerSuggestionDTO(
+                    "LOWER_PRICE",
+                    facility.getId(),
+                    facility.getName(),
+                    "Low Utilization",
+                    "Few bookings recently. Consider a promotion or price reduction.",
+                    "MEDIUM",
+                    null));
+        }
+    }
+
+    private void addHighDemandSuggestionIfLowEquipment(List<OwnerSuggestionDTO> suggestions, Facility facility) {
+        long equipmentCount = equipmentRepository.findByFacilityId(facility.getId()).size();
+        if (equipmentCount < 5) {
+            suggestions.add(new OwnerSuggestionDTO(
+                    "ADD_EQUIPMENT",
+                    facility.getId(),
+                    facility.getName(),
+                    "High Demand Detected",
+                    "High booking volume detected. Add more equipment to maximize revenue.",
+                    "HIGH",
+                    facility.getPricePerHour() * 10));
+        }
+    }
+
+    private boolean needsMaintenance(Facility facility) {
+        if (facility.getRating() != null && facility.getRating() < 4.0) {
+            return true;
+        }
+
+        long daysSinceUpdate = ChronoUnit.DAYS.between(facility.getUpdatedAt(), LocalDateTime.now());
+        return daysSinceUpdate > 90;
+    }
+
 
     private List<FacilitySuggestionDTO> suggestTopRatedFacilities() {
         return facilityRepository.findAll().stream()

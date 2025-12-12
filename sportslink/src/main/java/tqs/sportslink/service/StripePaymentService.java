@@ -30,6 +30,8 @@ public class StripePaymentService {
 
     private static final Logger logger = LoggerFactory.getLogger(StripePaymentService.class);
 
+    private static final String SUCCEEDED = "SUCCEEDED";
+
     @Value("${stripe.api.key}")
     private String stripeApiKey;
 
@@ -46,8 +48,12 @@ public class StripePaymentService {
 
     @PostConstruct
     public void init() {
-        Stripe.apiKey = stripeApiKey;
+        configureStripeApiKey(stripeApiKey);
         logger.info("Stripe API initialized");
+    }
+
+    private static void configureStripeApiKey(String apiKey) {
+        Stripe.apiKey = apiKey;
     }
 
     /**
@@ -63,7 +69,7 @@ public class StripePaymentService {
         Optional<Payment> existingPayment = paymentRepository.findByRentalId(rentalId);
         if (existingPayment.isPresent()) {
             Payment payment = existingPayment.get();
-            if ("SUCCEEDED".equals(payment.getStatus())) {
+            if (SUCCEEDED.equals(payment.getStatus())) {
                 throw new IllegalStateException("Payment already completed for this rental");
             }
             // Return existing payment intent
@@ -144,7 +150,7 @@ public class StripePaymentService {
         String paymentIntentId = paymentIntent.getId();
 
         paymentRepository.findByStripePaymentIntentId(paymentIntentId).ifPresent(payment -> {
-            payment.setStatus("SUCCEEDED");
+            payment.setStatus(SUCCEEDED);
             paymentRepository.save(payment);
 
             Rental rental = payment.getRental();
@@ -207,13 +213,13 @@ public class StripePaymentService {
                     PaymentIntent intent = PaymentIntent.retrieve(payment.getStripePaymentIntentId());
 
                     // Check if payment succeeded and get the latest charge
-                    if ("succeeded".equals(intent.getStatus()) && intent.getLatestCharge() != null) {
+                    if (SUCCEEDED.equals(intent.getStatus()) && intent.getLatestCharge() != null) {
                         Charge charge = Charge.retrieve(intent.getLatestCharge());
 
                         if (charge.getReceiptUrl() != null) {
                             payment.setReceiptUrl(charge.getReceiptUrl());
                             payment.setStripeChargeId(charge.getId());
-                            payment.setStatus("SUCCEEDED");
+                            payment.setStatus(SUCCEEDED);
                             paymentRepository.save(payment);
 
                             // Also update rental payment status

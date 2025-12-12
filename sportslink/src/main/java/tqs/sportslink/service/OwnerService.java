@@ -32,6 +32,8 @@ public class OwnerService {
         private final UserRepository userRepository;
         private final StorageService storageService;
 
+        private static final String FACILITY_NOT_FOUND = "Facility not found";
+
         public OwnerService(FacilityRepository facilityRepository,
                         EquipmentRepository equipmentRepository,
                         UserRepository userRepository,
@@ -123,7 +125,7 @@ public class OwnerService {
 
         public void deleteFacility(Long ownerId, Long facilityId) {
                 Facility facility = facilityRepository.findById(facilityId)
-                                .orElseThrow(() -> new NoSuchElementException("Facility not found"));
+                                .orElseThrow(() -> new NoSuchElementException(FACILITY_NOT_FOUND));
 
                 if (!facility.getOwner().getId().equals(ownerId)) {
                         throw new IllegalArgumentException("Owner does not own this facility");
@@ -137,7 +139,7 @@ public class OwnerService {
         public FacilityResponseDTO updateFacility(Long ownerId, Long facilityId, FacilityRequestDTO dto) {
 
                 Facility facility = facilityRepository.findById(facilityId)
-                                .orElseThrow(() -> new NoSuchElementException("Facility not found"));
+                                .orElseThrow(() -> new NoSuchElementException(FACILITY_NOT_FOUND));
 
                 if (!facility.getOwner().getId().equals(ownerId)) {
                         throw new IllegalArgumentException("Owner does not own this facility");
@@ -179,7 +181,7 @@ public class OwnerService {
         public EquipmentResponseDTO addEquipment(Long ownerId, Long facilityId, EquipmentRequestDTO dto) {
 
                 Facility facility = facilityRepository.findById(facilityId)
-                                .orElseThrow(() -> new NoSuchElementException("Facility not found"));
+                                .orElseThrow(() -> new NoSuchElementException(FACILITY_NOT_FOUND));
 
                 if (!facility.getOwner().getId().equals(ownerId)) {
                         throw new IllegalArgumentException("Owner does not own this facility");
@@ -210,7 +212,7 @@ public class OwnerService {
         public List<EquipmentResponseDTO> getEquipment(Long ownerId, Long facilityId) {
 
                 Facility facility = facilityRepository.findById(facilityId)
-                                .orElseThrow(() -> new NoSuchElementException("Facility not found"));
+                                .orElseThrow(() -> new NoSuchElementException(FACILITY_NOT_FOUND));
 
                 if (!facility.getOwner().getId().equals(ownerId)) {
                         throw new IllegalArgumentException("Owner does not own this facility");

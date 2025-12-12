@@ -26,6 +26,10 @@ public class AuthService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final Set<String> blacklistedTokens; // Simple in-memory blacklist
 
+    private static final String OWNER = "OWNER";
+    private static final String ADMIN = "ADMIN";
+    private static final String RENTER = "RENTER";
+
     public AuthService(UserRepository userRepository, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
@@ -60,7 +64,7 @@ public class AuthService {
         
         String token = jwtUtil.generateToken(user.getEmail(), roleNames);
         
-        String primaryRole = roleNames.contains("OWNER") ? "OWNER" : (roleNames.contains("ADMIN") ? "ADMIN" : "RENTER");
+        String primaryRole = roleNames.contains(OWNER) ? OWNER : (roleNames.contains(ADMIN) ? ADMIN : RENTER);
 
         logger.info("User {} logged in successfully", user.getEmail());
         return new AuthResponseDTO(token, roleNames, primaryRole, user.getId());
@@ -121,7 +125,7 @@ public class AuthService {
 
         String token = jwtUtil.generateToken(savedUser.getEmail(), roleNames);
         
-        String primaryRole = roleNames.contains("OWNER") ? "OWNER" : (roleNames.contains("ADMIN") ? "ADMIN" : "RENTER");
+        String primaryRole = roleNames.contains(OWNER) ? OWNER : (roleNames.contains(ADMIN) ? ADMIN : RENTER);
 
         logger.info("User {} registered successfully with roles {}", savedUser.getEmail(), savedUser.getRoles());
         return new AuthResponseDTO(token, roleNames, primaryRole, savedUser.getId());
@@ -183,14 +187,14 @@ public class AuthService {
         }
 
         // Determine primary role for backward compatibility
-        String primaryRole = "RENTER"; // Default
+        String primaryRole = RENTER; // Default
         Set<String> roleNames = new HashSet<>();
         user.getRoles().forEach(r -> roleNames.add(r.name()));
         
-        if (roleNames.contains("ADMIN")) {
-            primaryRole = "ADMIN";
-        } else if (roleNames.contains("OWNER")) {
-            primaryRole = "OWNER";
+        if (roleNames.contains(ADMIN)) {
+            primaryRole = ADMIN;
+        } else if (roleNames.contains(OWNER)) {
+            primaryRole = OWNER;
         }
 
         // Preenche o DTO com os campos de perfil + contagem de rentals/facilities

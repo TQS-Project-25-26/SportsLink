@@ -27,18 +27,4 @@ public class FacilityResponseDTO {
     private String openingTime;
     private String closingTime;
     
-    // Constructor for service layer usage
-    public FacilityResponseDTO(Long id, String name, String imageUrl, List<Sport> sports, String city, String address, 
-                              String description, Double pricePerHour, Double rating) {
-        this.id = id;
-        this.name = name;
-        this.imageUrl = imageUrl;
-        this.sports = sports;
-        this.city = city;
-        this.address = address;
-        this.description = description;
-        this.pricePerHour = pricePerHour;
-        this.rating = rating;
-    }
-    
 }

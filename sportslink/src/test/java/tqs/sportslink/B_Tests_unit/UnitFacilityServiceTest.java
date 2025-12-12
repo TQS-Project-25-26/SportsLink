@@ -12,6 +12,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
 
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import tqs.sportslink.data.FacilityRepository;
@@ -138,8 +141,13 @@ class UnitFacilityServiceTest {
 
     // --- Time Parsing Tests ---
 
-    @Test
-    void whenSearchWithIsoTime_thenParsesCorrectly() {
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "2025-12-25T14:00:00", // ISO
+            "2025-12-25 14:00",    // custom format
+            "14:00"                // time only
+    })
+    void whenSearchWithSupportedTimeFormats_thenParsesCorrectly(String timeInput) {
         // Given
         Facility facility = new Facility();
         facility.setId(1L);
@@ -149,45 +157,12 @@ class UnitFacilityServiceTest {
         when(rentalRepository.findByFacilityId(1L)).thenReturn(List.of());
 
         // When
-        List<FacilityResponseDTO> result = facilityService.searchFacilities(null, null, "2025-12-25T14:00:00");
+        List<FacilityResponseDTO> result = facilityService.searchFacilities(null, null, timeInput);
 
         // Then
         assertThat(result).hasSize(1);
     }
 
-    @Test
-    void whenSearchWithCustomFormatTime_thenParsesCorrectly() {
-        // Given
-        Facility facility = new Facility();
-        facility.setId(1L);
-        facility.setStatus("ACTIVE");
-
-        when(facilityRepository.findAll()).thenReturn(List.of(facility));
-        when(rentalRepository.findByFacilityId(1L)).thenReturn(List.of());
-
-        // When
-        List<FacilityResponseDTO> result = facilityService.searchFacilities(null, null, "2025-12-25 14:00");
-
-        // Then
-        assertThat(result).hasSize(1);
-    }
-
-    @Test
-    void whenSearchWithTimeOnly_thenParsesCorrectly() {
-        // Given
-        Facility facility = new Facility();
-        facility.setId(1L);
-        facility.setStatus("ACTIVE");
-
-        when(facilityRepository.findAll()).thenReturn(List.of(facility));
-        when(rentalRepository.findByFacilityId(1L)).thenReturn(List.of());
-
-        // When
-        List<FacilityResponseDTO> result = facilityService.searchFacilities(null, null, "14:00");
-
-        // Then
-        assertThat(result).hasSize(1);
-    }
 
     @Test
     void whenSearchWithInvalidTimeFormat_thenThrowsException() {

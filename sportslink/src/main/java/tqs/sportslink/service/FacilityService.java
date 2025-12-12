@@ -124,17 +124,17 @@ public class FacilityService {
     }
     
     private FacilityResponseDTO toDTO(Facility facility) {
-        FacilityResponseDTO dto = new FacilityResponseDTO(
-            facility.getId(),
-            facility.getName(),
-            facility.getImageUrl(),
-            facility.getSports(),
-            facility.getCity(),
-            facility.getAddress(),
-            facility.getDescription(),
-            facility.getPricePerHour(),
-            facility.getRating()
-        );
+        FacilityResponseDTO dto = new FacilityResponseDTO();
+        dto.setId(facility.getId());
+        dto.setName(facility.getName());
+        dto.setImageUrl(facility.getImageUrl());
+        dto.setSports(facility.getSports());
+        dto.setCity(facility.getCity());
+        dto.setAddress(facility.getAddress());
+        dto.setDescription(facility.getDescription());
+        dto.setPricePerHour(facility.getPricePerHour());
+        dto.setRating(facility.getRating());
+
         if (facility.getOpeningTime() != null) {
             dto.setOpeningTime(facility.getOpeningTime().toString());
         }

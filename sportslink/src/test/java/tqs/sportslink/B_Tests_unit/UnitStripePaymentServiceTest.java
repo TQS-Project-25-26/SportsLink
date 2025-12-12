@@ -259,8 +259,6 @@ class UnitStripePaymentServiceTest {
     void whenHandleWebhookEvent_PaymentSucceeded_shouldUpdateStatus() {
         String payload = "{}";
         String sigHeader = "sig";
-        String webhookSecret = null; // Value from @Value, might need reflection or setting via constructor if possible, but field injection is used. 
-                                     // However, we are mocking Webhook.constructEvent so secret verification logic inside it is bypassed.
 
         try (org.mockito.MockedStatic<com.stripe.net.Webhook> mockedWebhook = mockStatic(com.stripe.net.Webhook.class)) {
             // Mock Event

@@ -18,7 +18,6 @@ import tqs.sportslink.dto.EquipmentResponseDTO;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +30,8 @@ public class OwnerService {
         private final EquipmentRepository equipmentRepository;
         private final UserRepository userRepository;
         private final StorageService storageService;
+
+        private static final String FACILITY_NOT_FOUND = "Facility not found";
 
         public OwnerService(FacilityRepository facilityRepository,
                         EquipmentRepository equipmentRepository,
@@ -118,12 +119,12 @@ public class OwnerService {
                                                         openingTimeStr,
                                                         closingTimeStr);
                                 })
-                                .collect(Collectors.toList());
+                                .toList();
         }
 
         public void deleteFacility(Long ownerId, Long facilityId) {
                 Facility facility = facilityRepository.findById(facilityId)
-                                .orElseThrow(() -> new NoSuchElementException("Facility not found"));
+                                .orElseThrow(() -> new NoSuchElementException(FACILITY_NOT_FOUND));
 
                 if (!facility.getOwner().getId().equals(ownerId)) {
                         throw new IllegalArgumentException("Owner does not own this facility");
@@ -137,7 +138,7 @@ public class OwnerService {
         public FacilityResponseDTO updateFacility(Long ownerId, Long facilityId, FacilityRequestDTO dto) {
 
                 Facility facility = facilityRepository.findById(facilityId)
-                                .orElseThrow(() -> new NoSuchElementException("Facility not found"));
+                                .orElseThrow(() -> new NoSuchElementException(FACILITY_NOT_FOUND));
 
                 if (!facility.getOwner().getId().equals(ownerId)) {
                         throw new IllegalArgumentException("Owner does not own this facility");
@@ -179,7 +180,7 @@ public class OwnerService {
         public EquipmentResponseDTO addEquipment(Long ownerId, Long facilityId, EquipmentRequestDTO dto) {
 
                 Facility facility = facilityRepository.findById(facilityId)
-                                .orElseThrow(() -> new NoSuchElementException("Facility not found"));
+                                .orElseThrow(() -> new NoSuchElementException(FACILITY_NOT_FOUND));
 
                 if (!facility.getOwner().getId().equals(ownerId)) {
                         throw new IllegalArgumentException("Owner does not own this facility");
@@ -210,7 +211,7 @@ public class OwnerService {
         public List<EquipmentResponseDTO> getEquipment(Long ownerId, Long facilityId) {
 
                 Facility facility = facilityRepository.findById(facilityId)
-                                .orElseThrow(() -> new NoSuchElementException("Facility not found"));
+                                .orElseThrow(() -> new NoSuchElementException(FACILITY_NOT_FOUND));
 
                 if (!facility.getOwner().getId().equals(ownerId)) {
                         throw new IllegalArgumentException("Owner does not own this facility");
@@ -226,7 +227,7 @@ public class OwnerService {
                                                 eq.getQuantity(),
                                                 eq.getPricePerHour(),
                                                 eq.getStatus()))
-                                .collect(Collectors.toList());
+                                .toList();
         }
 
         public EquipmentResponseDTO updateEquipment(Long ownerId, Long equipmentId, EquipmentRequestDTO dto) {

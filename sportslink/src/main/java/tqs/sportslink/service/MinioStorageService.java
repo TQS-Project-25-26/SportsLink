@@ -45,7 +45,7 @@ public class MinioStorageService implements StorageService {
             return publicUrl + "/" + bucketName + "/" + fileName;
 
         } catch (Exception e) {
-            throw new RuntimeException("Error uploading file to MinIO", e);
+            throw new IllegalStateException("Error uploading file to MinIO", e);
         }
     }
 }

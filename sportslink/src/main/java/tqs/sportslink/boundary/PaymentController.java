@@ -40,7 +40,7 @@ public class PaymentController {
      * Returns the client secret needed by the frontend to complete payment.
      */
     @PostMapping("/api/payments/create-intent/{rentalId}")
-    public ResponseEntity<?> createPaymentIntent(
+    public ResponseEntity<Object> createPaymentIntent(
             @PathVariable Long rentalId,
             @RequestParam String email) {
         try {
@@ -51,7 +51,7 @@ public class PaymentController {
                     result.paymentId(),
                     stripePublishableKey);
 
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok().body(response);
 
         } catch (NoSuchElementException e) {
             logger.error("Rental not found: {}", rentalId);
@@ -98,9 +98,9 @@ public class PaymentController {
      * Get payment status for a rental.
      */
     @GetMapping("/api/payments/status/{rentalId}")
-    public ResponseEntity<?> getPaymentStatus(@PathVariable Long rentalId) {
+    public ResponseEntity<Object> getPaymentStatus(@PathVariable Long rentalId) {
         return stripePaymentService.getPaymentByRentalId(rentalId)
-                .map(payment -> {
+                .<ResponseEntity<Object>>map(payment -> {
                     PaymentStatusDTO dto = new PaymentStatusDTO(
                             payment.getId(),
                             payment.getRental().getId(),
@@ -109,9 +109,9 @@ public class PaymentController {
                             payment.getCurrency(),
                             payment.getReceiptUrl(),
                             payment.getCustomerEmail());
-                    return ResponseEntity.ok(dto);
+                    return ResponseEntity.ok().body(dto);
                 })
-                .orElse(ResponseEntity.notFound().build());
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     /**

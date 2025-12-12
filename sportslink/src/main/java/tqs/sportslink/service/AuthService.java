@@ -64,7 +64,12 @@ public class AuthService {
         
         String token = jwtUtil.generateToken(user.getEmail(), roleNames);
         
-        String primaryRole = roleNames.contains(OWNER) ? OWNER : (roleNames.contains(ADMIN) ? ADMIN : RENTER);
+        String primaryRole = RENTER;
+        if (roleNames.contains(OWNER)) {
+            primaryRole = OWNER;
+        } else if (roleNames.contains(ADMIN)) {
+            primaryRole = ADMIN;
+        }
 
         logger.info("User {} logged in successfully", user.getEmail());
         return new AuthResponseDTO(token, roleNames, primaryRole, user.getId());
@@ -99,14 +104,15 @@ public class AuthService {
             try {
                 Role requestedRole = Role.valueOf(request.getRole().toUpperCase());
                 
-                if (requestedRole == Role.ADMIN) {
-                    newUser.getRoles().add(Role.ADMIN);
-                } else if (requestedRole == Role.OWNER) {
-                    newUser.getRoles().add(Role.OWNER);
-                    newUser.getRoles().add(Role.RENTER);
-                } else {
-                    newUser.getRoles().add(Role.RENTER);
+                switch (requestedRole) {
+                    case ADMIN -> newUser.getRoles().add(Role.ADMIN);
+                    case OWNER -> {
+                        newUser.getRoles().add(Role.OWNER);
+                        newUser.getRoles().add(Role.RENTER);
+                    }
+                    default -> newUser.getRoles().add(Role.RENTER);
                 }
+
             } catch (IllegalArgumentException e) {
                 logger.warn("Invalid role requested: {}. Defaulting to RENTER.", request.getRole());
                 newUser.getRoles().add(Role.RENTER);
@@ -125,7 +131,12 @@ public class AuthService {
 
         String token = jwtUtil.generateToken(savedUser.getEmail(), roleNames);
         
-        String primaryRole = roleNames.contains(OWNER) ? OWNER : (roleNames.contains(ADMIN) ? ADMIN : RENTER);
+        String primaryRole = RENTER;
+        if (roleNames.contains(OWNER)) {
+            primaryRole = OWNER;
+        } else if (roleNames.contains(ADMIN)) {
+            primaryRole = ADMIN;
+        }
 
         logger.info("User {} registered successfully with roles {}", savedUser.getEmail(), savedUser.getRoles());
         return new AuthResponseDTO(token, roleNames, primaryRole, savedUser.getId());

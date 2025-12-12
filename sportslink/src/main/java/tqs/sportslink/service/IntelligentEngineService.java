@@ -90,7 +90,7 @@ public class IntelligentEngineService {
         List<Facility> candidates = facilityRepository.findAll().stream()
                 .filter(f -> "ACTIVE".equals(f.getStatus()))
                 .filter(f -> !visitedFacilityIds.contains(f.getId()))
-                .collect(Collectors.toList());
+                .toList();
 
         // Score facilities
         List<FacilitySuggestionDTO> suggestions = candidates.stream()
@@ -98,7 +98,7 @@ public class IntelligentEngineService {
                         effectiveLon))
                 .sorted(Comparator.comparingDouble(FacilitySuggestionDTO::getScore).reversed())
                 .limit(5)
-                .collect(Collectors.toList());
+                .toList();
 
         return suggestions;
     }
@@ -131,7 +131,7 @@ public class IntelligentEngineService {
                         95.0 // High score for strict matches
                 ))
                 .sorted(Comparator.comparingDouble(EquipmentSuggestionDTO::getScore).reversed())
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -239,7 +239,7 @@ public class IntelligentEngineService {
                         "Top rated facility",
                         f.getRating() * 20,
                         null))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private FacilitySuggestionDTO createFacilitySuggestion(Facility facility, String preferredCity,

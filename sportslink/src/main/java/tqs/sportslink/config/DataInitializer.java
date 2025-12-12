@@ -27,8 +27,8 @@ public class DataInitializer {
     private static final String STATUS_AVAILABLE = "AVAILABLE";
     private static final String CITY_AVEIRO = "Aveiro";
     private static final String OWNER_EMAIL = "owner@sportslink.com";
-    private static final String MINIO_BASE_URL = "http://192.168.160.31:9000/sportslink-images/imagensMinIO/";
     private static final String USER_EMAIL = "test@sportslink.com";
+    private static final String MINIO_BASE_URL = "http://192.168.160.31:9000/sportslink-images/imagensMinIO/";
     private static final String TIME_EXAMPLE_1 = "08:00";
     private static final String TIME_EXAMPLE_2 = "22:00";
     private static final String TIME_EXAMPLE_3 = "09:00";
@@ -38,9 +38,16 @@ public class DataInitializer {
     private static final String COMPLETED = "COMPLETED";
     private static final String ACCESSORY = "Accessory";
 
+    // 🔐 Passwords via environment variables (defaults keep behavior unchanged)
+    private static final String ADMIN_PASSWORD =
+            System.getenv().getOrDefault("SPORTSLINK_ADMIN_PASSWORD", "pwdAdmin");
+
+    private static final String DEFAULT_PASSWORD =
+            System.getenv().getOrDefault("SPORTSLINK_DEFAULT_PASSWORD", "password123");
 
     @Bean
-    CommandLineRunner initDatabase(FacilityRepository facilityRepository,
+    CommandLineRunner initDatabase(
+            FacilityRepository facilityRepository,
             EquipmentRepository equipmentRepository,
             UserRepository userRepository,
             tqs.sportslink.data.RentalRepository rentalRepository) {
@@ -78,16 +85,19 @@ public class DataInitializer {
     }
 
     private void createAdminIfMissing(UserRepository userRepository,
-                                    org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder passwordEncoder) {
+            org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder passwordEncoder) {
+
         if (!userRepository.existsByEmail("admin@admin.com")) {
             User adminUser = new User();
             adminUser.setEmail("admin@admin.com");
-            adminUser.setPassword(passwordEncoder.encode("pwdAdmin"));
+            adminUser.setPassword(passwordEncoder.encode(ADMIN_PASSWORD));
             adminUser.setName("Admin User");
             adminUser.getRoles().add(Role.ADMIN);
             adminUser.setActive(true);
             userRepository.save(adminUser);
-            logger.info("Admin user created: admin@admin.com / pwdAdmin");
+
+            // 🔒 Do NOT log passwords
+            logger.info("Admin user created: admin@admin.com");
         } else {
             logger.info("Admin user already exists");
         }
@@ -99,26 +109,28 @@ public class DataInitializer {
         return count;
     }
 
-    private void createOwnerAndTestUserIfMissing(UserRepository userRepository,
+    private void createOwnerAndTestUserIfMissing(
+            UserRepository userRepository,
             org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder passwordEncoder) {
 
         if (userRepository.findByEmail(OWNER_EMAIL).isEmpty()) {
             User ownerUser = new User();
             ownerUser.setEmail(OWNER_EMAIL);
-            ownerUser.setPassword(passwordEncoder.encode("password123"));
+            ownerUser.setPassword(passwordEncoder.encode(DEFAULT_PASSWORD));
             ownerUser.setName("Owner User");
             ownerUser.setPhone("911111111");
             ownerUser.getRoles().add(Role.OWNER);
             ownerUser.getRoles().add(Role.RENTER);
             ownerUser.setActive(true);
             userRepository.save(ownerUser);
-            logger.info("Owner user created: {} / password123 (id={})", OWNER_EMAIL, ownerUser.getId());
+
+            logger.info("Owner user created: {} (id={})", OWNER_EMAIL, ownerUser.getId());
         }
 
         if (userRepository.findByEmail(USER_EMAIL).isEmpty()) {
             User testUser = new User();
             testUser.setEmail(USER_EMAIL);
-            testUser.setPassword(passwordEncoder.encode("password123"));
+            testUser.setPassword(passwordEncoder.encode(DEFAULT_PASSWORD));
             testUser.setName("Test User");
             testUser.setPhone("912345678");
             testUser.getRoles().add(Role.RENTER);
@@ -126,9 +138,12 @@ public class DataInitializer {
             testUser.setLatitude(40.6443);
             testUser.setLongitude(-8.6455);
             userRepository.save(testUser);
-            logger.info("Test user created: test@sportslink.com / password123 (id={})", testUser.getId());
+
+            logger.info("Test user created: {} (id={})", USER_EMAIL, testUser.getId());
         }
     }
+
+
 
     private List<Facility> createFacilities(FacilityRepository facilityRepository, UserRepository userRepository) {
         Facility facility1 = new Facility();

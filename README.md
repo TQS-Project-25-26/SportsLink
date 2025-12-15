@@ -17,3 +17,5 @@ SportsLink is a digital marketplace platform that connects field owners with spo
 **Product Name:** SportsLink
 
 **Domain:** Sports facilities and equipment rental platform, initially focused on collective sports (padel, futsal, tennis, badminton, basketball, volleyball, etc.)
+
+**Devops Dashboard:** https://learning.oreilly.com/library/view/mastering-spring-boot/9781803230788/B18400_07.xhtml

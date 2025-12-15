@@ -146,8 +146,8 @@
         </div>
 
         <div class="mt-auto d-flex gap-2">
-          <button class="btn btn-sm btn-primary text-white btn-equip flex-fill">Equipamentos</button>
-          <button class="btn btn-sm btn-primary btn-rent flex-fill text-white">Reservar</button>
+          <button class="btn btn-sm btn-primary text-white btn-equip flex-fill">Equipment</button>
+          <button class="btn btn-sm btn-primary btn-rent flex-fill text-white">Book Now</button>
         </div>
       </div>
     `;
@@ -322,8 +322,8 @@
       document.body.appendChild(panel);
     }
     panel.innerHTML = `<div class="d-flex justify-content-between align-items-center mb-2">
-        <strong>Equipamentos — ${field.name || ""}</strong>
-        <button id="close-equip" class="btn btn-sm btn-light">Fechar</button>
+        <strong>Equipment — ${field.name || ""}</strong>
+        <button id="close-equip" class="btn btn-sm btn-light">Close</button>
       </div>
       <div id="equip-list"></div>
     `;
